@@ -141,26 +141,32 @@
   (require 'semantic)
   (require 'semantic/db))
 (require 'mode-local)
-(require 'lispy-tags)
 (require 'help-fns)
 (require 'edebug)
 (require 'etags)
 (require 'outline)
 (require 'avy)
 (require 'newcomment)
-(require 'lispy-inline)
 (setq iedit-toggle-key-default nil)
 (require 'delsel)
 (require 'swiper)
 (require 'pcase)
 (require 'hydra)
-(eval-after-load 'cider '(require 'le-clojure))
 
 (defsubst lispy-looking-back (regexp)
   "Forward to (`looking-back' REGEXP)."
   (looking-back regexp (line-beginning-position)))
 
 ;;* Locals: extract block
+(defvar lispy-elisp-modes
+  '(emacs-lisp-mode lisp-interaction-mode eltex-mode minibuffer-inactive-mode
+                    suggest-mode)
+  "Modes for which `lispy--eval-elisp' and related functions are appropriate.")
+
+(defvar lispy-clojure-modes
+  '(clojure-mode clojurescript-mode clojurex-mode clojurec-mode)
+  "Modes for which clojure related functions are appropriate.")
+
 (defvar lispy-map-input-overlay nil
   "The input overlay for mapping transformations.")
 
@@ -489,12 +495,6 @@ backward through lists, which is useful to move into special.
                (setq-local lispy-outline "^\\(?:%\\*+\\|\\\\\\(?:sub\\)?section{\\)")
                (setq lispy-outline-header "%")
                (setq-local outline-regexp "\\(?:%\\*+\\|\\\\\\(?:sub\\)?section{\\)"))
-              ((eq major-mode 'clojure-mode)
-               (eval-after-load 'le-clojure
-                 '(setq completion-at-point-functions
-                   '(lispy-clojure-complete-at-point
-                     cider-complete-at-point)))
-               (setq-local outline-regexp (substring lispy-outline 1)))
               ((eq major-mode 'python-mode)
                (setq-local lispy-outline "^#\\*+")
                (setq lispy-outline-header "#")
@@ -580,10 +580,6 @@ Otherwise return the amount of times executed."
        (setcdr
         (nthcdr (1- ,n) (prog1 ,lst (setq ,lst (nthcdr ,n ,lst))))
         nil))))
-
-(defvar lispy-site-directory (file-name-directory
-                              load-file-name)
-  "The directory where all of the lispy files are located.")
 
 ;;* Verb related
 (defun lispy-disable-verbs-except (verb)
@@ -4373,37 +4369,16 @@ SYMBOL is a string."
 (define-error 'eval-error "Eval error")
 
 (defun lispy-eval (arg)
-  "Eval the current sexp and display the result.
-When ARG is 2, insert the result as a comment.
-When at an outline, eval the outline."
+  "Eval the current sexp and display the result."
   (interactive "p")
-  (setq lispy-eval-output nil)
-  (condition-case e
-      (cond ((eq arg 2)
-             (lispy-eval-and-comment))
-            ((and (looking-at lispy-outline)
-                  (looking-at lispy-outline-header))
-             (lispy-eval-outline))
-            (t
-             (let ((res (lispy--eval nil)))
-               (when (memq major-mode lispy-clojure-modes)
-                 (setq res (lispy--clojure-pretty-string res)))
-               (when lispy-eval-output
-                 (setq res (concat lispy-eval-output res)))
-               (cond ((eq lispy-eval-display-style 'message)
-                      (lispy-message res))
-                     ((or (fboundp 'cider--display-interactive-eval-result)
-                          (require 'cider nil t))
-                      (cider--display-interactive-eval-result
-                       res (cdr (lispy--bounds-dwim))))
-                     ((or (fboundp 'eros--eval-overlay)
-                          (require 'eros nil t))
-                      (eros--eval-overlay
-                       res (cdr (lispy--bounds-dwim))))
-                     (t
-                      (error "Please install CIDER >= 0.10 or eros to display overlay"))))))
-    (eval-error
-     (lispy-message (cdr e)))))
+  (cond
+   ((bound-and-true-p inf-clojure-minor-mode)
+    (inf-clojure-eval-last-sexp))
+   ((derived-mode-p 'emacs-lisp-mode)
+    (call-interactively #'eval-last-sexp))
+   ((bound-and-true-p cider-mode)
+    (cider-eval-last-sexp)))
+  (setq lispy-eval-output nil))
 
 (defun lispy-forward-outline ()
   (let ((pt (point)))
@@ -4581,41 +4556,6 @@ If STR is too large, pop it to a buffer instead."
           (doit))
       (doit))))
 
-(defun lispy-eval-and-comment ()
-  "Eval last sexp and insert the result as a comment."
-  (interactive)
-  (let ((str (lispy--eval-dwim))
-        re-bnd)
-    (save-excursion
-      (cond ((region-active-p)
-             (setq re-bnd (cons (region-beginning)
-                                (region-end)))
-             (when (= (point) (region-beginning))
-               (exchange-point-and-mark)))
-            ((eq major-mode 'python-mode)
-             (let ((bnd (lispy-eval-python-bnd)))
-               (goto-char (cdr bnd))
-               (unless (looking-at "\n *#")
-                 (newline)
-                 (insert
-                  (save-excursion
-                    (goto-char (car bnd))
-                    (beginning-of-line)
-                    (buffer-substring
-                     (point)
-                     (progn
-                       (back-to-indentation)
-                       (point))))))))
-            ((lispy-left-p)
-             (lispy-different)))
-      (lispy--insert-eval-result str)
-      (unless (eolp)
-        (newline)))
-    (unless (eq major-mode 'python-mode)
-      (lispy--reindent 1))
-    (when re-bnd
-      (lispy--mark re-bnd))))
-
 (defun lispy--major-mode-lisp-p ()
   (memq major-mode (append lispy-elisp-modes
                            lispy-clojure-modes
@@ -4714,54 +4654,15 @@ Unlike `comment-region', ensure a contiguous comment."
         (cl-incf end 1))
       (beginning-of-line 2))))
 
-(defun lispy-eval-and-replace ()
-  "Eval last sexp and replace it with the result."
-  (interactive)
-  (let* ((leftp (lispy--leftp))
-         (bnd (lispy--bounds-dwim))
-         (str (lispy--string-dwim bnd))
-         (res (lispy--eval str)))
-    (delete-region (car bnd) (cdr bnd))
-    (deactivate-mark)
-    (insert res)
-    (unless (or (lispy-left-p)
-                (lispy-right-p)
-                (member major-mode '(python-mode julia-mode)))
-      (lispy--out-backward 1))
-    (when (and leftp (lispy-right-p))
-      (lispy-different))))
-
 (defconst lispy--eval-cond-msg
   (format "%s: nil" (propertize "cond" 'face 'font-lock-keyword-face))
   "Message to echo when the current `cond' branch is nil.")
-
-(defvar lispy-eval-other--window nil
-  "Target window for `lispy-eval-other-window'.")
-
-(defvar lispy-eval-other--buffer nil
-  "Target buffer for `lispy-eval-other-window'.")
-
-(defvar lispy-eval-other--cfg nil
-  "Last window configuration for `lispy-eval-other-window'.")
-
-(defun lispy-eval--last-live-p ()
-  "Return t if the last eval window is still live with same buffer."
-  (and (window-live-p
-        lispy-eval-other--window)
-       (equal (window-buffer
-               lispy-eval-other--window)
-              lispy-eval-other--buffer)
-       (equal (cl-mapcan #'window-list (frame-list))
-              lispy-eval-other--cfg)))
 
 (defvar lispy--eval-sym nil
   "Last set `dolist' sym.")
 
 (defvar lispy--eval-data nil
   "List data for a `dolist' sym.")
-
-(declare-function aw-select "ext:ace-window")
-(defvar aw-dispatch-always)
 
 (defun lispy--dolist-item-expr (expr)
   "Produce an eval expression for dolist-type EXPR.
@@ -4797,55 +4698,6 @@ SYM will take on each value of LST with each eval."
           (set sym popped))
       (setq lispy--eval-data lst)
       (set sym nil))))
-
-(defun lispy-eval-other-window (&optional arg)
-  "Eval current expression in the context of other window.
-In case the point is on a let-bound variable, add a `setq'.
-When ARG is non-nil, force select the window."
-  (interactive "P")
-  (require 'ace-window)
-  (let* ((expr (save-mark-and-excursion (lispy--setq-expression)))
-         (aw-dispatch-always nil)
-         (target-window
-          (cond ((not (memq major-mode lispy-elisp-modes))
-                 (selected-window))
-                ((and (null arg) (lispy-eval--last-live-p))
-                 lispy-eval-other--window)
-                ((setq lispy-eval-other--window
-                       (aw-select " Ace - Eval in Window"))
-                 (setq lispy-eval-other--buffer
-                       (window-buffer lispy-eval-other--window))
-                 (setq lispy-eval-other--cfg
-                       (cl-mapcan #'window-list (frame-list)))
-                 lispy-eval-other--window)
-                (t
-                 (setq lispy-eval-other--buffer nil)
-                 (setq lispy-eval-other--cfg nil)
-                 (selected-window))))
-         res)
-    (cond ((memq major-mode '(lisp-mode scheme-mode))
-           (lispy-message (lispy--eval (prin1-to-string expr))))
-          ((memq major-mode lispy-clojure-modes)
-           (lispy-eval 1))
-          (t
-           (with-selected-window target-window
-             (setq res (lispy--eval-elisp-form expr lexical-binding)))
-           (cond ((equal res lispy--eval-cond-msg)
-                  (lispy-message res))
-                 ((and (fboundp 'object-p) (object-p res))
-                  (message "(eieio object length %d)" (length res)))
-                 ((and (memq major-mode lispy-elisp-modes)
-                       (consp res)
-                       (numberp (car res))
-                       (numberp (cdr res)))
-                  (lispy-message
-                   (format "%S\n%s" res
-                           (with-selected-window target-window
-                             (lispy--string-dwim res)))))
-                 (t
-                  (lispy-message
-                   (replace-regexp-in-string "%" "%%"
-                                             (format "%S" res)))))))))
 
 (defun lispy-follow ()
   "Follow to `lispy--current-function'."
@@ -6013,7 +5865,7 @@ An equivalent of `cl-destructuring-bind'."
   ;; ("o" nil)
   ("p" lispy-set-python-process "process")
   ;; ("q" nil)
-  ("r" lispy-eval-and-replace "eval and replace")
+  ;; ("r" nil)
   ("s" save-buffer)
   ("t" lispy-view-test "view test")
   ("u" lispy-unbind-variable "unbind let-var")
@@ -9144,7 +8996,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "k" 'lispy-up)
     (lispy-define-key map "d" 'lispy-different)
     (lispy-define-key map "o" 'lispy-other-mode)
-    (lispy-define-key map "p" 'lispy-eval-other-window)
     (lispy-define-key map "P" 'lispy-paste)
     (lispy-define-key map "y" 'lispy-occur)
     (lispy-define-key map "z" 'lh-knight/body)
