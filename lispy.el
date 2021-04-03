@@ -4368,17 +4368,50 @@ SYMBOL is a string."
 
 (define-error 'eval-error "Eval error")
 
+(defvar lispy--eval-last-sexp-handlers-alist
+      '((:emacs-lisp . eval-last-sexp)
+        (:cider . cider-eval-last-sexp)
+        (:inf-clojure . inf-clojure-eval-last-sexp)))
+
+(defvar lispy--eval-region-handlers-alist
+      '((:emacs-lisp . eval-region)
+        (:cider . cider-eval-region)
+        (:inf-clojure . inf-clojure-eval-region)))
+
+(defun lispy--evaluation-kind ()
+  (cond
+   ((derived-mode-p 'emacs-lisp-mode)
+    :emacs-lisp)
+   ((bound-and-true-p inf-clojure-minor-mode)
+    :inf-clojure)
+   ((bound-and-true-p cider-mode)
+    :cider)
+   ('t
+    (message "[lispy-lite]: Couldn't find evaluation handler for current mode."))))
+
+(defun lispy--get-eval-handler ()
+  "Gets the most appropriate evaluation handler, depending on the region and the current major/minor modes."
+  (assoc-default (lispy--evaluation-kind)
+                 (if (region-active-p)
+                     lispy--eval-region-handlers-alist
+                   lispy--eval-last-sexp-handlers-alist)))
+
 (defun lispy-eval (arg)
   "Eval the current sexp and display the result."
   (interactive "p")
-  (cond
-   ((bound-and-true-p inf-clojure-minor-mode)
-    (inf-clojure-eval-last-sexp))
-   ((derived-mode-p 'emacs-lisp-mode)
-    (call-interactively #'eval-last-sexp))
-   ((bound-and-true-p cider-mode)
-    (cider-eval-last-sexp)))
-  (setq lispy-eval-output nil))
+  ;; if point is at the end of the sexp.
+  ;; TODO: region is active, point is at the begging of sexp
+  (setq lispy-eval-output nil)
+  (when-let ((handler (lispy--get-eval-handler)))
+    (cond
+     ((or (region-active-p)
+          (lispy-right-p))
+      (call-interactively handler))
+
+     ((lispy-left-p)
+      (save-excursion
+        (lispy-forward 1)
+        (call-interactively handler))))))
 
 (defun lispy-forward-outline ()
   (let ((pt (point)))

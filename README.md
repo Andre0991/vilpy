@@ -1,4 +1,4 @@
-# Lispy-lite
+# lispy-lite
 
 This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode.
 The motivation is not loading `le-clojure.clj`, which relies on injecting dependencies to cider and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552).
@@ -38,6 +38,3 @@ Note that `lispy` has some dependencies, you might need to get them as well. You
 
 ## Roadmap
 The current version works fine for my use case, but I'd love to remove some dependencies (looking at you, `ivy`, `swiper`, `hydra`, `avy`, etc), have a uniform set of operations that work on all supported lisps and leverages some operations to language-specific packages.
-
-## Bugs
-- Region evaluation does not work in `clojure-mode`.
