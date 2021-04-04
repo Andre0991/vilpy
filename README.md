@@ -27,13 +27,12 @@ Uses `xref-find-definitions`.
 ### `lispy-goto` (g)
 Uses `imenu`.
 
-### `lispy-goto-symbol` (M-.)
-
 You may want to call something fancier:
 
 ``` emacs-lisp
 (lispy-define-key lispy-mode-map "g" 'counsel-imenu)
 ```
+
 
 ### Removed functions
 - `lispy-goto-projectile` (0g and ogp).
@@ -44,10 +43,11 @@ You may want to call something fancier:
 - `lispy-goto-def-ace`
 - `lispy-debug-step-in` (xj)
 - `lispy-goto-symbol-elisp`
+- `lispy-goto-symbol` (M-.)
 
 ### Other
 For a complete diff with the original file, compare HEAD with the first commit, which contains the original code.
-
+    
 ## Installation
 As usual, you can simply download the `.el` file and put it into your load path.
 
@@ -106,4 +106,3 @@ I simply use these customizations for making `lispy` take precedence over `evil`
       :i "C-y" 'lispy-yank)
 ```
 
-The current version works fine for my use case, but I'd love to remove some dependencies (looking at you, `ivy`, `swiper`, `hydra`, `avy`, etc), have a uniform set of operations that work on all supported lisps and leverages some operations to language-specific packages.
