@@ -1,10 +1,8 @@
 ;;; lispy.el --- vi-like Paredit. -*- lexical-binding: t -*-
 
-;; Copyright (C) 2014-2019 Oleh Krehel
-
-;; Author: Oleh Krehel <ohwoeowho@gmail.com>
-;; URL: https://github.com/abo-abo/lispy
-;; Version: 0.27.0
+;; Author: André Peric Tavares <andre.peric.tavares@gmail.com>
+;; URL: https://github.com/Andre0991/lispy-lite
+;; Version: 0.1.0
 ;; Keywords: lisp
 
 ;; This file is not part of GNU Emacs
@@ -23,6 +21,8 @@
 ;; see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+;; This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode.
+;; For more details, please see https://github.com/Andre0991/lispy-lite.
 ;;
 ;; Due to the structure of Lisp syntax it's very rare for the
 ;; programmer to want to insert characters right before "(" or right
