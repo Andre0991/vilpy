@@ -6,7 +6,7 @@ The motivation is not loading `le-clojure.clj` (or any other language-specific f
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
 Design goals (mostly not taken into practice yet):
-- Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features.
+- Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features. Refactoring commands can be leveraged from other packages.
 - Prefer to leverage Emacs built-ins function when possible.
 - Implement a uniform API that works well with all supported languages. Alternatively: avoid commands that are language-specific.
 - Rely on fewer external dependencies.
@@ -44,6 +44,8 @@ You may want to call something fancier:
 - `lispy-debug-step-in` (xj)
 - `lispy-goto-symbol-elisp`
 - `lispy-goto-symbol` (M-.)
+- `lispy-shifttab` (I)
+- All `lispy-outline-*`functions 
 
 ### Other
 For a complete diff with the original file, compare HEAD with the first commit, which contains the original code.
@@ -105,4 +107,3 @@ I simply use these customizations for making `lispy` take precedence over `evil`
 (map! :map lispy-mode-map
       :i "C-y" 'lispy-yank)
 ```
-

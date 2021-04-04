@@ -2,7 +2,7 @@
 
 ;; Author: André Peric Tavares <andre.peric.tavares@gmail.com>
 ;; URL: https://github.com/Andre0991/lispy-lite
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Keywords: lisp
 
 ;; This file is not part of GNU Emacs
@@ -133,7 +133,6 @@
 
 ;;* Requires
 (eval-when-compile
-  (require 'org)
   (require 'iedit)
   (require 'eldoc)
   (require 'ediff)
@@ -3197,37 +3196,12 @@ Precondition: the region is active and the point is at `region-beginning'."
       (lispy-different))
     (cond ((region-active-p)
            (lispy--move-up-region arg))
-          ((looking-at lispy-outline)
-           (lispy-move-outline-up arg))
           (t
            (lispy--mark (lispy--bounds-dwim))
            (lispy-move-up arg)
            (deactivate-mark)
            (lispy-different)))
     (unless at-start (lispy-different))))
-
-(declare-function zo-up "zoutline")
-(defun lispy-move-outline-up (arg)
-  (interactive)
-  (require 'zoutline)
-  (lispy-dotimes arg
-    (let ((lvl1 (lispy-outline-level))
-          (lvl2 (save-excursion
-                  (backward-char)
-                  (lispy-outline-level))))
-      (when (<= lvl1 lvl2)
-        (let ((bnd1 (lispy--bounds-outline))
-              (bnd2 (progn
-                      (zo-up 1)
-                      (lispy--bounds-outline))))
-          (if (or (equal bnd1 bnd2)
-                  (and (eq (car bnd2) (point-min))
-                       (not (save-excursion
-                              (goto-char (point-min))
-                              (looking-at lispy-outline)))))
-              (goto-char (car bnd1))
-            (lispy--swap-regions bnd1 bnd2)
-            (goto-char (car bnd2))))))))
 
 (defun lispy--move-down-region (arg)
   "Swap the marked region ARG positions down.
@@ -4239,118 +4213,6 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
         (lispy-forward 1)
         (call-interactively handler))))))
 
-(defun lispy-forward-outline ()
-  (let ((pt (point)))
-    (outline-next-heading)
-    (if (looking-at lispy-outline)
-        (when (> (point) pt)
-          (point))
-      (goto-char pt)
-      nil)))
-
-(defun lispy-eval-current-outline ()
-  (interactive)
-  (save-excursion
-    (let ((buf (current-buffer)))
-      (outline-back-to-heading)
-      (lispy-eval-outline)
-      (let ((inhibit-message t))
-        (with-current-buffer buf
-          (save-buffer))))))
-
-(defun lispy-add-outline-title ()
-  (save-excursion
-    (lispy-outline-prev 1)
-    (if (looking-at (format "\\(%s\\*+ ?:$\\)" lispy-outline-header))
-        (match-string-no-properties 1)
-      (concat lispy-outline-header (make-string (1+ (funcall outline-level)) ?*) " :"))))
-
-(defun lispy-insert-outline-below ()
-  (interactive)
-  "Add an unnamed notebook outline at point."
-  (outline-back-to-heading)
-  (cond
-    ((lispy-outline-next 1)
-     (insert "\n\n")
-     (backward-char 2))
-    (t
-     (goto-char (point-max))
-     (unless (bolp)
-       (insert "\n"))))
-  (let ((start (point))
-        (title (lispy-add-outline-title)))
-    (skip-chars-backward "\n")
-    (delete-region (point) start)
-    (insert "\n\n" title "\n")
-    (let ((inhibit-message t))
-      (save-buffer))))
-
-(defun lispy-insert-outline-left ()
-  (interactive)
-  "Add a named notebook outline at point."
-  (lispy-insert-outline-below)
-  (delete-char -4)
-  (insert " "))
-
-(defun lispy-eval-outline ()
-  "Evaluate the current outline and its children.
-Return the result of the last evaluation as a string."
-  (let ((lvl (lispy-outline-level))
-        ans)
-    (lispy--remember)
-    (setq ans (lispy-eval-single-outline))
-    (while (and (lispy-forward-outline)
-                (> (funcall outline-level) lvl))
-      (setq ans (lispy-eval-single-outline)))
-    ans))
-
-(defun lispy--eval-bounds-outline ()
-  (let* ((beg (1+ (line-end-position)))
-         bnd
-         (end
-          (save-excursion
-            (forward-char)
-            (if (re-search-forward (concat "^" outline-regexp) nil t)
-                (progn
-                  (goto-char (match-beginning 0)))
-              (goto-char (point-max)))
-            (skip-chars-backward "\n")
-            (while (and
-                    (> (point) beg)
-                    (setq bnd (lispy--bounds-comment)))
-              (goto-char (car bnd))
-              (skip-chars-backward "\n "))
-            (point))))
-    (if (> beg end)
-        (cons beg beg)
-      (cons beg end))))
-
-(defun lispy-eval-single-outline ()
-  (let* ((pt (point))
-         (bnd (lispy--eval-bounds-outline))
-         (res
-          (lispy--eval-dwim bnd)))
-    (when lispy-eval-output
-      (setq res (concat lispy-eval-output res)))
-    (cond ((equal res "")
-           (message "(ok)"))
-          ((= ?: (char-before (line-end-position)))
-           (goto-char (cdr bnd))
-           (save-restriction
-             (narrow-to-region
-              (point)
-              (if (re-search-forward outline-regexp nil t)
-                  (1- (match-beginning 0))
-                (point-max)))
-             (goto-char (point-min))
-             (unless (looking-at (concat "\n" lispy-outline-header))
-               (newline))
-             (lispy--insert-eval-result res))
-           (goto-char pt)
-           res)
-          (t
-           (message (replace-regexp-in-string "%" "%%" res))))))
-
 (defvar lispy-message-limit 4000
   "String length limit for `lispy-message' to pop up a window.
 For smaller strings `message' is used.")
@@ -4736,117 +4598,10 @@ Sexp is obtained by exiting the list ARG times."
   (when (region-active-p)
     (lispy-delete 1)))
 
-;;* Locals: outline
-(defun lispy-outline-level ()
-  "Compute the outline level of the heading at point."
-  (save-excursion
-    (save-match-data
-      (end-of-line)
-      (if (re-search-backward lispy-outline nil t)
-          (max (cl-count ?* (match-string 0)) 1)
-        0))))
-
-(defun lispy-outline-next (arg)
-  "Call `outline-next-visible-heading' ARG times."
-  (interactive "p")
-  (lispy--remember)
-  (lispy-dotimes arg
-    (let ((pt (point)))
-      (outline-next-visible-heading 1)
-      (unless (looking-at outline-regexp)
-        (goto-char pt)
-        (error "Past last outline")))))
-
-(defun lispy-outline-prev (arg)
-  "Call `outline-previous-visible-heading' ARG times."
-  (interactive "p")
-  (lispy--remember)
-  (deactivate-mark)
-  (lispy-dotimes arg
-                 (let ((pt (point)))
-                   (outline-previous-visible-heading 1)
-                   (unless (looking-at outline-regexp)
-                     (goto-char pt)
-                     (error "Past first outline")))))
-
-(defun lispy-outline-promote ()
-  "Promote current outline level by one."
-  (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (when (looking-at lispy-outline)
-      (goto-char (match-end 0))
-      (insert "*"))))
-
-(defun lispy-outline-demote ()
-  "Demote current outline level by one."
-  (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (when (looking-at lispy-outline)
-      (if (<= (- (match-end 0)
-                 (match-beginning 0))
-              (1+ (- (length lispy-outline-header)
-                     ;; `sml-mode'
-                     (cl-count ?* lispy-outline-header))))
-          (progn
-            (setq this-command 'lispy-outline-left)
-            (lispy-complain "Can't demote outline"))
-        (goto-char (match-end 0))
-        (delete-char -1))
-      t)))
-
-(defun lispy-outline-left ()
-  "Move left."
-  (interactive)
-  (when (looking-at lispy-outline)
-    (lispy--remember)
-    (let ((level-up (1- (funcall outline-level))))
-      (when (> level-up 0)
-        (re-search-backward
-         (format "^%s\\*\\{1,%d\\} " lispy-outline-header level-up) nil t)))))
-
-(defun lispy-outline-right ()
-  "Move right."
-  (interactive)
-  (let ((pt (point))
-        result)
-    (save-restriction
-      (org-narrow-to-subtree)
-      (forward-char)
-      (if (re-search-forward lispy-outline nil t)
-          (progn
-            (goto-char (match-beginning 0))
-            (setq result t))
-        (goto-char pt)))
-    (lispy--ensure-visible)
-    result))
-
-(defun lispy-outline-goto-child ()
-  "Goto the first variable `lispy-left' of the current outline."
-  (interactive)
-  (let ((end (save-excursion
-               (or (re-search-forward lispy-outline nil t 2)
-                   (point-max)))))
-    (if (re-search-forward lispy-left end t)
-        (progn
-          (backward-char 1)
-          (lispy--ensure-visible))
-      (lispy-complain "This outline has no children"))))
-
 (declare-function ediff-regions-internal "ediff")
 
 (declare-function iedit-regexp-quote "iedit")
 (declare-function iedit-start "iedit")
-
-(declare-function org-back-to-heading "org")
-(declare-function org-end-of-subtree "org")
-(declare-function org-at-heading-p "org")
-(declare-function org-speed-move-safe "org")
-(declare-function org-cycle-internal-local "org")
-(declare-function org-content "org")
-(declare-function org-cycle-internal-global "org")
-(declare-function org-narrow-to-subtree "org")
 
 (defun lispy-tab ()
   "Indent code and hide/show outlines.
@@ -4855,17 +4610,6 @@ When region is active, call `lispy-mark-car'."
   (let (outline-eval-tag)
     (cond ((region-active-p)
            (lispy-mark-car))
-          ((looking-at lispy-outline)
-           (outline-minor-mode 1)
-           (condition-case e
-               (lispy-flet (org-unlogged-message (&rest _x))
-                 (require 'org)
-                 (let ((org-outline-regexp outline-regexp))
-                   (org-cycle-internal-local)))
-             (error
-              (if (string= (error-message-string e) "before first heading")
-                  (outline-next-visible-heading 1)
-                (signal (car e) (cdr e))))))
           ((looking-at (setq outline-eval-tag (format "^%s =>" lispy-outline-header)))
            (let* ((bnd (lispy--bounds-comment))
                   (beg (car bnd))
@@ -4876,34 +4620,6 @@ When region is active, call `lispy-mark-car'."
                 (+ beg (1- (length outline-eval-tag))) end 'visible))))
           (t
            (lispy--normalize-1)))))
-
-(defun lispy--show-hidden-outlines ()
-  (remove-overlays (point-min) (point-max) 'invisible 'outline))
-
-(defun lispy--org-content ()
-  (require 'org)
-  (lispy--show-hidden-outlines)
-  (save-excursion
-    (goto-char (point-max))
-    (let ((last (point)))
-      (while (re-search-backward outline-regexp nil t)
-        (org-flag-region (line-end-position) last t 'outline)
-        (setq last (line-end-position 0))))))
-
-(defvar lispy--outline-state 'show-all)
-
-(defun lispy-shifttab ()
-  "Hide/show outline summary."
-  (interactive)
-  (outline-minor-mode 1)
-  (let ((outline-regexp lispy-outline))
-    (if (eq lispy--outline-state 'show-all)
-        (progn
-          (setq lispy--outline-state 'content)
-          (lispy--org-content))
-      (setq lispy--outline-state 'show-all)
-      (lispy--show-hidden-outlines)))
-  (recenter))
 
 ;;* Locals: refactoring
 (defun lispy-to-lambda ()
@@ -5783,12 +5499,7 @@ X is an item of a radio- or choice-type defcustom."
          (narrow-to-region (point)
                            (save-excursion
                              (lispy-backward arg)
-                             (point))))
-        ((looking-at lispy-outline)
-         (save-excursion
-           (outline-back-to-heading)
-           (let ((org-outline-regexp outline-regexp))
-             (org-narrow-to-subtree))))))
+                             (point))))))
 
 (defun lispy-widen ()
   "Forward to `widen'."
@@ -6369,48 +6080,6 @@ Otherwise return cons of current string, symbol or list bounds."
                (goto-char pt)
                (end-of-line)
                (cons beg (point))))))))
-
-(defun lispy--bounds-outline ()
-  "Return bounds of current outline."
-  (save-excursion
-    (save-match-data
-      (condition-case e
-          (cons
-           (progn
-             (org-back-to-heading t)
-             (point))
-           (progn
-             (org-end-of-subtree t t)
-             (when (and (org-at-heading-p)
-                        (not (eobp)))
-               (backward-char 1))
-             (point)))
-        (error
-         (if (string-match
-              "^Before first headline"
-              (error-message-string e))
-             (cons (point-min)
-                   (or (ignore-errors
-                         (org-speed-move-safe 'outline-next-visible-heading)
-                         (point))
-                       (point-max)))
-           (signal (car e) (cdr e))))))))
-
-(defun lispy--outline-beg ()
-  "Return the current outline start."
-  (save-excursion
-    (condition-case nil
-        (progn
-          (outline-back-to-heading)
-          (point))
-      (error (point-min)))))
-
-(defun lispy--outline-end ()
-  "Return the current outline end."
-  (save-excursion
-    (if (outline-next-heading)
-        (1- (point))
-      (point-max))))
 
 (defun lispy--string-dwim (&optional bounds)
   "Return the string that corresponds to BOUNDS.
@@ -7432,11 +7101,6 @@ insert a space."
            (when (lispy-after-string-p "( ")
              (backward-delete-char 1))))))
 
-(defvar lispy-select-candidate-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-.") 'ivy-done)
-    map))
-
 (defun lispy--recenter-bounds (bnd)
   "Make sure BND is visible in window.
 BND is a cons of start and end points."
@@ -8426,10 +8090,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "P" 'lispy-paste)
     (lispy-define-key map "y" 'lispy-occur)
     (lispy-define-key map "z" 'lh-knight/body)
-    ;; outline
-    (lispy-define-key map "J" 'lispy-outline-next)
-    (lispy-define-key map "K" 'lispy-outline-prev)
-    (lispy-define-key map "L" 'lispy-outline-goto-child)
     ;; Paredit transformations
     (lispy-define-key map ">" 'lispy-slurp)
     (lispy-define-key map "<" 'lispy-barf)
@@ -8446,9 +8106,7 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "M" 'lispy-alt-multiline)
     (lispy-define-key map "S" 'lispy-stringify)
     ;; marking
-    (lispy-define-key map "a" 'lispy-ace-symbol
-      :override '(cond ((looking-at lispy-outline)
-                        (lispy-meta-return))))
+    (lispy-define-key map "a" 'lispy-ace-symbol)
     (lispy-define-key map "H" 'lispy-ace-symbol-replace)
     (lispy-define-key map "m" 'lispy-mark-list)
     ;; dialect-specific
@@ -8462,7 +8120,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     ;; miscellanea
     (define-key map (kbd "SPC") 'lispy-space)
     (lispy-define-key map "i" 'lispy-tab)
-    (lispy-define-key map "I" 'lispy-shifttab)
     (lispy-define-key map "N" 'lispy-narrow)
     (lispy-define-key map "W" 'lispy-widen)
     (lispy-define-key map "c" 'lispy-clone)
@@ -8472,9 +8129,7 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
                         (View-quit))))
     (lispy-define-key map "Q" 'lispy-ace-char)
     (lispy-define-key map "v" 'lispy-view)
-    (lispy-define-key map "t" 'lispy-teleport
-      :override '(cond ((looking-at lispy-outline)
-                        (end-of-line))))
+    (lispy-define-key map "t" 'lispy-teleport)
     (lispy-define-key map "n" 'lispy-new-copy)
     (lispy-define-key map "b" 'lispy-back)
     (lispy-define-key map "B" 'lispy-ediff-regions)
@@ -9031,10 +8686,6 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "M-RET") 'lispy-meta-return)
     ;; misc
     (define-key map (kbd "M-i") 'lispy-iedit)
-    (define-key map (kbd "<backtab>") 'lispy-shifttab)
-    ;; outline
-    (define-key map (kbd "M-<left>") 'lispy-outline-demote)
-    (define-key map (kbd "M-<right>") 'lispy-outline-promote)
     map))
 
 (defvar lispy-mode-map-oleh
@@ -9046,7 +8697,6 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "χ") 'lispy-right)
     (define-key map (kbd "C-M-a") 'lispy-beginning-of-defun)
     (define-key map (kbd "<return>") 'lispy-alt-line)
-    (define-key map (kbd "C-c C-c") 'lispy-eval-current-outline)
     (define-key map (kbd "RET") 'lispy-newline-and-indent-plain)
     map))
 
