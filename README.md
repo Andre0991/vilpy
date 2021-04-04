@@ -46,10 +46,9 @@ You may want to call something fancier:
 - `lispy-goto-symbol-elisp`
 
 ### Other
-Some functions have been removed.
 For a complete diff with the original file, compare HEAD with the first commit, which contains the original code.
 
-## Usage
+## Installation
 As usual, you can simply download the `.el` file and put it into your load path.
 
 Note that `lispy` has some dependencies, you might need to get them as well.
@@ -76,5 +75,35 @@ You can consult all dependencies in the list of `requires` in `lispy.el`.
    :config (add-hook 'lispy-mode-hook #'turn-off-smartparens-mode))
 ```
 
-## Roadmap
+## Usage
+Refer to the original [lispy documentation](https://github.com/abo-abo/lispy) and [function reference](http://oremacs.com/lispy/).
+
+### Evil
+`lispy` disputes keybindings with `evil-mode`, so in some cases its commands are overwritten.
+Using [lispyville](https://github.com/noctuid/lispyville) is a typical solution for making both packages work together.
+Personally, I'm fine with the default `lispy` bindings working only in `insert-mode`.
+I simply use these customizations for making `lispy` take precedence over `evil` in some specific keys:
+
+``` emacs-lisp
+(defun raise-minor-mode (mode)
+  "Make MODE the first on `minor-mode-map-alist'."
+  (let ((x (assq mode minor-mode-map-alist)))
+    (when x
+      (setq minor-mode-map-alist
+            (cons x (delq mode minor-mode-map-alist))))))
+            
+            
+;; prevents `/` (`lispy-splice`) from being overriden
+(raise-minor-mode 'lispy-mode)
+
+;; TODO: `map!` is a Doom-emacs macro - not sure how
+;; to do this with vanilla Evil.
+(map! :map lispy-mode-map
+      :i "C-d" 'lispy-delete)
+(map! :map lispy-mode-map
+      :i "C-k" 'lispy-kill)
+(map! :map lispy-mode-map
+      :i "C-y" 'lispy-yank)
+```
+
 The current version works fine for my use case, but I'd love to remove some dependencies (looking at you, `ivy`, `swiper`, `hydra`, `avy`, etc), have a uniform set of operations that work on all supported lisps and leverages some operations to language-specific packages.
