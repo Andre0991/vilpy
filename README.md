@@ -6,14 +6,23 @@ The motivation is not loading `le-clojure.clj`, which relies on injecting depend
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
 ## Differences with `lispy`
-The main difference is that `lispy-eval` calls `eval-last-sexp` (`emacs-lisp-mode`), `cider-eval-last-sexp` (`cider-mode`) or `inf-clojure-eval-last-sexp` (`inf-clojure-minor-mode`) rather than directly using the cider middleware functions.
 
-Also, some functions have been removed. For a complete diff with the original file, compare HEAD with the first commit, which contains the original code.
+### `lispy-eval` (e)
+Calls `eval-last-sexp` (`emacs-lisp-mode`), `cider-eval-last-sexp` (`cider-mode`) or `inf-clojure-eval-last-sexp` (`inf-clojure-minor-mode`) rather than directly using the cider middleware functions.
+
+### `lispy-eval-and-insert` (E)
+Renamed to `lispy-eval-last-sexp-and-insert-comment`.
+Adds `;; =>` in front of the result
+
+### Other
+Some functions have been removed.
+For a complete diff with the original file, compare HEAD with the first commit, which contains the original code.
 
 ## Usage
 As usual, you can simply download the `.el` file and put it into your load path.
 
-Note that `lispy` has some dependencies, you might need to get them as well. You can consult all dependencies in the list of `requires` in `lispy.el`.
+Note that `lispy` has some dependencies, you might need to get them as well.
+You can consult all dependencies in the list of `requires` in `lispy.el`.
 
 ### with `load-path`
 

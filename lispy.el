@@ -4369,14 +4369,23 @@ SYMBOL is a string."
 (define-error 'eval-error "Eval error")
 
 (defvar lispy--eval-last-sexp-handlers-alist
-      '((:emacs-lisp . eval-last-sexp)
-        (:cider . cider-eval-last-sexp)
-        (:inf-clojure . inf-clojure-eval-last-sexp)))
+  '((:emacs-lisp . eval-last-sexp)
+    (:cider . cider-eval-last-sexp)
+    (:inf-clojure . inf-clojure-eval-last-sexp)))
 
 (defvar lispy--eval-region-handlers-alist
-      '((:emacs-lisp . eval-region)
-        (:cider . cider-eval-region)
-        (:inf-clojure . inf-clojure-eval-region)))
+  '((:emacs-lisp . eval-region)
+    (:cider . cider-eval-region)
+    (:inf-clojure . inf-clojure-eval-region)))
+
+(defvar lispy--pp-eval-last-sexp-handlers-alist
+  '((:emacs-lisp . lispy--elisp-pp-last-sexp)
+    (:cider . cider-pprint-eval-last-sexp-to-comment)))
+
+(defun lispy--elisp-pp-last-sexp ()
+  "Same as `(pp-eval-last-sexp 1)`, but also insert comment."
+  (interactive)
+  (insert ";; => " (pp-to-string (eval (pp-last-sexp) lexical-binding))))
 
 (defun lispy--evaluation-kind ()
   (cond
@@ -4395,6 +4404,12 @@ SYMBOL is a string."
                  (if (region-active-p)
                      lispy--eval-region-handlers-alist
                    lispy--eval-last-sexp-handlers-alist)))
+
+
+(defun lispy--get-pp-eval-handler ()
+  "Gets the most appropriate prety-printing evaluation handler, depending on the region and the current major/minor modes."
+  (assoc-default (lispy--evaluation-kind)
+                 lispy--pp-eval-last-sexp-handlers-alist))
 
 (defun lispy-eval (arg)
   "Eval the current sexp and display the result."
@@ -4565,29 +4580,21 @@ If STR is too large, pop it to a buffer instead."
           (lispy--eval eval-str)
         (eval-error (cdr e))))))
 
-(defun lispy-eval-and-insert ()
+(defun lispy-eval-last-sexp-and-insert-comment ()
   "Eval last sexp and insert the result."
   (interactive)
-  (cl-labels
-      ((doit ()
-         (cond ((region-active-p)
-                (when (= (point) (region-beginning))
-                  (exchange-point-and-mark)))
-               ((lispy-right-p))
-               ((eq major-mode 'python-mode))
-               (t
-                (lispy-forward 1)))
-         (let ((str (lispy--eval-dwim)))
-           (when (eq major-mode 'python-mode)
-             (end-of-line))
-           (newline-and-indent)
-           (insert str)
-           (when (and (lispy-right-p) (lispy--major-mode-lisp-p))
-             (lispy-alt-multiline t)))))
-    (if (lispy-left-p)
-        (save-excursion
-          (doit))
-      (doit))))
+  (when-let ((handler (lispy--get-pp-eval-handler)))
+    (cond
+     ((lispy-right-p)
+      (call-interactively handler))
+
+     ((lispy-left-p)
+      (save-excursion
+        (lispy-forward 1)
+        (call-interactively handler)))
+
+     ('t
+      (message "[lispy-lite]: Can't perform action because point is not at beggining or end of sexp.")))))
 
 (defun lispy--major-mode-lisp-p ()
   (memq major-mode (append lispy-elisp-modes
@@ -9059,7 +9066,7 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "m" 'lispy-mark-list)
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
-    (lispy-define-key map "E" 'lispy-eval-and-insert)
+    (lispy-define-key map "E" 'lispy-eval-last-sexp-and-insert-comment)
     (lispy-define-key map "G" 'lispy-goto-local)
     (lispy-define-key map "g" 'lispy-goto)
     (lispy-define-key map "F" 'lispy-follow t)
