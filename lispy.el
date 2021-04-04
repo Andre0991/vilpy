@@ -137,13 +137,10 @@
   (require 'iedit)
   (require 'eldoc)
   (require 'ediff)
-  (require 'ediff-util)
-  (require 'semantic)
-  (require 'semantic/db))
+  (require 'ediff-util))
 (require 'mode-local)
 (require 'help-fns)
 (require 'edebug)
-(require 'etags)
 (require 'outline)
 (require 'avy)
 (require 'newcomment)
@@ -228,27 +225,6 @@ The hint will consist of the possible nouns that apply to the verb."
   "If t, when pressing the `\"' at the end of a quoted string, it will move you past the end quote."
   :type 'boolean
   :group 'lispy)
-
-(defcustom lispy-helm-columns '(70 80)
-  "Max lengths of tag and tag+filename when completing with `helm'."
-  :group 'lispy
-  :type '(list integer integer))
-
-(defcustom lispy-no-permanent-semantic nil
-  "When t, `lispy' will not enable function `semantic-mode' when it's off."
-  :type 'boolean
-  :group 'lispy)
-
-(defcustom lispy-completion-method 'ivy
-  "Method to select a candidate from a list of strings."
-  :type '(choice
-          (const :tag "Ivy" ivy)
-          ;; sensible choice for many tags
-          (const :tag "Helm" helm)
-          ;; `ido-vertical-mode' is highly recommended here
-          (const :tag "Ido" ido)
-          ;; `icomplete-mode' and `icy-mode' will affect this
-          (const :tag "Default" default)))
 
 (defcustom lispy-visit-method 'ffip
   "Method to switch to a file in the current project."
@@ -4166,175 +4142,10 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
              (backward-char 1)
              (lispy--teleport beg end endp regionp))))))
 
-;;* Locals: tags
-(defun lispy-goto (&optional arg)
-  "Jump to symbol within files in current directory.
-When ARG isn't nil, call `lispy-goto-projectile' instead."
+(defun lispy-goto ()
+  "Invoke `imenu."
   (interactive "p")
-  (deactivate-mark)
-  (let ((lispy-force-reparse (eq arg 2))
-        (fun (if (memq arg '(1 2))
-                 #'lispy--fetch-tags
-               #'lispy--fetch-tags-projectile)))
-    (lispy--goto fun)))
-
-(defun lispy-goto-recursive ()
-  "Jump to symbol within files in current directory and its subdiretories."
-  (interactive)
-  (deactivate-mark)
-  (let ((candidates (lispy--fetch-tags-recursive)))
-    (lispy--select-candidate
-     (if (> (length candidates) 30000)
-         candidates
-       (mapcar #'lispy--format-tag-line candidates))
-     #'lispy--action-jump)))
-
-(declare-function counsel-imenu "ext:counsel")
-
-(defun lispy-goto-local (&optional arg)
-  "Jump to symbol within current file.
-When ARG is non-nil, force a reparse."
-  (interactive "P")
-  (deactivate-mark)
-  (condition-case nil
-      (let ((lispy-force-reparse arg))
-        (lispy--select-candidate
-         (mapcar #'lispy--format-tag-line
-                 (lispy--fetch-tags (list (buffer-file-name))))
-         #'lispy--action-jump))
-    (no-semantic-support
-     (counsel-imenu))))
-
-(defun lispy-goto-elisp-commands (&optional arg)
-  "Jump to Elisp commands within current file.
-When ARG is non-nil, force a reparse."
-  (interactive "P")
-  (deactivate-mark)
-  (let ((lispy-force-reparse arg))
-    (lispy--fetch-tags (list (buffer-file-name)))
-    (let ((struct (gethash (buffer-file-name) lispy-db)))
-      (lispy--select-candidate
-       (mapcar #'lispy--format-tag-line
-               (delq nil
-                     (cl-mapcar
-                      (lambda (tag pretty-tag)
-                        (when (semantic-tag-get-attribute tag :user-visible-flag)
-                          pretty-tag))
-                      (lispy-dbfile-plain-tags struct)
-                      (lispy-dbfile-tags struct))))
-       #'lispy--action-jump))))
-
-(defun lispy-goto-projectile ()
-  "Jump to symbol within files in (`projectile-project-root')."
-  (interactive)
-  (deactivate-mark)
-  (lispy--goto 'lispy--fetch-tags-projectile))
-
-(defun lispy-goto-def-down (arg)
-  "Jump to definition of ARGth element of current list."
-  (interactive "p")
-  (let* ((expr (read (lispy--string-dwim)))
-         (n (length expr)))
-    (if (>= arg n)
-        (error "Out of range: %s/%s" arg n)
-      (let ((elt (nth arg expr)))
-        (while (consp elt)
-          (if (eq (car elt) 'quote)
-              (setq elt (cadr elt))
-            (setq elt (car elt))))
-        (if elt
-            (lispy-goto-symbol elt)
-          (error "No symbol found"))))))
-
-(defun lispy-goto-def-ace (arg)
-  "Jump to definition of selected element of current sexp.
-Sexp is obtained by exiting list ARG times."
-  (interactive "p")
-  (lispy-ace-symbol arg)
-  (call-interactively 'lispy-goto-symbol))
-
-(when (version< emacs-version "25.1")
-  (eval-after-load 'etags
-    '(add-to-list 'byte-compile-not-obsolete-vars 'find-tag-marker-ring)))
-
-(defvar lispy-goto-symbol-alist
-  '((clojure-mode lispy-goto-symbol-clojure le-clojure)
-    (clojurescript-mode lispy-goto-symbol-clojurescript le-clojure)
-    (scheme-mode lispy-goto-symbol-scheme le-scheme)
-    (geiser-repl-mode lispy-goto-symbol-scheme le-scheme)
-    (racket-mode lispy-goto-symbol-racket le-racket)
-    (lisp-mode lispy-goto-symbol-lisp le-lisp)
-    (slime-repl-mode lispy-goto-symbol-lisp le-lisp)
-    (slime-mrepl-mode lispy-goto-symbol-lisp le-lisp)
-    (sly-mrepl-mode lispy-goto-symbol-lisp le-lisp)
-    (python-mode lispy-goto-symbol-python le-python))
-  "An alist of `major-mode' to function for jumping to symbol.
-
-Each element is: (MAJOR-MODE FUNC &optional LIB).
-
-FUNC should take a string argument - a symbol to jump to.
-When LIB is non-nil, `require' it prior to calling FUNC.")
-
-(defun lispy-goto-symbol (symbol)
-  "Go to definition of SYMBOL.
-SYMBOL is a string."
-  (interactive (list (or (thing-at-point 'symbol t)
-                         (lispy--current-function))))
-  (lispy--remember)
-  (deactivate-mark)
-  (with-no-warnings
-    (ring-insert find-tag-marker-ring (point-marker)))
-  (let ((narrowedp (buffer-narrowed-p)))
-    (when narrowedp
-      (widen))
-    (cond ((memq major-mode lispy-elisp-modes)
-           (lispy-goto-symbol-elisp symbol)
-           (when narrowedp
-             (lispy-narrow 1)))
-          (t
-           (let ((handler (cdr (assoc major-mode lispy-goto-symbol-alist)))
-                 lib)
-             (if (null handler)
-                 (error "no handler for %S in `lispy-goto-symbol-alist'" major-mode)
-               (when (setq lib (cadr handler))
-                 (require lib))
-               (funcall (car handler) symbol))))))
-  ;; in case it's hidden in an outline
-  (lispy--ensure-visible))
-
-(defun lispy-goto-symbol-elisp (symbol)
-  "Goto definition of an Elisp SYMBOL."
-  (let (rsymbol)
-    (if (null (setq symbol (intern-soft symbol)))
-        (error "symbol not interned")
-      (cond ((and current-prefix-arg (boundp symbol))
-             (find-variable symbol))
-            ((fboundp symbol)
-             (condition-case nil
-                 (find-function symbol)
-               (error
-                (goto-char (point-min))
-                (if (re-search-forward (format "^(def.*%S" symbol) nil t)
-                    (move-beginning-of-line 1)
-                  (lispy-complain
-                   (format "Don't know where `%S' is defined" symbol))
-                  (pop-tag-mark)))))
-            ((boundp symbol)
-             (find-variable symbol))
-            ((or (featurep symbol)
-                 (locate-library
-                  (prin1-to-string symbol)))
-             (find-library (prin1-to-string symbol)))
-            ((setq rsymbol
-                   (cl-find-if
-                    `(lambda (x)
-                       (equal (car x)
-                              ,(symbol-name symbol)))
-                    (lispy--fetch-this-file-tags)))
-             (goto-char (aref (nth 4 rsymbol) 0)))
-            (t
-             (error "Couldn't find definition of %s"
-                    symbol))))))
+  (call-interactively #'imenu))
 
 ;;* Locals: dialect-related
 (defcustom lispy-eval-display-style 'message
@@ -5763,74 +5574,9 @@ ARG is 4: `eval-defun' on the function from this sexp."
                           (error "Argument = %s isn't supported" arg)))))
              (error "%s isn't bound" fun))))))
 
-(declare-function lispy--clojure-debug-step-in "le-clojure")
-(declare-function lispy--python-debug-step-in "le-python")
 (declare-function lispy-eval-python-bnd "le-python")
 (declare-function lispy-eval-python-str "le-python")
 (declare-function lispy-set-python-process "le-python")
-
-(defun lispy-debug-step-in ()
-  "Eval current function arguments and jump to definition."
-  (interactive)
-  (cond ((memq major-mode lispy-elisp-modes)
-         (let* ((ldsi-sxp (lispy--setq-expression))
-                (ldsi-fun (car ldsi-sxp)))
-           (cond
-             ((memq ldsi-fun '(mapcar mapc mapcan
-                               cl-remove-if cl-remove-if-not
-                               cl-find-if cl-find-if-not
-                               cl-some cl-every cl-any cl-notany))
-              (let ((fn (nth 1 ldsi-sxp))
-                    (lst (nth 2 ldsi-sxp)))
-                (when (eq (car-safe fn) 'lambda)
-                  (set (car (cadr fn)) (car (eval lst)))
-                  (lispy-flow 2))))
-             ((or (functionp ldsi-fun)
-                  (macrop ldsi-fun))
-              (when (eq ldsi-fun 'funcall)
-                (setq ldsi-fun (eval (cadr ldsi-sxp)))
-                (setq ldsi-sxp (cons ldsi-fun (cddr ldsi-sxp))))
-              (let ((ldsi-args
-                     (copy-sequence
-                      (help-function-arglist
-                       (if (ad-is-advised ldsi-fun)
-                           (ad-get-orig-definition ldsi-fun)
-                         ldsi-fun)
-                       t)))
-                    (ldsi-vals (cdr ldsi-sxp))
-                    ldsi-arg
-                    ldsi-val)
-                (catch 'done
-                  (while (setq ldsi-arg (pop ldsi-args))
-                    (cond ((eq ldsi-arg '&optional)
-                           (setq ldsi-arg (pop ldsi-args))
-                           (set ldsi-arg (eval (pop ldsi-vals))))
-                          ((eq ldsi-arg '&rest)
-                           (setq ldsi-arg (pop ldsi-args))
-                           (set ldsi-arg
-                                (if (functionp ldsi-fun)
-                                    (mapcar #'eval ldsi-vals)
-                                  ldsi-vals))
-                           (throw 'done t))
-                          (t
-                           (setq ldsi-val (pop ldsi-vals))
-                           (set ldsi-arg
-                                (if (functionp ldsi-fun)
-                                    (eval ldsi-val)
-                                  ldsi-val))))))
-                (lispy-goto-symbol ldsi-fun)))
-             (t
-              (lispy-complain
-               (format "%S isn't a function" ldsi-fun))))))
-        ((eq major-mode 'clojure-mode)
-         (require 'le-clojure)
-         (lispy--clojure-debug-step-in))
-        ((eq major-mode 'python-mode)
-         (require 'le-python)
-         (lispy--python-debug-step-in))
-        (t
-         (lispy-complain
-          (format "%S isn't currently supported" major-mode)))))
 
 (defvar cl--bind-lets)
 (defvar cl--bind-forms)
@@ -5892,7 +5638,6 @@ An equivalent of `cl-destructuring-bind'."
   ;; ("g" nil)
   ("h" lispy-describe "describe")
   ("i" lispy-to-ifs "to ifs")
-  ("j" lispy-debug-step-in "debug step in")
   ("k" lispy-extract-block "extract block")
   ("l" lispy-to-lambda "to lambda")
   ("m" lispy-cursor-ace "multi cursor")
@@ -6852,274 +6597,6 @@ so that no other packages disturb the match data."
                  (message "Caught unbound variable %s, setting it to nil." es))
              (signal (car e) (cdr e)))))))))
 
-;;* Utilities: tags
-(defvar lispy-tag-arity
-  '((lisp-mode
-     (defclass . 1)
-     (defconstant . 1)
-     (defgeneric . 1)
-     (define-condition . 1)
-     (define-symbol-macro . 1)
-     (defmethod . 2)
-     (defpackage . 1)
-     (defparameter . 1)
-     (defsetf . 1)
-     (defstruct . 1)
-     (deftype . 1)
-     (in-package . 1)
-     (load . 1)
-     (setq . 2)
-     ;; SLIME/SLY specific
-     (definterface . 1)
-     (defimplementation . 1)
-     (define-caller-pattern . 1)
-     (define-variable-pattern . 1)
-     (define-pattern-substitution . 1)
-     (defslimefun . 1)
-     (defslyfun . 1))
-    (emacs-lisp-mode
-     (setq . 2)
-     (csetq . 2)
-     (setq-default . 2)
-     (add-to-list . 2)
-     (add-hook . 2)
-     (load . 1)
-     (load-file . 1)
-     (define-key . 3)
-     (ert-deftest . 1)
-     (declare-function . 1)
-     (defalias . 2)
-     (defvaralias . 2)
-     (defvar-local . 1)
-     (make-variable-buffer-local . 1)
-     (define-minor-mode . 1)
-     (make-obsolete . 2)
-     (put . 3)
-     (overlay-put . 3)
-     (make-obsolete-variable . 1)
-     (define-obsolete-function-alias . 1)
-     (define-obsolete-variable-alias . 1)
-     (eval-after-load . 1)
-     (global-set-key . 2)
-     (if . 1)
-     (when . 1)
-     (unless . 1)
-     (advice-add . 1)
-     (cl-defun . 1)
-     (defstruct . 1)
-     (cl-defstruct . 1)
-     ;; org-mode specific
-     (org-defkey . 3)
-     ;; use-package specific
-     (use-package . 1)
-     ;; lispy-specific
-     (lispy-defverb . 1)
-     ;; misc
-     (defhydra . 1)
-     (ivy-set-actions . 1)
-     (ivy-add-actions . 1)
-     (ivy-set-sources . 1)
-     (ivy-set-occur . 1)
-     (ivy-configure . 1)))
-  "Alist of tag arities for supported modes.")
-
-(defun lispy--tag-regexp (&optional mode)
-  "Return tag regexp based on MODE."
-  (setq mode (or mode major-mode))
-  (cond ((eq mode 'lisp-mode)
-         (concat
-          "^([ \t\n]*\\_<\\(?:cl:\\)?"
-          "\\("
-          (regexp-opt
-           (mapcar (lambda (x) (symbol-name (car x)))
-                   (cdr (assoc mode lispy-tag-arity))))
-          "\\)"
-          "\\_>"))
-        ((memq major-mode lispy-elisp-modes)
-         (concat
-          "^([ \t\n]*\\_<"
-          "\\("
-          (regexp-opt
-           (mapcar (lambda (x) (symbol-name (car x)))
-                   (cdr (assoc mode lispy-tag-arity))))
-          "\\)"
-          "\\_>"))
-        ((memq major-mode lispy-clojure-modes)
-         "^(\\([a-z-A-Z0-0]+\\)")
-        (t (error "%s isn't supported" mode))))
-
-(defun lispy--propertize-tag (kind x &optional face)
-  "Concatenate KIND and the name of tag X.
-KIND is fontified with `font-lock-keyword-face'.
-The name of X fontified according to FACE.
-FACE can be :keyword, :function or :type.  It defaults to 'default."
-  (concat
-   (if kind (concat (propertize kind 'face 'font-lock-keyword-face) " ") "")
-   (propertize (car x) 'face
-               (cl-case face
-                 (:keyword 'font-lock-keyword-face)
-                 (:type 'font-lock-type-face)
-                 (:function 'font-lock-function-name-face)
-                 (:command 'lispy-command-name-face)
-                 (t 'font-lock-variable-name-face)))))
-
-(defun lispy--modify-tag (x regex arity-alist file)
-  "Re-parse X and modify it accordingly.
-REGEX selects the symbol is 1st place of sexp.
-ARITY-ALIST combines strings that REGEX matches and their arities.
-FILE is the file where X is defined."
-  (let* ((overlay (nth 4 x))
-         (buffer (find-file-noselect file))
-         (start (cond ((overlayp overlay)
-                       (overlay-start overlay))
-                      ((vectorp overlay)
-                       (aref overlay 0))
-                      (t
-                       (error "Unexpected")))))
-    (with-current-buffer buffer
-      (save-excursion
-        (goto-char (or start (point-min)))
-        (when (looking-at regex)
-          (goto-char (match-end 0))
-          (let ((tag-head (match-string 1))
-                beg arity str)
-            (skip-chars-forward " \n")
-            (when (setq arity (cdr (assoc (intern tag-head) arity-alist)))
-              (setq beg (point))
-              (condition-case nil
-                  (forward-sexp arity)
-                (error
-                 (forward-sexp 1)))
-              (setq str (replace-regexp-in-string
-                         "\n *" " " (buffer-substring-no-properties beg (point))))
-              (setcar x str)
-              (setcar (nthcdr 1 x) (intern tag-head))))))))
-  x)
-
-(defun lispy--tag-name-lisp (x)
-  "Build tag name for Common Lisp tag X."
-  (cond ((not (stringp (car x)))
-         "tag with no name")
-        ((eq (cadr x) 'function)
-         (lispy--propertize-tag nil x :function))
-        ((eq (cadr x) 'type)
-         (lispy--propertize-tag "defstruct" x :type))
-        ((eq (cadr x) 'variable)
-         (lispy--propertize-tag "defvar" x))
-        ((assq (cadr x) (cdr (assoc 'lisp-mode lispy-tag-arity)))
-         (lispy--propertize-tag (symbol-name (cadr x)) x))
-        (t (car x))))
-
-(defun lispy--tag-sexp-elisp (x &optional file)
-  "Get the actual sexp from semantic tag X in FILE."
-  (let ((ov (nth 4 x))
-        buf end)
-    (if (overlayp ov)
-        (setq buf (overlay-buffer ov)
-              end (overlay-end ov))
-      (if (vectorp ov)
-          (setq buf (find-file-noselect
-                     (or file
-                         (aref ov 2)))
-                end (aref ov 1))
-        (error "Unexpected")))
-    (with-current-buffer buf
-      (save-excursion
-        (goto-char end)
-        (ignore-errors
-          (lispy--preceding-sexp))))))
-
-(defun lispy--tag-name-elisp (x &optional file)
-  "Build tag name for Elisp tag X in FILE."
-  (cond ((not (stringp (car x)))
-         "tag with no name")
-        ((eq (cadr x) 'include)
-         (lispy--propertize-tag "require" x))
-        ((eq (cadr x) 'package)
-         (lispy--propertize-tag "provide" x))
-        ((eq (cadr x) 'customgroup)
-         (lispy--propertize-tag "defgroup" x))
-        ((eq (cadr x) 'function)
-         (if (semantic-tag-get-attribute x :user-visible-flag)
-             (lispy--propertize-tag nil x :command)
-           (lispy--propertize-tag nil x :function)))
-        ((eq (cadr x) 'variable)
-         (lispy--propertize-tag "defvar" x))
-        ((assq (cadr x) (cdr (assoc 'emacs-lisp-mode lispy-tag-arity)))
-         (lispy--propertize-tag (symbol-name (cadr x)) x))
-        ((and (eq (cadr x) 'code)
-              (string= (car x) "define-derived-mode"))
-         (let ((sexp (lispy--tag-sexp-elisp x file)))
-           (if (and sexp (listp sexp))
-               (lispy--propertize-tag
-                "define-derived-mode"
-                (list (format "%s %s"
-                              (cadr sexp)
-                              (cl-caddr sexp))))
-             "define-derived-mode")))
-        (t (car x))))
-
-(defun lispy--tag-name-clojure (x)
-  "Build tag name for Clojure tag X."
-  (cond ((not (stringp (car x))))
-        ((eq (cadr x) 'package)
-         (lispy--propertize-tag "ns" x))
-        ((eq (cadr x) 'function)
-         (lispy--propertize-tag nil x :function))
-        ((eq (cadr x) 'variable)
-         (lispy--propertize-tag "def" x))
-        (t (car x))))
-
-(defun lispy--tag-name (x &optional file)
-  "Given a semantic tag X in FILE, return its string representation.
-This is `semantic-tag-name', amended with extra info.
-For example, a `setq' statement is amended with variable name that it uses."
-  (let ((str (cond ((memq major-mode lispy-elisp-modes)
-                    (lispy--tag-name-elisp x file))
-                   ((memq major-mode lispy-clojure-modes)
-                    (lispy--tag-name-clojure x))
-                   ((eq major-mode 'scheme-mode)
-                    ;; (lispy--tag-name-scheme x)
-                    (car x))
-                   ((eq major-mode 'lisp-mode)
-                    (lispy--tag-name-lisp x))
-                   (t nil))))
-    (when str
-      (setq str (replace-regexp-in-string "\t" "    " str))
-      (let ((width (car lispy-helm-columns)))
-        (if (> (length str) width)
-            (concat (substring str 0 (- width 4)) " ...")
-          str)))))
-
-(defun lispy--fetch-tags-recursive ()
-  "Fetch all tags in current directory recursively."
-  (lispy--fetch-tags
-   (split-string
-    (shell-command-to-string
-     (format "find %s -type f -regex \".*\\.%s\" ! -regex \".*\\(\\.git\\|\\.cask\\).*\""
-             default-directory
-             (file-name-extension (buffer-file-name))))
-    "\n"
-    t)))
-
-(defun lispy--fetch-tags-projectile ()
-  "Fetch all tags in the projectile directory recursively."
-  (require 'projectile)
-  (let ((default-directory (projectile-project-root)))
-    (lispy--fetch-tags-recursive)))
-
-(defun lispy--goto (fun)
-  "Jump to symbol selected from (FUN)."
-  (let ((semantic-on (bound-and-true-p semantic-mode)))
-    (semantic-mode 1)
-    (let ((candidates (funcall fun)))
-      (lispy--select-candidate
-       (mapcar #'lispy--format-tag-line candidates)
-       #'lispy--action-jump))
-    (when (and lispy-no-permanent-semantic
-               (not semantic-on))
-      (semantic-mode -1))))
-
 (defun lispy-follow ()
   "Find the definition for the symbol at point or at the next char.
 
@@ -7955,117 +7432,10 @@ insert a space."
            (when (lispy-after-string-p "( ")
              (backward-delete-char 1))))))
 
-(defun lispy--current-tag ()
-  "Forward to `semantic-current-tag'.
-Try to refresh if nil is returned."
-  (save-excursion
-    (lispy-beginning-of-defun)
-    (let ((tag (semantic-current-tag)))
-      (setq tag
-            (or (and tag (lispy--tag-name tag))
-                (semantic-tag-name tag)
-                (when (looking-at "(def")
-                  (goto-char (match-end 0))
-                  (forward-sexp 2)
-                  (backward-char 1)
-                  (thing-at-point 'sexp))
-                (lispy--fancy-tag)))
-      (when tag
-        (concat "\\b" (regexp-quote tag) " ")))))
-
-(defun lispy--fancy-tag ()
-  "Return a fancy tag name using `lispy-tag-arity'."
-  (let ((arity-alist (cdr (assoc major-mode lispy-tag-arity)))
-        (regex (lispy--tag-regexp)))
-    (if (looking-at regex)
-        (progn
-          (goto-char (match-end 0))
-          (let ((tag-head (match-string 1))
-                beg arity)
-            (skip-chars-forward " \n")
-            (if (setq arity (cdr (assoc (intern tag-head) arity-alist)))
-                (progn
-                  (setq beg (point))
-                  (condition-case nil
-                      (forward-sexp arity)
-                    (error
-                     (forward-sexp 1)))
-                  (concat tag-head " "
-                          (replace-regexp-in-string
-                           "\n" " " (buffer-substring-no-properties beg (point)))))
-              tag-head)))
-      (save-excursion
-        (forward-char 1)
-        (thing-at-point 'sexp)))))
-
-(defvar helm-update-blacklist-regexps)
-(defvar helm-candidate-number-limit)
-
-(defvar lispy-tag-history nil
-  "History for tags.")
-
 (defvar lispy-select-candidate-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-.") 'ivy-done)
     map))
-
-(defun lispy--select-candidate (candidates action)
-  "Select from CANDIDATES list with `helm'.
-ACTION is called for the selected candidate."
-  (let (strs)
-    (cond ((eq lispy-completion-method 'helm)
-           (require 'helm-help)
-           ;; allows restriction with space
-           (require 'helm-multi-match)
-           (let (helm-update-blacklist-regexps
-                 helm-candidate-number-limit)
-             (helm :sources
-                   `((name . "semantic tags")
-                     (candidates . ,candidates)
-                     (action . ,action))
-                   :preselect (lispy--current-tag)
-                   :buffer "*lispy-goto*")))
-          ((progn
-             (setq strs (mapcar #'car candidates))
-             (eq lispy-completion-method 'ivy))
-           (ivy-read "tag: " strs
-                     :keymap lispy-select-candidate-mode-map
-                     :require-match t
-                     :preselect (lispy--current-tag)
-                     :action (lambda (x)
-                               (funcall action
-                                        (cdr (assoc x candidates))))
-                     :history 'lispy-tag-history
-                     :caller 'lispy-goto))
-          (t
-           (let ((res
-                  (cl-case lispy-completion-method
-                    (ido
-                     (ido-completing-read "tag: " strs))
-                    (t
-                     (completing-read "tag: " strs)))))
-             (funcall action (cdr (assoc res candidates))))))))
-
-(defun lispy--action-jump (tag)
-  "Jump to TAG."
-  (if (eq (length tag) 3)
-      (with-selected-window (if (eq lispy-completion-method 'ivy)
-                                (ivy--get-window ivy-last)
-                              (selected-window))
-        (push-mark)
-        (find-file (cadr tag))
-        (goto-char
-         (let ((ov (cl-caddr tag)))
-           (if (overlayp ov)
-               (overlay-start ov)
-             (aref ov 0))))
-        (when (and (memq major-mode lispy-clojure-modes)
-                   (not (looking-at "(")))
-          (forward-char -1))
-        (require 'find-func)
-        (recenter find-function-recenter-line)
-        (lispy--ensure-visible))
-    (error "Unexpected tag: %S" tag)))
 
 (defun lispy--recenter-bounds (bnd)
   "Make sure BND is visible in window.
@@ -9024,15 +8394,9 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
 (lispy-defverb
  "goto"
  (("d" lispy-goto)
-  ("l" lispy-goto-local)
-  ("r" lispy-goto-recursive)
-  ("p" lispy-goto-projectile)
   ("f" lispy-follow)
   ("b" pop-tag-mark)
-  ("q" lispy-quit)
-  ("j" lispy-goto-def-down)
-  ("a" lispy-goto-def-ace)
-  ("e" lispy-goto-elisp-commands)))
+  ("q" lispy-quit)))
 
 (lispy-defverb
  "other"
@@ -9090,7 +8454,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
     (lispy-define-key map "E" 'lispy-eval-last-sexp-and-insert-comment)
-    (lispy-define-key map "G" 'lispy-goto-local)
     (lispy-define-key map "g" 'lispy-goto)
     (lispy-define-key map "F" 'lispy-follow t)
     (lispy-define-key map "D" 'pop-tag-mark)
@@ -9529,7 +8892,6 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "C-j") 'lispy-newline-and-indent)
     (define-key map (kbd "RET") 'lispy-newline-and-indent-plain)
     ;; tags
-    (define-key map (kbd "M-.") 'lispy-goto-symbol)
     (define-key map (kbd "M-,") 'pop-tag-mark)
     map))
 

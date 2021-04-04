@@ -5,6 +5,13 @@ The motivation is not loading `le-clojure.clj` (or any other language-specific f
 
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
+Design goals (mostly not taken into practice yet):
+- Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features.
+- Prefer to leverage Emacs built-ins function when possible.
+- Implement a uniform API that works well with all supported languages. Alternatively: avoid commands that are language-specific.
+- Rely on fewer external dependencies.
+- Drop support for non-lisps languages.
+
 ## Differences with `lispy`
 
 ### `lispy-eval` (e)
@@ -15,7 +22,28 @@ Renamed to `lispy-eval-last-sexp-and-insert-comment`.
 Adds `;; =>` in front of the result
 
 ### `lispy-follow` (F)
-Use `xref-find-definitions`.
+Uses `xref-find-definitions`.
+
+### `lispy-goto` (g)
+Uses `imenu`.
+
+### `lispy-goto-symbol` (M-.)
+
+You may want to call something fancier:
+
+``` emacs-lisp
+(lispy-define-key lispy-mode-map "g" 'counsel-imenu)
+```
+
+### Removed functions
+- `lispy-goto-projectile` (0g and ogp).
+- `lispy-goto-elisp-commands` (oge)
+- `lispy-goto-local` (G)
+- `lispy-goto-recursive` (ogr)
+- `lispy-goto-def-down`
+- `lispy-goto-def-ace`
+- `lispy-debug-step-in` (xj)
+- `lispy-goto-symbol-elisp`
 
 ### Other
 Some functions have been removed.

@@ -3106,14 +3106,6 @@ Insert KEY if there's no command."
                    "(defun helper (y z)\n  (list y z y z))\n\n(defun foo (x)\n  (helper (* x x) (+ x x))|)")))
 
 
-(ert-deftest lispy-debug-step-in ()
-  (should (equal (lispy-with-v el
-                     "|(mapcar\n (lambda (x))\n (mapcar\n  (lambda (y) (expt y 3))\n  (number-sequence 10 42)))"
-                   (setq x "42")
-                   (lispy-debug-step-in)
-                   x)
-                 1000)))
-
 (ert-deftest lispy-eval-str-racket ()
   (let ((geiser-active-implementations '(racket)))
     (should (equal (lispy-with-v scm
