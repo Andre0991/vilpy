@@ -1,7 +1,7 @@
 # lispy-lite
 
 This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode.
-The motivation is not loading `le-clojure.clj`, which relies on injecting dependencies to cider and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552).
+The motivation is not loading `le-clojure.clj` (or any other language-specific file), which relies on injecting dependencies to cider and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552).
 
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
@@ -13,6 +13,9 @@ Calls `eval-last-sexp` (`emacs-lisp-mode`), `cider-eval-last-sexp` (`cider-mode`
 ### `lispy-eval-and-insert` (E)
 Renamed to `lispy-eval-last-sexp-and-insert-comment`.
 Adds `;; =>` in front of the result
+
+### `lispy-follow` (F)
+Use `xref-find-definitions`.
 
 ### Other
 Some functions have been removed.

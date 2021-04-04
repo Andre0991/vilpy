@@ -4739,11 +4739,6 @@ SYM will take on each value of LST with each eval."
       (setq lispy--eval-data lst)
       (set sym nil))))
 
-(defun lispy-follow ()
-  "Follow to `lispy--current-function'."
-  (interactive)
-  (lispy-goto-symbol (lispy--current-function)))
-
 (declare-function cider-doc-lookup "ext:cider-doc")
 
 (defun lispy-show-top-level ()
@@ -7124,6 +7119,34 @@ For example, a `setq' statement is amended with variable name that it uses."
     (when (and lispy-no-permanent-semantic
                (not semantic-on))
       (semantic-mode -1))))
+
+(defun lispy-follow ()
+  "Find the definition for the symbol at point or at the next char.
+
+Relies on `xref-find-definitions`."
+  (interactive)
+  ;; HACK: Prevent this `xref` command from prompting for input.
+  ;; The issue boils down to `xref--prompt-p`, which decides if the
+  ;; prompt should be displayed. If `xref-prompt-for-identifier` is
+  ;; a list and starts with `not`, the subsequent values represent a
+  ;; whitelist. We add `special-lispy-follow` to that list, since this
+  ;; is the value of `this-command` when `xref-prompt-for-identifier`
+  ;; is invoked with `call-interactively`.
+  (when (and (listp xref-prompt-for-identifier)
+             (eq 'not (car xref-prompt-for-identifier)))
+    (add-to-list 'xref-prompt-for-identifier 'special-lispy-follow 't))
+  (when (buffer-narrowed-p)
+    (widen))
+  (cond ((lispy-left-p)
+         (let ((next-symbol (save-excursion
+                              (forward-char 1)
+                              (thing-at-point 'symbol 't))))
+           (xref-find-definitions next-symbol)))
+        ((region-active-p)
+         (deactivate-mark)
+         (call-interactively 'xref-find-definitions))
+        ('t
+         (call-interactively 'xref-find-definitions))))
 
 ;;* Utilities: slurping and barfing
 (defun lispy--slurp-forward ()
