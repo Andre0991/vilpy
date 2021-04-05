@@ -8,7 +8,7 @@ I prefer forking the original code because (1) the author is happy with the curr
 Design goals (mostly not taken into practice yet):
 - Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features. Refactoring commands can be leveraged from other packages.
 - Prefer to leverage Emacs built-ins function when possible.
-- Implement a uniform API that works well with all supported languages. Alternatively: avoid commands that are language-specific.
+- Implement a uniform API that works well with all supported languages. Alternatively: avoid language-specific commands.
 - Rely on fewer external dependencies.
 - Drop support for non-lisps languages.
 
@@ -33,6 +33,9 @@ You may want to call something fancier:
 (lispy-define-key lispy-mode-map "g" 'counsel-imenu)
 ```
 
+### `lispy-tab` (i)
+Does not deal with outlines.
+In `clojure-mode`, only calls `clojure-align` and trims whitespace at beginning of line.
 
 ### Removed functions
 - `lispy-goto-projectile` (0g and ogp).
@@ -45,7 +48,7 @@ You may want to call something fancier:
 - `lispy-goto-symbol-elisp`
 - `lispy-goto-symbol` (M-.)
 - `lispy-shifttab` (I)
-- All `lispy-outline-*`functions 
+- All `lispy-outline-*`functions
 
 ### Other
 For a complete diff with the original file, compare HEAD with the first commit, which contains the original code.

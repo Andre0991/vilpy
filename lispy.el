@@ -2,7 +2,7 @@
 
 ;; Author: André Peric Tavares <andre.peric.tavares@gmail.com>
 ;; URL: https://github.com/Andre0991/lispy-lite
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Keywords: lisp
 
 ;; This file is not part of GNU Emacs
@@ -1397,7 +1397,7 @@ Otherwise (`backward-delete-char-untabify' ARG)."
                         (lispy--indent-for-tab)
                       (let ((p (point)))
                         (lispy--out-forward 1)
-                        (lispy--normalize-1)
+                        (lispy--prettify-1)
                         (goto-char p)))))
                  (t
                   (backward-delete-char-untabify arg))))
@@ -2822,7 +2822,7 @@ When lispy-left, will slurp ARG sexps forwards.
              (indent-sexp))
             (t
              (error "unexpected"))))
-        (lispy--normalize-1)
+        (lispy--prettify-1)
         (lispy-flow 2)
         (when parent-binds
           (lispy-down (length parent-binds))))
@@ -2843,7 +2843,7 @@ When lispy-left, will slurp ARG sexps forwards.
     (delete-region beg end)
     (insert "\n")
     (lispy--out-backward 2)
-    (lispy--normalize-1)
+    (lispy--prettify-1)
     t))
 
 (defun lispy-barf-to-point (arg)
@@ -2863,7 +2863,7 @@ When ARG is non-nil, barf from the left."
         (when (and arg
                    (not (= (line-number-at-pos) line-number)))
           (setq split-moved-point-down t))
-        (lispy--normalize-1)
+        (lispy--prettify-1)
         (cond (arg
                (save-excursion
                  (lispy-up 1)
@@ -3036,7 +3036,7 @@ Useful for propagating `let' bindings."
              (lispy-save-excursion
                (forward-char 1)
                (lispy-left 2)
-               (lispy--normalize-1))))
+               (lispy--prettify-1))))
           ((and (setq bnd (lispy--bounds-string))
                 (or (save-excursion
                       (goto-char (car bnd))
@@ -3095,7 +3095,7 @@ Useful for propagating `let' bindings."
     (save-excursion
       (insert ")\n(let (")
       (lispy--out-backward 3)
-      (lispy--normalize-1))
+      (lispy--prettify-1))
     (lispy-flow 1)
     (lispy-down 1)
     t))
@@ -3840,7 +3840,7 @@ When SILENT is non-nil, don't issue messages."
   (if (or (lispy-left-p)
           (lispy-right-p))
       (let ((lispy-do-fill t))
-        (lispy--normalize-1))
+        (lispy--prettify-1))
     (fill-paragraph)))
 
 (defcustom lispy-move-after-commenting t
@@ -3930,7 +3930,7 @@ When SILENT is non-nil, don't issue messages."
                      (insert "\n"))
                    (insert (lispy-comment-char 2 "\n"))))
                (when (lispy--out-forward 1)
-                 (lispy--normalize-1))
+                 (lispy--prettify-1))
                (move-end-of-line 0)
                (insert " "))
               ((lispy-bolp)
@@ -4607,19 +4607,9 @@ Sexp is obtained by exiting the list ARG times."
   "Indent code and hide/show outlines.
 When region is active, call `lispy-mark-car'."
   (interactive)
-  (let (outline-eval-tag)
-    (cond ((region-active-p)
-           (lispy-mark-car))
-          ((looking-at (setq outline-eval-tag (format "^%s =>" lispy-outline-header)))
-           (let* ((bnd (lispy--bounds-comment))
-                  (beg (car bnd))
-                  (end (cdr bnd)))
-             (if (overlays-in beg end)
-                 (remove-overlays beg end)
-               (outline-flag-region
-                (+ beg (1- (length outline-eval-tag))) end 'visible))))
-          (t
-           (lispy--normalize-1)))))
+  (if (region-active-p)
+      (lispy-mark-car)
+    (lispy--prettify-1)))
 
 ;;* Locals: refactoring
 (defun lispy-to-lambda ()
@@ -4959,7 +4949,7 @@ Macro used may be customized in `lispy-thread-last-macro', which see."
             (lispy-raise-some))
         (save-excursion
           (lispy--out-backward 2)
-          (lispy--normalize-1)))
+          (lispy--prettify-1)))
       (undo-boundary))))
 
 (defun lispy-unbind-variable-clojure ()
@@ -4977,7 +4967,7 @@ Macro used may be customized in `lispy-thread-last-macro', which see."
   (delete-active-region)
   (deactivate-mark)
   (lispy--out-backward 2)
-  (lispy--normalize-1)
+  (lispy--prettify-1)
   (lispy-flow 1))
 
 (defun lispy--bind-variable-kind ()
@@ -7339,9 +7329,8 @@ The outer delimiters are stripped."
 (defvar clojure-align-forms-automatically)
 (declare-function clojure-align "ext:clojure-mode")
 
-;; TODO: Make me work with janet...
-(defun lispy--normalize-1 ()
-  "Normalize/prettify current sexp."
+(defun lispy--trim-whitespace-at-bol ()
+  "If the point is at '(', remove whitespace (tab and blank space) before point."
   (when (and (looking-at "(")
              (= (point)
                 (save-excursion
@@ -7349,33 +7338,24 @@ The outer delimiters are stripped."
                   (point))))
     (let ((pt (point)))
       (skip-chars-backward " \t")
-      (delete-region pt (point))))
-  (let* ((lisp-indent-function (if (looking-at "(\\(cl-defun\\|defhydra\\)")
-                                   #'common-lisp-indent-function
-                                 lisp-indent-function))
+      (delete-region pt (point)))))
+
+(defun lispy--get-lisp-indent-function ()
+  (if (looking-at "(\\(cl-defun\\|defhydra\\)")
+      #'common-lisp-indent-function
+    lisp-indent-function))
+
+(defun lispy--prettify-emacs-lisp-sexp ()
+  (let* ((lisp-indent-function (lispy--get-lisp-indent-function))
          (bnd (lispy--bounds-dwim))
          (str (lispy--string-dwim bnd))
-         (offset (if (eq major-mode 'racket-mode)
-                     0
-                   (save-excursion
-                     (goto-char (car bnd))
-                     (current-column))))
+         (offset (save-excursion (goto-char (car bnd)) (current-column)))
          (was-left (lispy-left-p)))
-    (cond ((or (and (memq major-mode lispy-clojure-modes)
-                    (or (string-match "\\^" str)
-                        (string-match "~" str)))
-               (> (length str) 10000))
-           (lispy-from-left
-            (indent-sexp)))
-          ((looking-at (lispy-comment-char 2)))
+    (cond ((looking-at (lispy-comment-char 2)))
           (t
            (let* ((max-lisp-eval-depth 10000)
                   (max-specpdl-size 10000)
-                  (geiser-active-implementations
-                   (and (bound-and-true-p geiser-active-implementations)
-                        (list (car geiser-active-implementations))))
-                  (res (lispy--sexp-normalize
-                        (lispy--read str)))
+                  (res (lispy--sexp-normalize (lispy--read str)))
                   (new-str (lispy--prin1-to-string res offset major-mode)))
              (unless (string= str new-str)
                ;; We should not do this if new-str failed to eval.
@@ -7384,10 +7364,15 @@ The outer delimiters are stripped."
                                 (cdr bnd))
                  (insert new-str))
                (when was-left
-                 (backward-list))))))
-    (when (and (memq major-mode lispy-clojure-modes)
-               clojure-align-forms-automatically)
-      (clojure-align (car bnd) (cdr bnd)))))
+                 (backward-list))))))))
+
+(defun lispy--prettify-1 ()
+  "Normalize/prettify current sexp."
+  (lispy--trim-whitespace-at-bol)
+  (cond ((memq major-mode lispy-clojure-modes)
+         (call-interactively 'clojure-align))
+        ((eq 'emacs-lisp-mode major-mode)
+         (lispy--prettify-emacs-lisp-sexp))))
 
 (defun lispy--sexp-trim-leading-newlines (expr comment)
   "Trim leading (ly-raw newline) from EXPR.
