@@ -1043,98 +1043,6 @@ Insert KEY if there's no command."
   (should (string= (lispy-with "(progn\n  (foo)\n  ~;; bar|\n  (baz))" "<")
                    "(progn\n  (foo)\n  ~;; bar|\n  (baz))")))
 
-(ert-deftest lispy-slurp-or-barf-right ()
-  (should (string= (lispy-with "()|(a) (b) (c)" (lispy-slurp-or-barf-right 1))
-                   "((a))| (b) (c)"))
-  (should (string= (lispy-with "()|(a) (b) (c)" (lispy-slurp-or-barf-right 2))
-                   "((a) (b))| (c)"))
-  (should (string= (lispy-with "()|(a) (b) (c)" (lispy-slurp-or-barf-right 3))
-                   "((a) (b) (c))|"))
-  (should (string= (lispy-with "()|(a) (b) (c)" (lispy-slurp-or-barf-right 4))
-                   "((a) (b) (c))|"))
-  (should (string= (lispy-with "|((a) (b) (c))" (lispy-slurp-or-barf-right 1))
-                   "(a) |((b) (c))"))
-  (should (string= (lispy-with "|((a) (b) (c))" (lispy-slurp-or-barf-right 2))
-                   "(a) (b) |((c))"))
-  (should (string= (lispy-with "|((a) (b) (c))" (lispy-slurp-or-barf-right 3))
-                   "(a) (b) (c)|()"))
-  (should (string= (lispy-with "|((a) (b) (c))" (lispy-slurp-or-barf-right 4))
-                   "(a) (b) (c)|()"))
-  (should (string= (lispy-with "(insert)|\"foo\"" (lispy-slurp-or-barf-right 1))
-                   "(insert \"foo\")|"))
-  (should (string= (lispy-with "(foo) #_~(bar)| (baz)" (lispy-slurp-or-barf-right 1))
-                   "(foo) #_~(bar) (baz)|"))
-  (should (string= (lispy-with "(progn\n  ~foo|-bar-baz-flip-flop)" (lispy-slurp-or-barf-right 1))
-                   "(progn\n  ~foo-bar|-baz-flip-flop)"))
-  (should (string= (lispy-with "(progn\n  ~foo|-bar-baz-flip-flop)" (lispy-slurp-or-barf-right 2))
-                   "(progn\n  ~foo-bar-baz|-flip-flop)"))
-  (should (string= (lispy-with "(progn\n  ~foo|-bar-baz-flip-flop)" (lispy-slurp-or-barf-right 3))
-                   "(progn\n  ~foo-bar-baz-flip|-flop)"))
-  (should (string= (lispy-with "(progn\n  ~foo|-bar-baz-flip-flop)" (lispy-slurp-or-barf-right 4))
-                   "(progn\n  ~foo-bar-baz-flip-flop|)"))
-  (should (string= (lispy-with "(progn\n  ~foo|-bar-baz-flip-flop)" (lispy-slurp-or-barf-right 5))
-                   "(progn\n  ~foo-bar-baz-flip-flop|)"))
-  (should (string= (lispy-with "(progn\n  |foo-bar-baz-flip-flop~)" (lispy-slurp-or-barf-right 1))
-                   "(progn\n  foo-|bar-baz-flip-flop~)"))
-  (should (string= (lispy-with "(progn\n  |foo-bar-baz-flip-flop~)" (lispy-slurp-or-barf-right 2))
-                   "(progn\n  foo-bar-|baz-flip-flop~)"))
-  (should (string= (lispy-with "(progn\n  |foo-bar-baz-flip-flop~)" (lispy-slurp-or-barf-right 3))
-                   "(progn\n  foo-bar-baz-|flip-flop~)"))
-  (should (string= (lispy-with "(progn\n  |foo-bar-baz-flip-flop~)" (lispy-slurp-or-barf-right 4))
-                   "(progn\n  foo-bar-baz-flip-|flop~)"))
-  (should (string= (lispy-with "(progn\n  |foo-bar-baz-flip-flop~)" (lispy-slurp-or-barf-right 5))
-                   "(progn\n  foo-bar-baz-flip-|flop~)"))
-  (should (string= (lispy-with "()|   foo" (lispy-slurp-or-barf-right 1))
-                   "(foo)|"))
-  (should (string= (lispy-with "(progn\n  ~(foo)|\n  ;; comment 1\n  ;; comment 2\n  (bar))" (lispy-slurp-or-barf-right 1))
-                   "(progn\n  ~(foo)\n  ;; comment 1\n  ;; comment 2|\n  (bar))")))
-
-(ert-deftest lispy-slurp-or-barf-left ()
-  (should (string= (lispy-with "((a) (b) (c))|" (lispy-slurp-or-barf-left 1))
-                   "((a) (b))| (c)"))
-  (should (string= (lispy-with "((a) (b) (c))|" (lispy-slurp-or-barf-left 2))
-                   "((a))| (b) (c)"))
-  (should (string= (lispy-with "((a) (b) (c))|" (lispy-slurp-or-barf-left 3))
-                   "()|(a) (b) (c)"))
-  (should (string= (lispy-with "((a) (b) (c))|" (lispy-slurp-or-barf-left 4))
-                   "()|(a) (b) (c)"))
-  (should (string= (lispy-with "(a) (b) (c) |()" (lispy-slurp-or-barf-left 2))
-                   "(a) |((b) (c) )"))
-  (should (string= (lispy-with "(a) (b) (c) |()" (lispy-slurp-or-barf-left 3))
-                   "|((a) (b) (c) )"))
-  (should (string= (lispy-with "(a) (b) (c) |()" (lispy-slurp-or-barf-left 4))
-                   "|((a) (b) (c) )"))
-  (should (string= (lispy-with "(progn\n  ~foo-bar-baz-flip-flop|)" (lispy-slurp-or-barf-left 1))
-                   "(progn\n  ~foo-bar-baz-flip|-flop)"))
-  (should (string= (lispy-with "(progn\n  ~foo-bar-baz-flip-flop|)" (lispy-slurp-or-barf-left 2))
-                   "(progn\n  ~foo-bar-baz|-flip-flop)"))
-  (should (string= (lispy-with "(progn\n  ~foo-bar-baz-flip-flop|)" (lispy-slurp-or-barf-left 3))
-                   "(progn\n  ~foo-bar|-baz-flip-flop)"))
-  (should (string= (lispy-with "(progn\n  ~foo-bar-baz-flip-flop|)" (lispy-slurp-or-barf-left 4))
-                   "(progn\n  ~foo|-bar-baz-flip-flop)"))
-  (should (string= (lispy-with "(progn\n  ~foo-bar-baz-flip-flop|)" (lispy-slurp-or-barf-left 5))
-                   "(progn\n  ~foo|-bar-baz-flip-flop)"))
-  (should (string= (lispy-with "(progn\n  ~(foo)\n  ;; comment 1\n  ;; comment 2|\n  (bar))" (lispy-slurp-or-barf-left 1))
-                   "(progn\n  ~(foo)|\n  ;; comment 1\n  ;; comment 2\n  (bar))"))
-  (should (string= (lispy-with "(progn\n  (foo)\n  ~;; bar|\n  (baz))" (lispy-slurp-or-barf-left 1))
-                   "(progn\n  (foo)\n  ~;; bar|\n  (baz))"))
-  (should (string= (lispy-with "(foo) #_|(bar)~ (baz)" (lispy-slurp-or-barf-left 1))
-                   "(foo) |#_(bar)~ (baz)"))
-  (should (string= (lispy-with "(progn\n  foo-bar-baz-flip-|flop~)" (lispy-slurp-or-barf-left 1))
-                   "(progn\n  foo-bar-baz-|flip-flop~)"))
-  (should (string= (lispy-with "(progn\n  foo-bar-baz-flip-|flop~)" (lispy-slurp-or-barf-left 2))
-                   "(progn\n  foo-bar-|baz-flip-flop~)"))
-  (should (string= (lispy-with "(progn\n  foo-bar-baz-flip-|flop~)" (lispy-slurp-or-barf-left 3))
-                   "(progn\n  foo-|bar-baz-flip-flop~)"))
-  (should (string= (lispy-with "(progn\n  foo-bar-baz-flip-|flop~)" (lispy-slurp-or-barf-left 4))
-                   "(progn\n  |foo-bar-baz-flip-flop~)"))
-  (should (string= (lispy-with "(progn\n  foo-bar-baz-flip-|flop~)" (lispy-slurp-or-barf-left 5))
-                   "(progn\n  |foo-bar-baz-flip-flop~)"))
-  (should (string= (lispy-with "(progn\n  |foo-bar~-baz-flip-flop)" (lispy-slurp-or-barf-left 1))
-                   "(progn\n  |foo-bar~-baz-flip-flop)"))
-  (should (string= (lispy-with "(progn\n  (foo)\n  ;; comment 1\n  ;; comment 2\n  |(bar)~)" (lispy-slurp-or-barf-left 1))
-                   "(progn\n  (foo)\n  |;; comment 1\n  ;; comment 2\n  (bar)~)")))
-
 (ert-deftest lispy-splice ()
   (should (string= (lispy-with "(|(a) (b) (c))" "/")
                    "(a |(b) (c))"))
@@ -2264,39 +2172,6 @@ Insert KEY if there's no command."
                                (lispy-knight-up))
                    "|(defun foo ()\n  (bar)\n  (baz))")))
 
-(ert-deftest lispy--setq-expression ()
-  (should (equal (lispy-with-v el "(dolist |(s '(1 2 3))\n  (message \"val: %d\" s))"
-                   (lispy--setq-expression))
-                 '(lispy--dolist-item-expr
-                   (quote (s (quote (1 2 3)))))))
-  (should (equal (lispy-with-v el "(cond |((string= question \"Where'd you get the coconut?\")\n       (message \"We found them.\")))"
-                   (lispy--setq-expression))
-                 '(if (string=
-                       question
-                       "Where'd you get the coconut?")
-                   (progn
-                     (message "We found them."))
-                   lispy--eval-cond-msg)))
-  (should (equal (lispy-with-v el "(let |(coconuts-migrate (swallow-type 'african) ridden-on-a-horse))"
-                   (lispy--setq-expression))
-                 '(setq coconuts-migrate
-                   nil
-                   ridden-on-a-horse
-                   nil)))
-  (should (equal (lispy-with-v el "(let (coconuts-migrate |(swallow-type 'african) ridden-on-a-horse))"
-                   (lispy--setq-expression))
-                 '(setq swallow-type
-                   (quote african))))
-  (should (equal (lispy-with-v el "(cl-labels (|(greeting ()\n (message \"Halt! Who goes there?\")))\n (greeting))"
-                   (lispy--setq-expression))
-                 '(defun greeting nil
-                   (message
-                    "Halt! Who goes there?"))))
-  (should (equal (lispy-with-v el "(cond |((pred)))"
-                   (lispy--setq-expression))
-                 '(or (pred)
-                   lispy--eval-cond-msg))))
-
 (ert-deftest lispy-ace-char ()
   (should (string= (lispy-with "|(cons 'norwegian 'blue)"
                                (execute-kbd-macro (kbd "Qob")))
@@ -2425,60 +2300,6 @@ Insert KEY if there's no command."
   (should (string= (lispy-with ";; |" ")")
                    ";; )|"))
   (lispy-set-key-theme '(special lispy c-digits oleh)))
-
-(ert-deftest lispy-parens-barf-to-point-or-jump-nostring ()
-  (should (string= (lispy-with
-                    "(a| b)"
-                    (lispy-parens-barf-to-point-or-jump-nostring nil))
-                   "(a)| b"))
-  (should (string= (lispy-with
-                    "(a |b)"
-                    (lispy-parens-barf-to-point-or-jump-nostring t))
-                   "a |(b)"))
-  (should (string= (lispy-with
-                    "([a |b] c)"
-                    (lispy-parens-barf-to-point-or-jump-nostring nil))
-                   "([a b] c)|"))
-  (should (string= (lispy-with
-                    "(a [b |c])"
-                    (lispy-parens-barf-to-point-or-jump-nostring t))
-                   "|(a [b c])")))
-
-(ert-deftest lispy-brackets-barf-to-point-or-jump-nostring ()
-  (should (string= (lispy-with
-                    "[a| b]"
-                    (lispy-brackets-barf-to-point-or-jump-nostring nil))
-                   "[a]| b"))
-  (should (string= (lispy-with
-                    "[a |b]"
-                    (lispy-brackets-barf-to-point-or-jump-nostring t))
-                   "a |[b]"))
-  (should (string= (lispy-with
-                    "[(a |b) c]"
-                    (lispy-brackets-barf-to-point-or-jump-nostring nil))
-                   "[(a b) c]|"))
-  (should (string= (lispy-with
-                    "[a (b |c)]"
-                    (lispy-brackets-barf-to-point-or-jump-nostring t))
-                   "|[a (b c)]")))
-
-(ert-deftest lispy-braces-barf-to-point-or-jump-nostring ()
-  (should (string= (lispy-with clojure
-                    "{a| b}"
-                    (lispy-braces-barf-to-point-or-jump-nostring nil))
-                   "{a}| b"))
-  (should (string= (lispy-with clojure
-                    "{a |b}"
-                    (lispy-braces-barf-to-point-or-jump-nostring t))
-                   "a |{b}"))
-  (should (string= (lispy-with clojure
-                    "{(a |b) c}"
-                    (lispy-braces-barf-to-point-or-jump-nostring nil))
-                   "{(a b) c}|"))
-  (should (string= (lispy-with clojure
-                    "{a (b |c)}"
-                    (lispy-braces-barf-to-point-or-jump-nostring t))
-                   "|{a (b c)}")))
 
 (ert-deftest lispy-delete-backward-or-splice-or-slurp ()
   (lispy-set-key-theme '(parinfer))
@@ -2957,22 +2778,6 @@ Insert KEY if there's no command."
                        "(list #hash((1 . 2) (3 . 4))| foo)"
                      (lispy--string-dwim))
                    "#hash((1 . 2) (3 . 4))"))))
-
-(ert-deftest lispy--insert-eval-result ()
-  (should (string=
-           (lispy-with-v py
-               "|"
-             (lispy--insert-eval-result
-              "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]")
-             (buffer-string))
-           "# =>\n# [0,\n#  1,\n#  2,\n#  3,\n#  4,\n#  5,\n#  6,\n#  7,\n#  8,\n#  9,\n#  10,\n#  11,\n#  12,\n#  13,\n#  14,\n#  15,\n#  16,\n#  17,\n#  18,\n#  19,\n#  20,\n#  21,\n#  22,\n#  23,\n#  24,\n#  25,\n#  26,\n#  27,\n#  28,\n#  29]"))
-  (should (string=
-           (lispy-with-v py
-               "|"
-             (lispy--insert-eval-result
-              "{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11, 12: 12, 13: 13, 14: 14, 15: 15, 16: 16, 17: 17, 18: 18, 19: 19}")
-             (buffer-string))
-           "# =>\n# {0: 0,\n#  1: 1,\n#  2: 2,\n#  3: 3,\n#  4: 4,\n#  5: 5,\n#  6: 6,\n#  7: 7,\n#  8: 8,\n#  9: 9,\n#  10: 10,\n#  11: 11,\n#  12: 12,\n#  13: 13,\n#  14: 14,\n#  15: 15,\n#  16: 16,\n#  17: 17,\n#  18: 18,\n#  19: 19}")))
 
 ;; Quarentine - these tests fail even without any modification to lispy
 
