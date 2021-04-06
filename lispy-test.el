@@ -1917,16 +1917,6 @@ Insert KEY if there's no command."
                                (execute-kbd-macro "xc"))
                    "|(cond\n  ((eq question 'name)\n   \"Sir Launcelot\")\n  ((eq question 'quest)\n   \"To seek the Holy Grail\")\n  ((eq question 'favorite-color)\n   \"Blue\")\n  (t\n   (error \"I don't know that!\")))")))
 
-(ert-deftest lispy-to-defun ()
-  (should (string= (lispy-with "(foo bar)|" (lispy-to-defun))
-                   "(defun foo (bar)\n  |)"))
-  (should (string= (lispy-with "|(foo bar)" (lispy-to-defun))
-                   "(defun foo (bar)\n  |)"))
-  (should (string= (lispy-with "(foo)|" (lispy-to-defun))
-                   "(defun foo ()\n  |)"))
-  (should (string= (lispy-with "|(foo)" (lispy-to-defun))
-                   "(defun foo ()\n  |)")))
-
 (ert-deftest lispy-up-slurp ()
   (should (string= (lispy-with "(progn\n  (foo))\n|(bar)" "ok")
                    "(progn\n  (foo)\n  |(bar))"))
@@ -2090,109 +2080,6 @@ Insert KEY if there's no command."
                    "\"See `~plumage|'.\""))
   (should (string= (lispy-with "(list ~\"one\" \"two\"|)" "i")
                    "(list ~\"one\"| \"two\")")))
-
-(ert-deftest lispy-bind-variable ()
-  (should (string= (lispy-with clojure "(+ |(1 2) 3)"
-                               (lispy-bind-variable)
-                               (insert "three")
-                               (lispy-map-done))
-                   "(+ (let |[three (1 2)]\n     three) 3)"))
-  (should (string= (lispy-with "(+ |(1 2) 3)"
-                               (lispy-bind-variable)
-                               (insert "three")
-                               (lispy-map-done))
-                   "(+ (let |((three (1 2)))\n     three) 3)")))
-
-(ert-deftest lispy-unbind-variable ()
-  ;; :expected-result :fail
-;;   (should (string= (lispy-with "(let ((x 1)\n      |(y 2))\n  (+ x y))"
-;;                                (lispy-unbind-variable))
-;;                    "(let (|(x 1))\n  (+ x 2))"))
-;;   (should (string=
-;;            (lispy-flet (recenter (&optional x))
-;;              (lispy-with "
-;; (defun foobar ()
-;;   (let (|(x 10)
-;;          (y 20)
-;;          (z 30))
-;;     (foo1 x y z)
-;;     (foo2 x z y)
-;;     (foo3 y x z)
-;;     (foo4 y z x)
-;;     (foo5 z x y)
-;;     (foo6 z y x)))"
-;;                          (lispy-unbind-variable)))
-;;            "
-;; (defun foobar ()
-;;   (let (|(y 20)
-;;         (z 30))
-;;     (foo1 10 y z)
-;;     (foo2 10 z y)
-;;     (foo3 y 10 z)
-;;     (foo4 y z 10)
-;;     (foo5 z 10 y)
-;;     (foo6 z y 10)))"))
-;;   (should (string=
-;;            (lispy-flet (recenter (&optional x))
-;;              (lispy-with "
-;; (defun foobar ()
-;;   (let (|(x 10)
-;;          (y 20)
-;;          (z 30))
-;;     (foo1 x y z)
-;;     (foo2 x z y)
-;;     (foo3 y x z)
-;;     (foo4 y z x)
-;;     (foo5 z x y)
-;;     (foo6 z y x)))"
-;;                          (lispy-unbind-variable)
-;;                          (lispy-unbind-variable)))
-;;            "
-;; (defun foobar ()
-;;   (let (|(z 30))
-;;     (foo1 10 20 z)
-;;     (foo2 10 z 20)
-;;     (foo3 20 10 z)
-;;     (foo4 20 z 10)
-;;     (foo5 z 10 20)
-;;     (foo6 z 20 10)))"))
-;;   (should (string=
-;;            (lispy-flet (recenter (&optional x))
-;;              (lispy-with "
-;; (defun foobar ()
-;;   (foo)
-;;   (let (|(x 10))
-;;     (+ x x x))
-;;   (bar))"
-;;                          (lispy-unbind-variable)))
-;;            "
-;; (defun foobar ()
-;;   (foo)
-;;   |(+ 10 10 10)
-;;   (bar))"))
-;;   (should (string=
-;;            (lispy-flet (recenter (&optional x))
-;;              (lispy-with clojure "
-;; (defn foobar []
-;;   (let [&x| 10 y 20 z 30]
-;;     (+ 1 x y z)
-;;     (+ 2 x z y)
-;;     (+ 3 y x z)
-;;     (+ 4 y z x)
-;;     (+ 5 z x y)
-;;     (+ 6 z y x)))"
-;;                          (lispy-unbind-variable)))
-;;            "
-;; (defn foobar []
-;;   (let |[y 20 z 30]
-;;     (+ 1 10 y z)
-;;     (+ 2 10 z y)
-;;     (+ 3 y 10 z)
-;;     (+ 4 y z 10)
-;;     (+ 5 z 10 y)
-;;     (+ 6 z y 10)))"))
-  )
-
 
 (ert-deftest lispy-other-space ()
   (should (string= (lispy-with "(foo (bar (baz)|))"
@@ -3059,21 +2946,6 @@ Insert KEY if there's no command."
                  '(1 2 3 0 4 5 6 0 7 8 9 0 10)))
   (should (equal (lispy-interleave 3 '(1 2 3 4 5 6 7 8 9 10) 3)
                  '(1 2 3 4 5 6 3 7 8 9 3 10))))
-
-(ert-deftest lispy-extract-block ()
-  (should (string= (lispy-with "(defun cube (x)\n  (* x |(* x x)))"
-                               (execute-kbd-macro "xdsquare x["))
-                   "(defun square (x)\n  (* x x))\n\n(defun cube (x)\n  (* x |(square x)))"))
-  (should (string= (lispy-with clojure "(defn cube [x]\n  (* x |(* x x)))"
-                                       (execute-kbd-macro "xdsquare x["))
-                   "(defn square [x]\n  (* x x))\n\n(defn cube [x]\n  (* x |(square x)))")))
-
-(ert-deftest lispy-extract-defun ()
-  (should (string= (lispy-with "(defun foo (x)\n  |(let ((y (* x x))\n        (z (+ x x)))\n    (list y z y z)))"
-                               (execute-kbd-macro "xdhelper
-"))
-                   "(defun helper (y z)\n  (list y z y z))\n\n(defun foo (x)\n  (helper (* x x) (+ x x))|)")))
-
 
 (ert-deftest lispy-eval-str-racket ()
   (let ((geiser-active-implementations '(racket)))

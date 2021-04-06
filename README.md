@@ -7,7 +7,7 @@ I prefer forking the original code because (1) the author is happy with the curr
 
 Design goals (mostly not taken into practice yet):
 - Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features. Refactoring commands can be leveraged from other packages.
-- Prefer to leverage Emacs built-ins function when possible.
+- Prefer to leverage Emacs built-in functions whenever possible.
 - Implement a uniform API that works well with all supported languages. Alternatively: avoid language-specific commands.
 - Rely on fewer external dependencies.
 - Drop support for non-lisps languages.
@@ -19,7 +19,7 @@ Calls `eval-last-sexp` (`emacs-lisp-mode`), `cider-eval-last-sexp` (`cider-mode`
 
 ### `lispy-eval-and-insert` (E)
 Renamed to `lispy-eval-last-sexp-and-insert-comment`.
-Adds `;; =>` in front of the result
+Adds `;; =>` in front of the result.
 
 ### `lispy-follow` (F)
 Uses `xref-find-definitions`.
@@ -48,6 +48,11 @@ In `clojure-mode`, only calls `clojure-align` and trims whitespace at beginning 
 - `lispy-goto-symbol-elisp`
 - `lispy-goto-symbol` (M-.)
 - `lispy-shifttab` (I)
+- `lispy-iedit` (M-i)
+- `lispy-bind-variable` (xb)
+- `lispy-unbind-variable` (xu)
+- `lispy-to-defun` (xd)
+- `lispy-extract-block` (xk)
 - All `lispy-outline-*`functions
 
 ### Other

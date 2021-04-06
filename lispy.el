@@ -2,7 +2,7 @@
 
 ;; Author: André Peric Tavares <andre.peric.tavares@gmail.com>
 ;; URL: https://github.com/Andre0991/lispy-lite
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Keywords: lisp
 
 ;; This file is not part of GNU Emacs
@@ -133,7 +133,6 @@
 
 ;;* Requires
 (eval-when-compile
-  (require 'iedit)
   (require 'eldoc)
   (require 'ediff)
   (require 'ediff-util))
@@ -143,7 +142,6 @@
 (require 'outline)
 (require 'avy)
 (require 'newcomment)
-(setq iedit-toggle-key-default nil)
 (require 'delsel)
 (require 'swiper)
 (require 'pcase)
@@ -1546,8 +1544,7 @@ When ARG is more than 1, mark ARGth element."
          (lispy--mark (lispy--bounds-comment))))
   (setq this-command 'lispy-mark-list))
 
-(defvar-local lispy-bind-var-in-progress nil
-  "When t, `lispy-mark-symbol' will exit `iedit'.")
+(defvar-local lispy-bind-var-in-progress nil)
 
 (defun lispy-mark-symbol ()
   "Mark current symbol."
@@ -2190,18 +2187,6 @@ to all the functions, while maintaining the parens in a pretty state."
     (setq str (lispy--string-dwim (setq bnd (lispy--bounds-string))))
     (delete-region (car bnd) (cdr bnd))
     (insert (replace-regexp-in-string "\n" "\\\\n" str))))
-
-(defun lispy-iedit (&optional arg)
-  "Wrap around `iedit'."
-  (interactive "P")
-  (require 'iedit)
-  (if iedit-mode
-      (iedit-mode nil)
-    (when (lispy-left-p)
-      (forward-char 1))
-    (if arg
-        (iedit-mode 0)
-      (iedit-mode))))
 
 ;;* Locals: navigation
 ;;** Occur
@@ -4600,9 +4585,6 @@ Sexp is obtained by exiting the list ARG times."
 
 (declare-function ediff-regions-internal "ediff")
 
-(declare-function iedit-regexp-quote "iedit")
-(declare-function iedit-start "iedit")
-
 (defun lispy-tab ()
   "Indent code and hide/show outlines.
 When region is active, call `lispy-mark-car'."
@@ -4624,47 +4606,6 @@ When region is active, call `lispy-mark-car'."
       (goto-char beg)
       (insert "lambda")
       (goto-char (1- beg)))))
-
-(defun lispy-to-defun ()
-  "Turn the current lambda or toplevel sexp or block into a defun."
-  (interactive)
-  (let (bnd expr)
-    (cond ((and (lispy-from-left (bolp))
-                (progn
-                  (setq expr
-                        (lispy--read
-                         (lispy--string-dwim
-                          (setq bnd (lispy--bounds-dwim)))))
-                  (cl-every #'symbolp expr)))
-           (delete-region (car bnd)
-                          (cdr bnd))
-           (lispy--insert
-            `(defun ,(car expr) ,(or (cdr expr) '(ly-raw empty))
-               (ly-raw newline)))
-           (backward-char))
-          ((let ((pt (point)))
-             (when (region-active-p)
-               (deactivate-mark))
-             (when (lispy-right-p)
-               (backward-list))
-             (while (and (not (looking-at "(lambda"))
-                         (lispy--out-backward 1)))
-             (if (looking-at "(lambda")
-                 t
-               (goto-char pt)
-               nil))
-           (let ((name (read-string "Function name: ")))
-             (forward-char 1)
-             (delete-char 6)
-             (insert "defun " name)
-             (lispy-kill-at-point)
-             (insert "#'" name)
-             (message "defun stored to kill ring")
-             (lispy-backward 1)))
-          ((looking-at "(let")
-           (lispy--extract-let-as-defun))
-          (t
-           (lispy-extract-block)))))
 
 (defun lispy-extract-defun ()
   "Extract the marked block as a defun.
@@ -4915,112 +4856,6 @@ Macro used may be customized in `lispy-thread-last-macro', which see."
    (lispy-different)
    (lispy-flow 1)
    (lispy-raise 1)))
-
-(defun lispy-unbind-variable ()
-  "Substitute let-bound variable."
-  (interactive)
-  (if (memq major-mode lispy-clojure-modes)
-      (lispy-unbind-variable-clojure)
-    (let ((inhibit-message t)
-          beg end)
-      (require 'iedit)
-      (save-excursion
-        (lispy--out-backward 2)
-        (setq beg (point))
-        (forward-list 1)
-        (setq end (point)))
-      (forward-char 1)
-      (iedit-start (iedit-regexp-quote (lispy--string-dwim)) beg end)
-      (lispy-mark-symbol)
-      (lispy-move-down 1)
-      (iedit-mode)
-      (deactivate-mark)
-      (lispy-left 1)
-      (lispy-delete 1)
-      (when (looking-at "[ \n]*")
-        (delete-region (match-beginning 0)
-                       (match-end 0)))
-      (lispy--out-backward 1)
-      (forward-char 1)
-      (if (looking-at ")")
-          (progn
-            (lispy--out-backward 1)
-            (lispy-down 1)
-            (lispy-raise-some))
-        (save-excursion
-          (lispy--out-backward 2)
-          (lispy--prettify-1)))
-      (undo-boundary))))
-
-(defun lispy-unbind-variable-clojure ()
-  "Subsititute let-bound variable in Clojure."
-  (interactive)
-  (require 'iedit)
-  (deactivate-mark)
-  (lispy-flet (message (&rest _x))
-    (iedit-mode 0))
-  (lispy-mark-symbol)
-  (lispy-move-down 1)
-  (iedit-mode)
-  (exchange-point-and-mark)
-  (lispy-slurp 1)
-  (delete-active-region)
-  (deactivate-mark)
-  (lispy--out-backward 2)
-  (lispy--prettify-1)
-  (lispy-flow 1))
-
-(defun lispy--bind-variable-kind ()
-  (save-excursion
-    (catch 'break
-      (while (not (bolp))
-        (lispy-left 1)
-        (cond ((lispy-looking-back "(let\\*? ")
-               (throw 'break 'let-binding))
-              ((looking-at "(let\\([*]?\\)")
-               (throw 'break 'let-body))))
-      'no-let)))
-
-(defun lispy-bind-variable ()
-  "Bind current expression as variable.
-
-`lispy-map-done' is used to finish entering the variable name.
-The bindings of `lispy-backward' or `lispy-mark-symbol' can also be used."
-  (interactive)
-  (let* ((bnd (lispy--bounds-dwim))
-         (str (lispy--string-dwim bnd))
-         (kind (lispy--bind-variable-kind))
-         (fmt (if (eq major-mode 'clojure-mode)
-                  '("(let [ %s]\n)" . 6)
-                '("(let (( %s))\n)" . 7))))
-    (setq lispy-bind-var-in-progress t)
-    (deactivate-mark)
-    (lispy-map-delete-overlay)
-    (delete-region (car bnd) (cdr bnd))
-    (cond ((eq kind 'let-binding)
-           (let ((lispy-ignore-whitespace t))
-             (while (not (lispy-bolp))
-               (lispy-left 1)))
-           (when (looking-at "(let")
-             (lispy-flow 2))
-           (let ((new-binding
-                  (concat
-                   "( " str ")\n"
-                   (make-string (current-column) ?\ ))))
-             (save-excursion
-               (insert new-binding))
-             (setq lispy-map-target-beg (1+ (point)))
-             (goto-char (+ (car bnd) (length new-binding)))))
-          (t
-           (insert (format (car fmt) str))
-           (goto-char (car bnd))
-           (indent-sexp)
-           (forward-sexp)
-           (setq lispy-map-target-beg (+ (car bnd) (cdr fmt)))
-           (backward-char 1)))
-    (setq lispy-map-target-len 0)
-    (setq lispy-map-format-function 'identity)
-    (lispy-map-make-input-overlay (point) (point))))
 
 ;;* Locals: multiple cursors
 (declare-function mc/create-fake-cursor-at-point "ext:multiple-cursors-core")
@@ -5336,7 +5171,6 @@ An equivalent of `cl-destructuring-bind'."
   ("b" lispy-bind-variable "bind variable")
   ("c" lispy-to-cond "to cond")
   ("C" lispy-cleanup "cleanup")
-  ("d" lispy-to-defun "to defun")
   ("D" lispy-extract-defun "extract defun")
   ("e" lispy-edebug "edebug")
   ("f" lispy-flatten "flatten")
@@ -5354,7 +5188,6 @@ An equivalent of `cl-destructuring-bind'."
   ;; ("r" nil)
   ("s" save-buffer)
   ("t" lispy-view-test "view test")
-  ("u" lispy-unbind-variable "unbind let-var")
   ("v" lispy-eval-expression "eval")
   ("w" lispy-show-top-level "where")
   ;; ("x" nil)
@@ -5678,23 +5511,6 @@ When ARG is given, paste at that place in the current list."
     map)
   "The input overlay keymap for `lispy-extract-block'.")
 
-(defun lispy-map-make-input-overlay (beg end)
-  "Set `lispy-map-input-overlay' to an overlay from BEG to END.
-This overlay will automatically extend with modifications.
-
-Each modification inside `lispy-map-input-overlay' will update the
-area between `lispy-map-target-beg' and `lispy-map-target-len'."
-  (when (overlayp lispy-map-input-overlay)
-    (delete-overlay lispy-map-input-overlay))
-  (let ((ov (make-overlay beg end (current-buffer) nil t)))
-    (overlay-put ov 'face 'iedit-occurrence)
-    (overlay-put ov 'insert-in-front-hooks '(lispy-map--overlay-update-hook))
-    (overlay-put ov 'insert-behind-hooks '(lispy-map--overlay-update-hook))
-    (overlay-put ov 'modification-hooks '(lispy-map--overlay-update-hook))
-    (overlay-put ov 'priority 200)
-    (overlay-put ov 'keymap lispy-map-keymap)
-    (setq lispy-map-input-overlay ov)))
-
 (defun lispy-map-delete-overlay ()
   "Delete `lispy-map-input-overlay'."
   (when (overlayp lispy-map-input-overlay)
@@ -5732,37 +5548,6 @@ area between `lispy-map-target-beg' and `lispy-map-target-len'."
         (let ((new-str (funcall lispy-map-format-function str)))
           (insert new-str)
           (setq lispy-map-target-len (length new-str)))))))
-
-(defun lispy-extract-block ()
-  "Transform the current sexp or region into a function call.
-The newly generated function will be placed above the current function.
-Starts the input for the new function name and arguments.
-To finalize this input, press \"[\"."
-  (interactive)
-  (lispy-map-delete-overlay)
-  (let* ((bnd (lispy--bounds-dwim))
-         (str (lispy--string-dwim bnd)))
-    (undo-boundary)
-    (delete-region (car bnd) (cdr bnd))
-    (insert "()")
-    (backward-char)
-    (lispy-map-make-input-overlay (point) (point))
-    (setq lispy-map-format-function 'lispy-map-format-function-extract-block)
-    (save-excursion
-      (lispy-beginning-of-defun)
-      (save-excursion
-        (insert
-         (if (memq major-mode lispy-clojure-modes)
-             "(defn a []\n"
-           "(defun a ()\n")
-         str
-         ")\n\n"))
-      (indent-sexp)
-      (forward-char 1)
-      (forward-sexp 2)
-      (delete-char -1)
-      (setq lispy-map-target-beg (point))
-      (setq lispy-map-target-len 3))))
 
 ;;* Predicates
 (defun lispy--in-string-p ()
@@ -8669,8 +8454,6 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "<C-return>") 'lispy-open-line)
     (define-key map (kbd "<M-return>") 'lispy-meta-return)
     (define-key map (kbd "M-RET") 'lispy-meta-return)
-    ;; misc
-    (define-key map (kbd "M-i") 'lispy-iedit)
     map))
 
 (defvar lispy-mode-map-oleh
