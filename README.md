@@ -1,5 +1,7 @@
 # lispy-lite
 
+**Important: Work in progress. Expect things to break.**
+
 This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode.
 The motivation is not loading `le-clojure.clj` (or any other language-specific file), which relies on injecting dependencies to cider and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552).
 
