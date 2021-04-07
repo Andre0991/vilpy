@@ -18,8 +18,7 @@ Design goals (mostly not taken into practice yet):
 Calls `eval-last-sexp` (`emacs-lisp-mode`), `cider-eval-last-sexp` (`cider-mode`) or `inf-clojure-eval-last-sexp` (`inf-clojure-minor-mode`) rather than directly using the cider middleware functions.
 
 ### `lispy-eval-and-insert` (E)
-Renamed to `lispy-eval-last-sexp-and-insert-comment`.
-Adds `;; =>` in front of the result.
+Removed.
 
 ### `lispy-follow` (F)
 Uses `xref-find-definitions`.

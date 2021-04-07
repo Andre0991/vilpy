@@ -1490,10 +1490,6 @@ Insert KEY if there's no command."
 (ert-deftest lispy-eval ()
   (lispy-with-v el "(+ 2 2)|" (lispy-eval 1)))
 
-(ert-deftest lispy-eval-last-sexp-and-insert-comment ()
-  (should (string= (lispy-with "(+ 2 2)|" "E")
-                   "(+ 2 2);; => 4|")))
-
 (ert-deftest lispy-quotes ()
   (should (string= (lispy-with "(frob grovel |full lexical)" "\"")
                    "(frob grovel \"|\" full lexical)"))

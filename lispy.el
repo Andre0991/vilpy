@@ -2,7 +2,7 @@
 
 ;; Author: André Peric Tavares <andre.peric.tavares@gmail.com>
 ;; URL: https://github.com/Andre0991/lispy-lite
-;; Version: 0.1.3
+;; Version: 0.1.4
 ;; Keywords: lisp
 
 ;; This file is not part of GNU Emacs
@@ -21,6 +21,7 @@
 ;; see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
 ;; This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode.
 ;; For more details, please see https://github.com/Andre0991/lispy-lite.
 ;;
@@ -146,6 +147,37 @@
 (require 'swiper)
 (require 'pcase)
 (require 'hydra)
+
+;;* Features for suported languages
+
+(defun lispy--lang ()
+  "Return the language that is being used, based on the current major and minor mode."
+  (cond
+   ((derived-mode-p 'emacs-lisp-mode)
+    :emacs-lisp)
+   ((derived-mode-p 'clojure-mode)
+    :clojure)))
+
+(setq lispy--eval-last-sexp-handlers-alist
+      '((:emacs-lisp . (lambda () (call-interactively 'eval-last-sexp)))
+        (:clojure . lispy--clojure-eval-last-sexp)))
+
+(setq lispy--eval-region-handlers-alist
+      '((:emacs-lisp . (lambda ()
+                         (call-interactively 'eval-region)))
+        (:clojure . lispy--clojure-eval-region)))
+
+(defun lispy--clojure-eval-last-sexp ()
+  (cond ((bound-and-true-p inf-clojure-minor-mode)
+         (call-interactively 'inf-clojure-eval-last-sexp))
+        ((bound-and-true-p cider-mode)
+         (call-interactively 'cider-eval-last-sexp))))
+
+(defun lispy--clojure-eval-region ()
+  (cond ((bound-and-true-p inf-clojure-minor-mode)
+         (call-interactively 'inf-clojure-eval-region))
+        ((bound-and-true-p cider-mode)
+         (call-interactively 'cider-eval-region))))
 
 (defsubst lispy-looking-back (regexp)
   "Forward to (`looking-back' REGEXP)."
@@ -1160,7 +1192,7 @@ If position isn't special, move to previous or error."
       ((and (eq (char-after) ?\")
             (eq (char-before) ?\"))
        (insert-for-yank (replace-regexp-in-string "\"" "\\\\\""
-                                         text)))
+                                                  text)))
       (t
        (push-mark (point))
        (insert-for-yank text)))))
@@ -4020,48 +4052,13 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
 
 (define-error 'eval-error "Eval error")
 
-(defvar lispy--eval-last-sexp-handlers-alist
-  '((:emacs-lisp . eval-last-sexp)
-    (:cider . cider-eval-last-sexp)
-    (:inf-clojure . inf-clojure-eval-last-sexp)))
-
-(defvar lispy--eval-region-handlers-alist
-  '((:emacs-lisp . eval-region)
-    (:cider . cider-eval-region)
-    (:inf-clojure . inf-clojure-eval-region)))
-
-(defvar lispy--pp-eval-last-sexp-handlers-alist
-  '((:emacs-lisp . lispy--elisp-pp-last-sexp)
-    (:cider . cider-pprint-eval-last-sexp-to-comment)))
-
-(defun lispy--elisp-pp-last-sexp ()
-  "Same as `(pp-eval-last-sexp 1)`, but also insert comment."
-  (interactive)
-  (insert ";; => " (pp-to-string (eval (pp-last-sexp) lexical-binding))))
-
-(defun lispy--evaluation-kind ()
-  (cond
-   ((derived-mode-p 'emacs-lisp-mode)
-    :emacs-lisp)
-   ((bound-and-true-p inf-clojure-minor-mode)
-    :inf-clojure)
-   ((bound-and-true-p cider-mode)
-    :cider)
-   ('t
-    (message "[lispy-lite]: Couldn't find evaluation handler for current mode."))))
-
 (defun lispy--get-eval-handler ()
   "Gets the most appropriate evaluation handler, depending on the region and the current major/minor modes."
-  (assoc-default (lispy--evaluation-kind)
+  (assoc-default (lispy--lang)
                  (if (region-active-p)
                      lispy--eval-region-handlers-alist
                    lispy--eval-last-sexp-handlers-alist)))
 
-
-(defun lispy--get-pp-eval-handler ()
-  "Gets the most appropriate prety-printing evaluation handler, depending on the region and the current major/minor modes."
-  (assoc-default (lispy--evaluation-kind)
-                 lispy--pp-eval-last-sexp-handlers-alist))
 
 (defun lispy-eval (arg)
   "Eval the current sexp and display the result."
@@ -4073,12 +4070,11 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
     (cond
      ((or (region-active-p)
           (lispy-right-p))
-      (call-interactively handler))
-
+      (funcall handler))
      ((lispy-left-p)
       (save-excursion
         (lispy-forward 1)
-        (call-interactively handler))))))
+        (funcall handler))))))
 
 (defvar lispy-message-limit 4000
   "String length limit for `lispy-message' to pop up a window.
@@ -4105,22 +4101,6 @@ If STR is too large, pop it to a buffer instead."
     (condition-case nil
         (message str)
       (error (message (replace-regexp-in-string "%" "%%" str))))))
-
-(defun lispy-eval-last-sexp-and-insert-comment ()
-  "Eval last sexp and insert the result."
-  (interactive)
-  (when-let ((handler (lispy--get-pp-eval-handler)))
-    (cond
-     ((lispy-right-p)
-      (call-interactively handler))
-
-     ((lispy-left-p)
-      (save-excursion
-        (lispy-forward 1)
-        (call-interactively handler)))
-
-     ('t
-      (message "[lispy-lite]: Can't perform action because point is not at beggining or end of sexp.")))))
 
 (declare-function cider-doc-lookup "ext:cider-doc")
 
@@ -7271,7 +7251,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "m" 'lispy-mark-list)
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
-    (lispy-define-key map "E" 'lispy-eval-last-sexp-and-insert-comment)
     (lispy-define-key map "g" 'lispy-goto)
     (lispy-define-key map "F" 'lispy-follow t)
     (lispy-define-key map "D" 'pop-tag-mark)
@@ -7754,6 +7733,7 @@ When ARG is non-nil, unquote the current string."
     map))
 
 (declare-function View-quit "view")
+
 (defvar lispy-mode-map-lispy
   (let ((map (copy-keymap lispy-mode-map-base)))
     ;; navigation
