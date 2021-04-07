@@ -2,7 +2,7 @@
 
 ;; Author: André Peric Tavares <andre.peric.tavares@gmail.com>
 ;; URL: https://github.com/Andre0991/lispy-lite
-;; Version: 0.1.4
+;; Version: 0.1.5
 ;; Keywords: lisp
 
 ;; This file is not part of GNU Emacs
@@ -150,6 +150,20 @@
 
 ;;* Features for suported languages
 
+(defvar lispy--eval-last-sexp-handlers-alist
+      '((:emacs-lisp . (lambda () (call-interactively 'eval-last-sexp)))
+        (:clojure . lispy--clojure-eval-last-sexp)))
+
+(defvar lispy--eval-defun-handlers-alist
+      '((:emacs-lisp . (lambda ()
+                         (call-interactively 'eval-defun)))
+        (:clojure . lispy--clojure-eval-defun)))
+
+(defvar lispy--eval-region-handlers-alist
+      '((:emacs-lisp . (lambda ()
+                         (call-interactively 'eval-region)))
+        (:clojure . lispy--clojure-eval-region)))
+
 (defun lispy--lang ()
   "Return the language that is being used, based on the current major and minor mode."
   (cond
@@ -157,15 +171,6 @@
     :emacs-lisp)
    ((derived-mode-p 'clojure-mode)
     :clojure)))
-
-(setq lispy--eval-last-sexp-handlers-alist
-      '((:emacs-lisp . (lambda () (call-interactively 'eval-last-sexp)))
-        (:clojure . lispy--clojure-eval-last-sexp)))
-
-(setq lispy--eval-region-handlers-alist
-      '((:emacs-lisp . (lambda ()
-                         (call-interactively 'eval-region)))
-        (:clojure . lispy--clojure-eval-region)))
 
 (defun lispy--clojure-eval-last-sexp ()
   (cond ((bound-and-true-p inf-clojure-minor-mode)
@@ -178,6 +183,12 @@
          (call-interactively 'inf-clojure-eval-region))
         ((bound-and-true-p cider-mode)
          (call-interactively 'cider-eval-region))))
+
+(defun lispy--clojure-eval-defun ()
+  (cond ((bound-and-true-p inf-clojure-minor-mode)
+         (call-interactively 'inf-clojure-eval-defun))
+        ((bound-and-true-p cider-mode)
+         (call-interactively 'cider-eval-defun-at-point))))
 
 (defsubst lispy-looking-back (regexp)
   "Forward to (`looking-back' REGEXP)."
@@ -4052,13 +4063,17 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
 
 (define-error 'eval-error "Eval error")
 
-(defun lispy--get-eval-handler ()
+(defun lispy--get-eval-last-sexp-or-region-handler ()
   "Gets the most appropriate evaluation handler, depending on the region and the current major/minor modes."
   (assoc-default (lispy--lang)
                  (if (region-active-p)
                      lispy--eval-region-handlers-alist
                    lispy--eval-last-sexp-handlers-alist)))
 
+(defun lispy--get-eval-defun-handler ()
+  "Gets the most appropriate evaluation handler, depending on the region and the current major/minor modes."
+  (assoc-default (lispy--lang)
+                 lispy--eval-defun-handlers-alist))
 
 (defun lispy-eval (arg)
   "Eval the current sexp and display the result."
@@ -4066,7 +4081,7 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
   ;; if point is at the end of the sexp.
   ;; TODO: region is active, point is at the begging of sexp
   (setq lispy-eval-output nil)
-  (when-let ((handler (lispy--get-eval-handler)))
+  (when-let ((handler (lispy--get-eval-last-sexp-or-region-handler)))
     (cond
      ((or (region-active-p)
           (lispy-right-p))
@@ -4075,6 +4090,12 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
       (save-excursion
         (lispy-forward 1)
         (funcall handler))))))
+
+(defun lispy-eval-defun ()
+  "Evaluate the top level form."
+  (interactive)
+  (when-let ((handler (lispy--get-eval-defun-handler)))
+    (funcall handler)))
 
 (defvar lispy-message-limit 4000
   "String length limit for `lispy-message' to pop up a window.
@@ -7251,6 +7272,7 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "m" 'lispy-mark-list)
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
+    (lispy-define-key map "E" 'lispy-eval-defun)
     (lispy-define-key map "g" 'lispy-goto)
     (lispy-define-key map "F" 'lispy-follow t)
     (lispy-define-key map "D" 'pop-tag-mark)

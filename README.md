@@ -19,6 +19,7 @@ Calls `eval-last-sexp` (`emacs-lisp-mode`), `cider-eval-last-sexp` (`cider-mode`
 
 ### `lispy-eval-and-insert` (E)
 Removed.
+New command added to the same binding: `lispy-eval-defun`.
 
 ### `lispy-follow` (F)
 Uses `xref-find-definitions`.
