@@ -164,12 +164,18 @@
                          (call-interactively 'eval-region)))
         (:clojure . lispy--clojure-eval-region)))
 
+(setq lispy--describe-handlers-alist
+  '((:emacs-lisp . lispy--emacs-lisp-describe-symbol)
+    (:clojure . lispy--clojure-describe-symbol)))
+
 (defun lispy--lang ()
   "Return the language that is being used, based on the current major and minor mode."
   (cond
-   ((derived-mode-p 'emacs-lisp-mode)
+   ((or (derived-mode-p 'emacs-lisp-mode)
+        (memq major-mode lispy-elisp-modes))
     :emacs-lisp)
-   ((derived-mode-p 'clojure-mode)
+   ((or (derived-mode-p 'clojure-mode)
+        (memq major-mode lispy-clojure-modes))
     :clojure)))
 
 (defun lispy--clojure-eval-last-sexp ()
@@ -194,14 +200,16 @@
   "Forward to (`looking-back' REGEXP)."
   (looking-back regexp (line-beginning-position)))
 
-;;* Locals: extract block
 (defvar lispy-elisp-modes
-  '(emacs-lisp-mode lisp-interaction-mode eltex-mode minibuffer-inactive-mode
-                    suggest-mode)
-  "Modes for which `lispy--eval-elisp' and related functions are appropriate.")
+  '(emacs-lisp-mode
+    lisp-interaction-mode
+    minibuffer-inactive-mode)
+  "Modes for which emacs-lisp related functions are appropriate.")
 
 (defvar lispy-clojure-modes
-  '(clojure-mode clojurescript-mode clojurex-mode clojurec-mode)
+  '(clojure-mode
+    clojurescript-mode
+    clojurec-mode)
   "Modes for which clojure related functions are appropriate.")
 
 (defvar lispy-map-input-overlay nil
@@ -974,7 +982,7 @@ If position isn't special, move to previous or error."
     (widen))
   (lispy-dotimes arg
     (if (zerop (ring-length lispy-pos-ring))
-        (lispy-complain "At beginning of point history")
+        (lispy--complain "At beginning of point history")
       (let* ((data (ring-remove lispy-pos-ring 0))
              (marker (pop data))
              (restriction (pop data))
@@ -2508,7 +2516,7 @@ to the next level and adjusting the parentheses accordingly."
     (if (or failp
             (not (lispy-backward 1)))
         (progn
-          (lispy-complain "No list above to slurp into")
+          (lispy--complain "No list above to slurp into")
           (if regionp
               (lispy--mark bnd)
             (goto-char
@@ -2847,7 +2855,7 @@ The outcome when ahead of sexps is different from when behind."
            (if (null (lispy--out-forward 1))
                (progn
                  (goto-char pt)
-                 (lispy-complain "Not enough depth to raise"))
+                 (lispy--complain "Not enough depth to raise"))
              (backward-char 1)
              (set-mark (point))
              (goto-char pt)))
@@ -2856,7 +2864,7 @@ The outcome when ahead of sexps is different from when behind."
            (if (null (lispy--out-forward 1))
                (progn
                  (goto-char pt)
-                 (lispy-complain "Not enough depth to raise"))
+                 (lispy--complain "Not enough depth to raise"))
              (backward-list)
              (forward-char 1)
              (set-mark (point))
@@ -3737,7 +3745,7 @@ When SILENT is non-nil, don't issue messages."
                             (read (lispy--prin1-to-string
                                    expr-m 0 major-mode)))
                    (error
-                    (lispy-complain "Got an unreadable expr (probably overlay)")
+                    (lispy--complain "Got an unreadable expr (probably overlay)")
                     t))))
            (error "Got a bad transform: %S" expr-m))
           (t
@@ -3919,7 +3927,7 @@ Quote newlines if ARG isn't 1."
               (backward-char 2)
               (unless leftp
                 (exchange-point-and-mark)))
-          (lispy-complain "can't do anything useful here"))
+          (lispy--complain "can't do anything useful here"))
       (deactivate-mark)
       (setq str-1 (lispy--quote-string str-1 (/= arg 1)))
       (setq str-2 (lispy--quote-string str-2 (/= arg 1)))
@@ -3946,7 +3954,7 @@ Quote newlines if ARG isn't 1."
             (insert (read str))
             (when leftp
               (lispy-different)))
-        (lispy-complain "the current region isn't a string"))
+        (lispy--complain "the current region isn't a string"))
     (let* ((bnd (lispy--bounds-string))
            (str (lispy--string-dwim bnd))
            (str-1 (concat (substring str 0 (- (point) (car bnd))) "\""))
@@ -4123,8 +4131,6 @@ If STR is too large, pop it to a buffer instead."
         (message str)
       (error (message (replace-regexp-in-string "%" "%%" str))))))
 
-(declare-function cider-doc-lookup "ext:cider-doc")
-
 (defun lispy-show-top-level ()
   "Show first line of top-level form containing point."
   (interactive)
@@ -4133,22 +4139,37 @@ If STR is too large, pop it to a buffer instead."
     (message "%s"
              (buffer-substring (point-at-bol) (point-at-eol)))))
 
+
+;;; Describe
+;;;
+
 (defun lispy-describe ()
   "Display documentation for `lispy--current-function'."
   (interactive)
-  (cond ((memq major-mode lispy-elisp-modes)
-         (let ((symbol (intern-soft (lispy--current-function))))
-           (cond ((fboundp symbol)
-                  (describe-function symbol))
-                 ((boundp symbol)
-                  (describe-variable symbol)))))
-        ((memq major-mode lispy-clojure-modes)
+  (if-let ((handler (lispy--get-describe-handler)))
+      (funcall handler)
+    (lispy--complain-not-supported)))
+
+(defun lispy--emacs-lisp-describe-symbol ()
+  (message "in describe")
+  (let ((symbol (intern-soft (lispy--current-function))))
+    (cond ((fboundp symbol)
+           (describe-function symbol))
+          ((boundp symbol)
+           (describe-variable symbol)))))
+
+(defun lispy--get-describe-handler ()
+  "Gets the most appropriate function for describing the thing at point, depending on the region and the current major/minor modes."
+  (assoc-default (lispy--lang)
+                 lispy--describe-handlers-alist))
+
+(declare-function cider-doc-lookup "ext:cider-doc")
+(defun lispy--clojure-describe-symbol ()
+  (cond ((bound-and-true-p cider-mode)
          (require 'cider-doc)
          (cider-doc-lookup (lispy--current-function)))
-
-        (t
-         (lispy-complain
-          (format "%s isn't supported currently" major-mode)))))
+        ('t
+         (lispy--complain-not-supported))))
 
 (defvar lispy--pams (make-hash-table))
 
@@ -4396,7 +4417,7 @@ Pass the ARG along."
          (lispy-flatten--lisp))
 
         (t
-         (lispy-complain
+         (lispy--complain
           (format "%S isn't currently supported" major-mode)))))
 
 (defun lispy-let-flatten ()
@@ -4414,7 +4435,7 @@ Pass the ARG along."
                    (lispy--function-str
                     (car expr))
                  (unsupported-mode-error
-                  (lispy-complain
+                  (lispy--complain
                    (format
                     "Can't flatten: symbol `%s' is defined in `%s'"
                     (lispy--prin1-fancy (car expr))
@@ -4467,7 +4488,7 @@ With ARG, use the contents of `lispy-store-region-and-buffer' instead."
                  (condition-case e
                      (lispy--function-str (car expr))
                    (unsupported-mode-error
-                    (lispy-complain
+                    (lispy--complain
                      (format "Can't flatten: symbol `%s' is defined in `%s'"
                              (lispy--prin1-fancy (car expr))
                              (lispy--prin1-fancy (cdr e))))
@@ -4679,7 +4700,7 @@ Second region and buffer are the current ones."
                  (= (region-beginning)
                     (region-end))))
         (progn
-          (lispy-complain "can't go any further")
+          (lispy--complain "can't go any further")
           (if (> mk pt)
               (lispy--mark (cons pt mk))
             (lispy--mark (cons mk pt)))
@@ -4732,7 +4753,7 @@ Second region and buffer are the current ones."
              (skip-chars-forward " "))
            (if bnd-2
                (lispy--mark bnd-2)
-             (lispy-complain "can't descend further"))))))
+             (lispy--complain "can't descend further"))))))
 
 ;;* Locals: edebug
 (declare-function lispy--clojure-debug-quit "le-clojure")
@@ -5157,7 +5178,7 @@ When ARG is given, paste at that place in the current list."
                     "\n"))))
 
         (t
-         (lispy-complain "should position point before (should (string="))))
+         (lispy--complain "should position point before (should (string="))))
 
 (defun lispy-map-done ()
   (interactive)
@@ -6303,16 +6324,16 @@ Defaults to `error'."
           (lispy--replace (cdr lst) from to)))))
 
 ;;* Utilities: error reporting
-(defun lispy-complain (msg)
+(defun lispy--complain (msg)
   "Display MSG if `lispy-verbose' is t."
-  (when (and lispy-verbose (null noninteractive))
-    (message "%s: %s"
-             (propertize
-              (prin1-to-string
-               this-command)
-              'face 'font-lock-keyword-face)
-             msg)
-    nil))
+  (when (and lispy-verbose
+             (null noninteractive))
+    (message "[lispy-lite] %s: %s"
+             (prin1-to-string this-command)
+             msg)))
+
+(defun lispy--complain-not-supported ()
+  (lispy--complain "Command not supported for current mode."))
 
 ;;* Utilities: rest
 (defun lispy--indent-region (beg end)
