@@ -7315,7 +7315,7 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "n" 'lispy-new-copy)
     (lispy-define-key map "b" 'lispy-back)
     (lispy-define-key map "B" 'lispy-ediff-regions)
-    (lispy-define-key map "x" 'lispy-x)
+    (lispy-define-key map "x" 'lispy-splice)
     (lispy-define-key map "Z" 'lispy-edebug-stop)
     (lispy-define-key map "V" 'lispy-visit)
     (lispy-define-key map "-" 'lispy-ace-subword)

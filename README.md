@@ -39,6 +39,9 @@ You may want to call something fancier:
 Does not deal with outlines.
 In `clojure-mode`, only calls `clojure-align` and trims whitespace at beginning of line.
 
+### `lispy-splice` (/)
+Changed to `x`.
+
 ### Removed functions
 - `lispy-goto-projectile` (0g and ogp).
 - `lispy-goto-elisp-commands` (oge)
