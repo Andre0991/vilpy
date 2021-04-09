@@ -42,6 +42,9 @@ In `clojure-mode`, only calls `clojure-align` and trims whitespace at beginning 
 ### `lispy-splice` (/)
 Changed to `x`.
 
+### `lispy-ace-symbol-replace` (H)
+Unmapped. `H` is mapped to `lispy-describe`.
+
 ### Removed functions
 - `lispy-goto-projectile` (0g and ogp).
 - `lispy-goto-elisp-commands` (oge)
@@ -120,3 +123,22 @@ I simply use these customizations for making `lispy` take precedence over `evil`
 (map! :map lispy-mode-map
       :i "C-y" 'lispy-yank)
 ```
+
+## Customization
+### Defining bindings
+Use `lispy-define-key` for overriding a default binding.
+
+For example, let's say you want to override `H`, which is originally bound to `lispy-describe`, to `my-function`, but only if `inf-clojure-minor-mode` is enabled.
+
+You would use this:
+
+``` emacs-lisp
+(defun apt-lispy-describe ()
+  (interactive)
+  (if (bound-and-true-p inf-clojure-minor-mode)
+      (call-interactively 'my-function)
+    (call-interactively 'lispy-describe)))
+
+(lispy-define-key lispy-mode-map "H" 'apt-lispy-describe)
+```
+

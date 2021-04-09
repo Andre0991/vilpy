@@ -7289,7 +7289,7 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "S" 'lispy-stringify)
     ;; marking
     (lispy-define-key map "a" 'lispy-ace-symbol)
-    (lispy-define-key map "H" 'lispy-ace-symbol-replace)
+    (lispy-define-key map "H" 'lispy-describe)
     (lispy-define-key map "m" 'lispy-mark-list)
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
