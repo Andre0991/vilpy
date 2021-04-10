@@ -2801,21 +2801,6 @@ When ARG is non-nil, barf from the left."
                  (delete-char 1))))
         (lispy--reindent 1)))))
 
-(defun lispy-reverse ()
-  "Reverse the current list or region selection."
-  (interactive)
-  (let* ((leftp (lispy--leftp))
-         (bnd (lispy--bounds-dwim))
-         (expr (lispy--read (format "(%s)" (lispy--string-dwim bnd))))
-         (deactivate-mark nil))
-    (delete-region (car bnd) (cdr bnd))
-    (if (eq (length expr) 1)
-        (lispy--insert (nreverse (car expr)))
-      (lispy--insert (nreverse expr))
-      (lispy-splice 1))
-    (when leftp
-      (lispy-different))))
-
 (defun lispy-raise (arg)
   "Use current sexp or region as replacement for its parent.
 Do so ARG times."
@@ -4522,23 +4507,6 @@ With ARG, use the contents of `lispy-store-region-and-buffer' instead."
   (lispy-from-left
    (indent-sexp)))
 
-(defun lispy-to-cond ()
-  "Reverse of `lispy-to-ifs'."
-  (interactive)
-  (lispy-from-left
-   (let* ((bnd (lispy--bounds-dwim))
-          (expr (lispy--read (lispy--string-dwim bnd)))
-          (res (cond ((eq (car expr) 'if)
-                      (cons 'cond (lispy--ifs->cases expr)))
-                     ((memq (car expr) '(case cl-case))
-                      (lispy--case->cond expr))
-                     (t
-                      (error "Can't convert %s to cond" (car expr))))))
-     (delete-region (car bnd) (cdr bnd))
-     (lispy--fast-insert res)))
-  (lispy-from-left
-   (indent-sexp)))
-
 (defun lispy-toggle-thread-last ()
   "Toggle current expression between last-threaded/unthreaded forms.
 Macro used may be customized in `lispy-thread-last-macro', which see."
@@ -4855,7 +4823,6 @@ ARG is 4: `eval-defun' on the function from this sexp."
   "x"
   ;; ("a" nil)
   ("b" lispy-bind-variable "bind variable")
-  ("c" lispy-to-cond "to cond")
   ("C" lispy-cleanup "cleanup")
   ("D" lispy-extract-defun "extract defun")
   ("e" lispy-edebug "edebug")
@@ -6240,69 +6207,6 @@ Defaults to `error'."
 (defun lispy--whitespace-trim (x)
   "Trim whitespace from start of X."
   (cl-subseq x (cl-position-if-not #'lispy--whitespacep x)))
-
-(defun lispy--if->case (cnd then)
-  "Return a case statement corresponding to if with CND and THEN."
-  (cond ((null then)
-         (reverse (lispy--whitespace-trim (reverse cnd))))
-        ((and (listp then) (eq (car then) 'progn))
-         (append cnd (lispy--whitespace-trim (cdr then))))
-        (t
-         (append cnd (list then)))))
-
-(defun lispy--ifs->cases (ifs)
-  "Return a list of cases corresponding to nested IFS."
-  (let (result ifs1)
-    (if (eq (car ifs) 'if)
-        (setq ifs1 (cdr ifs))
-      (error "Unexpected"))
-    (while ifs1
-      (let* ((p1 (cl-position-if-not #'lispy--whitespacep ifs1))
-             (whitespace1 (cl-subseq ifs1 0 p1))
-             (ifs2 (cl-subseq ifs1 (1+ p1)))
-             (p2 (cl-position-if-not #'lispy--whitespacep ifs2))
-             (cnd (cl-subseq ifs1 p1 (+ p1 (1+ p2))))
-             (then (nth p2 ifs2))
-             (ifs3 (cl-subseq ifs2 (1+ p2)))
-             (p3 (cl-position-if-not #'lispy--whitespacep ifs3))
-             (whitespace2 (cl-subseq ifs3 0 p3))
-             (ifs4 (and ifs3 (cl-subseq ifs3 p3))))
-        (when whitespace1
-          (setq result (append result whitespace1)))
-        (setq result (append result (list (lispy--if->case cnd then))))
-        (setq result (append result whitespace2))
-        (if (and (eq (length ifs4) 1)
-                 (listp (car ifs4))
-                 (eq (caar ifs4) 'if))
-            (setq ifs1 (cdar ifs4))
-          (when ifs4
-            (setq result (append result
-                                 `((t (ly-raw newline) ,@ifs4)))))
-          (setq ifs1 nil))))
-    result))
-
-(defun lispy--raw-quote-maybe (x)
-  "Quote X if it's a symbol."
-  (cond ((null x)
-         nil)
-        ((symbolp x)
-         `(ly-raw quote ,x))
-        (t
-         x)))
-
-(defun lispy--case->cond (expr)
-  "Convert EXPR, a `case' expression, to a `cond'."
-  (let ((sym-name (cadr expr)))
-    (cons 'cond
-          (mapcar (lambda (x)
-                    (if (lispy--whitespacep x)
-                        x
-                      (if (eq (car x) t)
-                          x
-                        (cons (list 'eq sym-name
-                                    (lispy--raw-quote-maybe (car x)))
-                              (cdr x)))))
-                  (cddr expr)))))
 
 (defun lispy--replace (lst from to)
   "Recursively replace elements in LST from FROM to TO."

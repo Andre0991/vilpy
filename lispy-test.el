@@ -1812,15 +1812,6 @@ Insert KEY if there's no command."
                                                                       (lispy-to-ifs))
                                                           "|(if (looking-at \" *;\")\n    nil\n  (if (and (looking-at \"\\n\")\n           (looking-back \"^ *\"))\n      (delete-blank-lines)\n    (if (looking-at \"\\\\([\\n ]+\\\\)[^\\n ;]\")\n        (delete-region (match-beginning 1)\n                       (match-end 1)))))"))))
 
-(ert-deftest lispy-to-cond ()
-  (should (or (version<= emacs-version "24.3.1")
-              (string= (lispy-with "|(if (looking-at \" *;\")\n    nil\n  (if (and (looking-at \"\\n\")\n           (looking-back \"^ *\"))\n      (delete-blank-lines)\n    (if (looking-at \"\\\\([\\n ]+\\\\)[^\\n ;]\")\n        (delete-region (match-beginning 1)\n                       (match-end 1)))))"
-                                   (lispy-to-cond))
-                       "|(cond ((looking-at \" *;\"))\n      ((and (looking-at \"\\n\")\n            (looking-back \"^ *\"))\n       (delete-blank-lines))\n      ((looking-at \"\\\\([\\n ]+\\\\)[^\\n ;]\")\n       (delete-region (match-beginning 1)\n                      (match-end 1))))")))
-  (should (string= (lispy-with "|(cl-case question\n  (name\n   \"Sir Launcelot\")\n  ( quest\n   \"To seek the Holy Grail\")\n  (   favorite-color\n   \"Blue\")\n  (t\n   (error \"I don't know that!\")))"
-                               (execute-kbd-macro "xc"))
-                   "|(cond\n  ((eq question 'name)\n   \"Sir Launcelot\")\n  ((eq question 'quest)\n   \"To seek the Holy Grail\")\n  ((eq question 'favorite-color)\n   \"Blue\")\n  (t\n   (error \"I don't know that!\")))")))
-
 (ert-deftest lispy-up-slurp ()
   (should (string= (lispy-with "(progn\n  (foo))\n|(bar)" "ok")
                    "(progn\n  (foo)\n  |(bar))"))
@@ -2717,23 +2708,6 @@ Insert KEY if there's no command."
                    "({a [b c]})"))
   (should (string= (lispy--balance "a)]}({[b")
                    "{[(a)]}({[b]})")))
-
-(ert-deftest lispy-reverse ()
-  (should (string= (lispy-with "|(read-string slurp clojure.java.io/resource path)"
-                               (execute-kbd-macro "xR"))
-                   "|(path clojure.java.io/resource slurp read-string)"))
-  (should (string= (lispy-with "(read-string slurp clojure.java.io/resource path)|"
-                               (execute-kbd-macro "xR"))
-                   "(path clojure.java.io/resource slurp read-string)|"))
-  (should (string= (lispy-with "(read-string ~slurp clojure.java.io/resource path|)"
-                               (execute-kbd-macro "xR"))
-                   "(read-string ~path clojure.java.io/resource slurp|)"))
-  (should (string= (lispy-with "(read-string |slurp clojure.java.io/resource path~)"
-                               (execute-kbd-macro "xR"))
-                   "(read-string |path clojure.java.io/resource slurp~)"))
-  (should (string= (lispy-with "(defn read-resource\n  \"Read a resource into a string.\"\n  [path]\n  |(read-string\n   (slurp\n    (clojure.java.io/resource path))))"
-                               (execute-kbd-macro "f//xR2 ->[i"))
-                   "(defn read-resource\n  \"Read a resource into a string.\"\n  [path]\n  |(-> path clojure.java.io/resource\n      slurp\n      read-string))")))
 
 (ert-deftest lispy-repeat ()
   (should (string= (lispy-with "(message \"a witch\")|"
