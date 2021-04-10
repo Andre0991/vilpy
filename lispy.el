@@ -7150,7 +7150,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
 (defvar lispy-mode-map-special
   (let ((map (make-sparse-keymap)))
     ;; navigation
-    (lispy-define-key map "l" 'lispy-right)
     (lispy-define-key map "h" 'lispy-left)
     (lispy-define-key map "f" 'lispy-flow)
     (lispy-define-key map "j" 'lispy-down)

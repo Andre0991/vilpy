@@ -125,6 +125,10 @@ I simply use these customizations for making `lispy` take precedence over `evil`
 ```
 
 ## Customization
+This section presents some common ways that `lispy-lite` can be configured.
+
+There is also the [wiki](#Wiki), with additional configuration examples.
+
 ### Defining bindings
 Use `lispy-define-key` for overriding a default binding.
 
@@ -142,3 +146,19 @@ You would use this:
 (lispy-define-key lispy-mode-map "H" 'apt-lispy-describe)
 ```
 
+## Wiki
+TODO: Move to GitHub Wiki. Keeping it here for the time being because it's more convient to edit while the keybindings are still changing.
+
+`lispy-lite` is documented in the README.
+
+The purpose of the wiki is to list configurations and tips that do not belong to the main documentation.
+
+## `paredit-forward-up`
+The equivalent `lispy-lite` command for `paredit-forward-up` is `lispy-right`.
+It is not bound to any key by in the special mode map because it's equivalent to `ho` (`lispy-left` and`lispy-different`).
+
+That said, you can bind to it some key of your preference:
+
+``` emacs-lisp
+(lispy-define-key lispy-mode-map "m" 'lispy-right)
+```
