@@ -4322,14 +4322,6 @@ Use STYLE function to update the overlays."
        (at-full #'avy--overlay-at-full)
        (post #'avy--overlay-post)))))
 
-(defun lispy-ace-symbol-replace (arg)
-  "Jump to a symbol within the current sexp and delete it.
-Sexp is obtained by exiting the list ARG times."
-  (interactive "p")
-  (lispy-ace-symbol arg)
-  (when (region-active-p)
-    (lispy-delete 1)))
-
 (declare-function ediff-regions-internal "ediff")
 
 (defun lispy-tab ()

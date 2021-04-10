@@ -2208,14 +2208,6 @@ Insert KEY if there's no command."
                                (execute-kbd-macro (kbd "- ESC")))
                    "|(a b c)")))
 
-(ert-deftest lispy-ace-symbol-replace ()
-  (should (string= (lispy-with "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"
-                               (execute-kbd-macro (kbd "Hd")))
-                   "(progn (setq type |)\n       (setq plumage-type 'lovely))"))
-  (should (string= (lispy-with "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"
-                               (execute-kbd-macro (kbd "Hg")))
-                   "(progn (setq type 'norwegian-blue)\n       (setq plumage-type |))")))
-
 ;;* Parinfer compatibility tests
 (ert-deftest lispy-parens-auto-wrap ()
   (lispy-set-key-theme '(parinfer))
