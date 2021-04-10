@@ -712,14 +712,6 @@ Return nil on failure, t otherwise."
              (ignore-errors
                (up-list -1))))))
 
-(defun lispy-left-maybe (arg)
-  "Call `lispy-left', unless we're in a REPL."
-  (interactive "p")
-  (let ((cmd (lookup-key (current-local-map) (this-command-keys))))
-    (if cmd
-        (call-interactively cmd)
-      (lispy-left arg))))
-
 (defun lispy-out-forward-newline (arg)
   "Call `lispy--out-forward', then ARG times `newline-and-indent'."
   (interactive "p")
@@ -7553,7 +7545,6 @@ When ARG is non-nil, unquote the current string."
     ;; navigation
     (define-key map (kbd "C-a") 'lispy-move-beginning-of-line)
     (define-key map (kbd "C-e") 'lispy-move-end-of-line)
-    (define-key map (kbd "M-o") 'lispy-left-maybe)
     ;; killing
     (define-key map (kbd "C-k") 'lispy-kill)
     (define-key map (kbd "M-d") 'lispy-kill-word)
