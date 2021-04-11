@@ -6943,6 +6943,12 @@ If `lispy-safe-paste' is non-nil, any unmatched delimiters will be added to it."
       (lispy--balance (current-kill 0))
     (current-kill 0)))
 
+(defun lispy-insert-at-end-of-sexp ()
+  (interactive)
+  (when (lispy-left-p)
+    (progn (lispy-other)
+           (backward-char))))
+
 ;;* Key definitions
 (defvar ac-trigger-commands '(self-insert-command))
 
@@ -7026,6 +7032,7 @@ k: Slurp up
     (lispy-define-key map "l" 'lispy-flow)
     (lispy-define-key map "j" 'lispy-down)
     (lispy-define-key map "k" 'lispy-up)
+    (lispy-define-key map "A" 'lispy-insert-at-end-of-sexp)
     ;; (lispy-define-key map "m" 'lispy-move-and-slurp-actions)
     (lispy-define-key map "P" 'lispy-paste)
     (lispy-define-key map "o" 'lispy-occur)
