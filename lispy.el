@@ -7168,7 +7168,7 @@ k: Slurp up
     (lispy-define-key map "X" 'lispy-convolute-left)
     (lispy-define-key map "w" 'lispy-move-up)
     (lispy-define-key map "s" 'lispy-move-down)
-    (lispy-define-key map "O" 'lispy-oneline)
+    (lispy-define-key map "J" 'lispy-oneline)
     (lispy-define-key map "M" 'lispy-alt-multiline)
     (lispy-define-key map "S" 'lispy-stringify)
     ;; marking
