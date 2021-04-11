@@ -138,24 +138,6 @@ Insert KEY if there's no command."
       (insert key))))
 
 ;;* Tests
-(ert-deftest lispy-toggle-threaded-last ()
-  (message "lispy-toggle-threaded-last")
-  (should (string= (lispy-with "|(thread-last (a) (b) (c))"
-                               (call-interactively #'lispy-toggle-thread-last))
-                   "|(c (b (a)))"))
-  (should (string= (lispy-with "|(thread-last (a 1) (b 2) (c 3))"
-                               (call-interactively #'lispy-toggle-thread-last))
-                   "|(c 3 (b 2 (a 1)))"))
-  (should (string= (lispy-with "|(c 3 (b 2 (a 1)))"
-                               (call-interactively #'lispy-toggle-thread-last))
-                   "|(thread-last (a 1) (b 2) (c 3))"))
-  (should (string= (lispy-with "|(equal 1443070800.0\n       (ts-unix\n        (ts-parse-org-element\n         (org-element-context))))"
-                               (lispy-toggle-thread-last))
-                   "|(thread-last (org-element-context)\n  (ts-parse-org-element)\n  (ts-unix)\n  (equal 1443070800.0))"))
-  (should (string= (lispy-with "|(thread-last (org-element-context)\n  (ts-parse-org-element)\n  (ts-unix)\n  (equal 1443070800.0))"
-                               (lispy-toggle-thread-last))
-                   "|(equal 1443070800.0\n       (ts-unix\n        (ts-parse-org-element\n         (org-element-context))))")))
-
 (ert-deftest lispy-forward ()
   (message "lispy-forward")
   (should (string= (lispy-with "(|(a) (b) (c))" (lispy-forward 1))
@@ -1811,15 +1793,6 @@ Insert KEY if there's no command."
   (should (string= (lispy-with clojure "(list #_[1 2 3]|\n      [3 4 5])" "_")
                    "(list [1 2 3]|\n      [3 4 5])")))
 
-(ert-deftest lispy-to-lambda ()
-  (message "lispy-to-lambda")
-  (should (string= (lispy-with "|(defun foo (x y)\n  (bar))" (lispy-to-lambda))
-                   "|(lambda (x y)\n  (bar))"))
-  (should (string= (lispy-with "(defun foo (x y)\n  |(bar))" (lispy-to-lambda))
-                   "|(lambda (x y)\n  (bar))"))
-  (should (string= (lispy-with "(defun foo (x y)\n  (bar))|" (lispy-to-lambda))
-                   "|(lambda (x y)\n  (bar))")))
-
 (ert-deftest lispy-parens ()
   (message "lispy-parens")
   (should (string= (lispy-with "'|(foo bar)" "1(")
@@ -1886,12 +1859,6 @@ Insert KEY if there's no command."
                    "`[|]"))
   (should (string= (lispy-with clojure "#my.klass_or_type_or_record|" "}")
                    "#my.klass_or_type_or_record[|]")))
-
-(ert-deftest lispy-to-ifs ()
-  (message "lispy-to-ifs")
-  (should (or (version<= emacs-version "24.3.1") (string= (lispy-with "|(cond ((looking-at \" *;\"))\n      ((and (looking-at \"\\n\")\n            (looking-back \"^ *\"))\n       (delete-blank-lines))\n      ((looking-at \"\\\\([\\n ]+\\\\)[^\\n ;]\")\n       (delete-region (match-beginning 1)\n                      (match-end 1))))"
-                                                                      (lispy-to-ifs))
-                                                          "|(if (looking-at \" *;\")\n    nil\n  (if (and (looking-at \"\\n\")\n           (looking-back \"^ *\"))\n      (delete-blank-lines)\n    (if (looking-at \"\\\\([\\n ]+\\\\)[^\\n ;]\")\n        (delete-region (match-beginning 1)\n                       (match-end 1)))))"))))
 
 (ert-deftest lispy-up-slurp ()
   (message "lispy-up-slurp")
@@ -2006,21 +1973,6 @@ Insert KEY if there's no command."
   (message "lispy-ace-subword")
   (should (string= (lispy-with "|foo-bar-baz~" (lispy-ace-subword 1))
                    "~foo|-bar-baz")))
-
-(ert-deftest lispy-flatten ()
-  (message "lispy-flatten")
-  (should (string= (lispy-with
-                    "(defun square (x &optional y &rest z)\n  (if y\n      (cons 200 z)\n    (* x x)))|\n(square 10 1 2 3)"
-                    "ej" (lispy-flatten nil))
-                   "(defun square (x &optional y &rest z)\n  (if y\n      (cons 200 z)\n    (* x x)))\n(if 1\n    (cons 200 (list 2 3))\n  (* 10 10))|"))
-  (should (string= (lispy-with
-                    "(defun square (x &optional y &rest z)\n  (if y\n      (cons 200 z)\n    (* x x)))|\n(square 10 1)"
-                    "ej" (lispy-flatten nil))
-                   "(defun square (x &optional y &rest z)\n  (if y\n      (cons 200 z)\n    (* x x)))\n(if 1\n    (cons 200 (list))\n  (* 10 10))|"))
-  (should (string= (lispy-with
-                    "(defun square (x &optional y &rest z)\n  (if y\n      (cons 200 z)\n    (* x x)))|\n(square 10)"
-                    "ej" (lispy-flatten nil))
-                   "(defun square (x &optional y &rest z)\n  (if y\n      (cons 200 z)\n    (* x x)))\n(if nil\n    (cons 200 (list))\n  (* 10 10))|")))
 
 (ert-deftest lispy-mark-list ()
   (message "lispy-mark-list")
