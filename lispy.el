@@ -6165,11 +6165,13 @@ k: Slurp up
   (cl-case (read-char-from-minibuffer "Actions:\n
 g: Go to beginning of buffer
 d: Go to definition
+SPC: Go to file in project
 [: Go to previous error
 ]: Go to next error
 \n")
     (?g (beginning-of-buffer))
     (?d (call-interactively 'lispy-follow))
+    (?\s (call-interactively 'project-find-file))
     (?\[ (call-interactively 'flymake-goto-prev-error))
     (?\] (call-interactively 'flymake-goto-next-error))
     (t (lispy--complain-unrecognized-key))))
