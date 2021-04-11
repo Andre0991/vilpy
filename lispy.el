@@ -4561,12 +4561,15 @@ Macro used may be customized in `lispy-thread-last-macro', which see."
 
 (eval-after-load 'multiple-cursors
   '(defadvice mc/execute-command-for-all-fake-cursors
-    (around lispy-other-mode-mc (cmd) activate)
-    (unless (and (eq cmd 'special-lispy-other-mode)
-                 (or (lispy-left-p)
-                     (lispy-right-p)
-                     (region-active-p)))
-      ad-do-it)))
+       (around lispy-other-mode-mc (cmd) activate)
+     ;; TODO: (Andre0991) lispy-other-mode was removed in favor of simply reading a char
+     ;; is the first (and) condition still relevant?
+     ;; Related issue: https://github.com/abo-abo/lispy/issues/112
+     (unless (and ;; (eq cmd 'special-lispy-other-mode)
+              (or (lispy-left-p)
+                  (lispy-right-p)
+                  (region-active-p)))
+       ad-do-it)))
 
 (defun lispy-cursor-ace ()
   "Add a cursor at a visually selected paren.
@@ -4961,16 +4964,6 @@ If already there, return it to previous position."
   "Forward to `widen'."
   (interactive)
   (widen))
-
-(defun lispy-other-space ()
-  "Alternative to `lispy-space'."
-  (interactive)
-  (cond ((lispy-right-p)
-         (backward-char 1)
-         (insert " "))
-        ((lispy-left-p)
-         (insert " ")
-         (backward-char 1))))
 
 (defun lispy-paste (arg)
   "Forward to `yank'.
@@ -7132,14 +7125,18 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
   ("b" pop-tag-mark)
   ("q" lispy-quit)))
 
-(lispy-defverb
- "other"
- (("h" lispy-move-left)
-  ("j" lispy-down-slurp)
-  ("k" lispy-up-slurp)
-  ("l" lispy-move-right)
-  ("SPC" lispy-other-space)
-  ("g" lispy-goto-mode)))
+(defun lispy-move-and-slurp-actions ()
+  (interactive)
+  (cl-case (read-char-from-minibuffer "Actions:\n
+h: Move left
+l: Move right
+j: Slurp down
+k: Slurp up
+\n")
+    (?h (call-interactively 'lispy-move-left))
+    (?j (call-interactively 'lispy-down-slurp))
+    (?k (call-interactively 'lispy-up-slurp))
+    (?l (call-interactively 'lispy-move-right))))
 
 (defhydra lh-knight ()
   "knight"
@@ -7147,7 +7144,7 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
   ("k" lispy-knight-up)
   ("z" nil))
 
-(defvar lispy-mode-map-special
+(setq lispy-mode-map-special
   (let ((map (make-sparse-keymap)))
     ;; navigation
     (lispy-define-key map "h" 'lispy-left)
@@ -7155,7 +7152,7 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (lispy-define-key map "j" 'lispy-down)
     (lispy-define-key map "k" 'lispy-up)
     (lispy-define-key map "d" 'lispy-different)
-    (lispy-define-key map "o" 'lispy-other-mode)
+    ;; (lispy-define-key map "m" 'lispy-move-and-slurp-actions)
     (lispy-define-key map "P" 'lispy-paste)
     (lispy-define-key map "y" 'lispy-occur)
     (lispy-define-key map "z" 'lh-knight/body)
