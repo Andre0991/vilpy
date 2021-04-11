@@ -6193,8 +6193,8 @@ d: Go to definition
     ;; more transformations
     (lispy-define-key map "C" 'lispy-convolute)
     (lispy-define-key map "X" 'lispy-convolute-left)
-    (lispy-define-key map "w" 'lispy-move-up)
-    (lispy-define-key map "s" 'lispy-move-down)
+    (lispy-define-key map "p" 'lispy-move-up)
+    (lispy-define-key map "n" 'lispy-move-down)
     (lispy-define-key map "J" 'lispy-oneline)
     (lispy-define-key map "M" 'lispy-alt-multiline)
     (lispy-define-key map "S" 'lispy-stringify)
@@ -6227,7 +6227,6 @@ d: Go to definition
     ;; (lispy-define-key map "v" 'lispy-view)
     (lispy-define-key map "y" 'lispy-new-copy)
     (lispy-define-key map "t" 'lispy-teleport)
-    (lispy-define-key map "n" 'lispy-new-copy)
     (lispy-define-key map "b" 'lispy-back)
     ;; (lispy-define-key map "B" 'lispy-ediff-regions)
     (lispy-define-key map "x" 'lispy-splice)
