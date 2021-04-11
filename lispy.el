@@ -7188,7 +7188,7 @@ k: Slurp up
     (lispy-define-key map "d" 'lispy-delete)
     (lispy-define-key map "D" 'lispy-kill)
     ;; (lispy-define-key map "D" 'pop-tag-mark)
-    (lispy-define-key map "A" 'lispy-beginning-of-defun)
+    (lispy-define-key map "B" 'lispy-beginning-of-defun)
     (lispy-define-key map "_" 'lispy-underscore)
     ;; miscellanea
     (define-key map (kbd "SPC") 'lispy-space)
@@ -7206,7 +7206,7 @@ k: Slurp up
     (lispy-define-key map "t" 'lispy-teleport)
     (lispy-define-key map "n" 'lispy-new-copy)
     (lispy-define-key map "b" 'lispy-back)
-    (lispy-define-key map "B" 'lispy-ediff-regions)
+    ;; (lispy-define-key map "B" 'lispy-ediff-regions)
     (lispy-define-key map "x" 'lispy-splice)
     (lispy-define-key map "Z" 'lispy-edebug-stop)
     (lispy-define-key map "V" 'lispy-visit)

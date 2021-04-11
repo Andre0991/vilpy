@@ -2075,11 +2075,11 @@ Insert KEY if there's no command."
   (should (string= (lispy-with "(baz)\n(foo (b|ar))"
                                (lispy-beginning-of-defun))
                    "(baz)\n|(foo (bar))"))
-  (should (string= (lispy-with "(baz)\n(foo |(bar))" "A")
+  (should (string= (lispy-with "(baz)\n(foo |(bar))" (lispy-beginning-of-defun))
                    "(baz)\n|(foo (bar))"))
   ;; (should (string= (lispy-with "(baz)\n(foo |(bar))" "AA")
   ;;                  "(baz)\n(foo |(bar))"))
-  (should (string= (lispy-with "(baz)\n(foo (|bar~))" "A")
+  (should (string= (lispy-with "(baz)\n(foo (|bar~))" (lispy-beginning-of-defun))
                    "(baz)\n|(foo (bar))"))
   ;; (should (string= (lispy-with "(baz)\n(foo (|bar~))" "AA")
   ;;                  "(baz)\n(foo (|bar~))"))
