@@ -8,6 +8,7 @@ The motivation is not loading `le-clojure.clj` (or any other language-specific f
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
 Design goals (mostly not taken into practice yet):
+- Be vimmier: avoid using modifier keys and prefer composability over specialization
 - Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features. Refactoring commands can be leveraged from other packages.
 - Prefer to leverage Emacs built-in functions whenever possible.
 - Implement a uniform API that works well with all supported languages. Alternatively: avoid language-specific commands.
@@ -16,17 +17,22 @@ Design goals (mostly not taken into practice yet):
 
 ## Differences with `lispy`
 
-### `lispy-eval` (e)
+### Keybinding changes
+The new bindings are still changing, so they are not listed here yet. For the time being, please consult `lispy-mode-map-special`.
+
+### Behavior changes
+
+#### `lispy-eval` (e)
 Calls `eval-last-sexp` (`emacs-lisp-mode`), `cider-eval-last-sexp` (`cider-mode`) or `inf-clojure-eval-last-sexp` (`inf-clojure-minor-mode`) rather than directly using the cider middleware functions.
 
-### `lispy-eval-and-insert` (E)
+#### `lispy-eval-and-insert` (E)
 Removed.
 New command added to the same binding: `lispy-eval-defun`.
 
-### `lispy-follow` (F)
+#### `lispy-follow` (F)
 Uses `xref-find-definitions`.
 
-### `lispy-goto` (g)
+#### `lispy-goto` (g)
 Uses `imenu`.
 
 You may want to call something fancier:
@@ -35,15 +41,9 @@ You may want to call something fancier:
 (lispy-define-key lispy-mode-map "g" 'counsel-imenu)
 ```
 
-### `lispy-tab` (i)
+#### `lispy-tab` (i)
 Does not deal with outlines.
 In `clojure-mode`, only calls `clojure-align` and trims whitespace at beginning of line.
-
-### `lispy-splice` (/)
-Changed to `x`.
-
-### `lispy-ace-symbol-replace` (H)
-Unmapped. `H` is mapped to `lispy-describe`.
 
 ### Removed functions
 - `lispy-goto-projectile` (0g and ogp).
@@ -62,6 +62,7 @@ Unmapped. `H` is mapped to `lispy-describe`.
 - `lispy-to-defun` (xd)
 - `lispy-extract-block` (xk)
 - All `lispy-outline-*`functions
+- And many more...
 
 ### Other
 For a complete diff with the original file, compare HEAD with the first commit, which contains the original code.
