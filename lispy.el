@@ -6160,7 +6160,7 @@ k: Slurp up
     (?l (call-interactively 'lispy-move-right))
     (t (lispy--complain-unrecognized-key))))
 
-(defun lispy-g ()
+(defun lispy-go-actions ()
   (interactive)
   (cl-case (read-char-from-minibuffer "Actions:\n
 g: Go to beginning of buffer
@@ -6168,7 +6168,22 @@ d: Go to definition
 \n")
     (?g (beginning-of-buffer))
     (?d (call-interactively 'lispy-follow))
+    (t (lispy--complain-unrecognized-key))))
+
+(defun lispy-window-actions ()
+  (interactive)
+  (cl-case (read-char-from-minibuffer "Actions:\n
+o: Select other window.
+h: Select left window.
+l: Select right window.
+k: Select up window.
+j: Select down window.
+\n")
     (?o (other-window 1))
+    (?h (windmove-left))
+    (?l (windmove-right))
+    (?j (windmove-down))
+    (?k (windmove-up))
     (t (lispy--complain-unrecognized-key))))
 
 (defhydra lh-knight ()
@@ -6211,7 +6226,7 @@ d: Go to definition
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
     (lispy-define-key map "E" 'lispy-eval-defun)
-    (lispy-define-key map "g" 'lispy-g)
+    (lispy-define-key map "g" 'lispy-go-actions)
     (lispy-define-key map "F" 'lispy-ace-symbol-beginning-of-defun)
     (lispy-define-key map "G" 'end-of-buffer)
     (lispy-define-key map "d" 'lispy-delete)
@@ -6221,6 +6236,7 @@ d: Go to definition
     (lispy-define-key map "_" 'lispy-underscore)
     ;; miscellanea
     (define-key map (kbd "SPC") 'lispy-space)
+    (lispy-define-key map "w" 'lispy-window-actions)
     (lispy-define-key map "i" 'lispy-tab)
     (lispy-define-key map "N" 'lispy-narrow)
     (lispy-define-key map "W" 'lispy-widen)
