@@ -7205,6 +7205,7 @@ k: Slurp up
     (lispy-define-key map "-" 'lispy-ace-subword)
     (lispy-define-key map "." 'lispy-repeat)
     (lispy-define-key map "~" 'lispy-tilde)
+    (lispy-define-key map "a" 'forward-char)
     ;; digit argument
     (mapc (lambda (x) (lispy-define-key map (format "%d" x) 'digit-argument))
           (number-sequence 0 9))
