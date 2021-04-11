@@ -6168,12 +6168,16 @@ d: Go to definition
 SPC: Go to file in project
 [: Go to previous error
 ]: Go to next error
+n: Narrow
+w: Widen
 \n")
     (?g (beginning-of-buffer))
     (?d (call-interactively 'lispy-follow))
     (?\s (call-interactively 'project-find-file))
     (?\[ (call-interactively 'flymake-goto-prev-error))
     (?\] (call-interactively 'flymake-goto-next-error))
+    (?n (call-interactively 'lispy-narrow))
+    (?w (call-interactively 'lispy-widen))
     (t (lispy--complain-unrecognized-key))))
 
 (defun lispy-window-actions ()
