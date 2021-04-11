@@ -6156,6 +6156,15 @@ k: Slurp up
     (?k (call-interactively 'lispy-up-slurp))
     (?l (call-interactively 'lispy-move-right))))
 
+(defun lispy-g ()
+  (interactive)
+  (cl-case (read-char-from-minibuffer "Actions:\n
+g: Go to beginning of buffer
+d: Go to definition
+\n")
+    (?g (beginning-of-buffer))
+    (?d (call-interactively 'lispy-follow))))
+
 (defhydra lh-knight ()
   "knight"
   ("j" lispy-knight-down)
@@ -6196,7 +6205,7 @@ k: Slurp up
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
     (lispy-define-key map "E" 'lispy-eval-defun)
-    (lispy-define-key map "g" 'lispy-goto)
+    (lispy-define-key map "g" 'lispy-g)
     (lispy-define-key map "F" 'lispy-ace-symbol-beginning-of-defun)
     (lispy-define-key map "G" 'lispy-follow t)
     (lispy-define-key map "d" 'lispy-delete)
