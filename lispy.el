@@ -7155,7 +7155,6 @@ k: Slurp up
     (lispy-define-key map "l" 'lispy-flow)
     (lispy-define-key map "j" 'lispy-down)
     (lispy-define-key map "k" 'lispy-up)
-    (lispy-define-key map "o" 'lispy-other)
     ;; (lispy-define-key map "m" 'lispy-move-and-slurp-actions)
     (lispy-define-key map "P" 'lispy-paste)
     (lispy-define-key map "o" 'lispy-occur)
