@@ -7159,7 +7159,7 @@ k: Slurp up
     ;; Paredit transformations
     (lispy-define-key map ">" 'lispy-slurp)
     (lispy-define-key map "<" 'lispy-barf)
-    (lispy-define-key map "/" 'lispy-splice)
+    (lispy-define-key map "x" 'lispy-splice)
     (lispy-define-key map "r" 'lispy-raise)
     (lispy-define-key map "R" 'lispy-raise-some)
     (lispy-define-key map "+" 'lispy-join)
