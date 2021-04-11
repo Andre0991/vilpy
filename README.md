@@ -95,7 +95,12 @@ You can consult all dependencies in the list of `requires` in `lispy.el`.
 ```
 
 ## Usage
-Refer to the original [lispy documentation](https://github.com/abo-abo/lispy) and [function reference](http://oremacs.com/lispy/).
+You can refer to the original [lispy documentation](https://github.com/abo-abo/lispy) and [function reference](http://oremacs.com/lispy/).
+However, some keybindings have been changed. For the time being, please consult `lispy-mode-map-special`.
+
+## TODO: Special mode
+## TODO: Navigation
+## TODO: Transformation
 
 ### Evil
 `lispy` disputes keybindings with `evil-mode`, so in some cases its commands are overwritten.
