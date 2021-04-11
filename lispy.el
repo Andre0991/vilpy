@@ -7154,7 +7154,7 @@ k: Slurp up
     (lispy-define-key map "o" 'lispy-other)
     ;; (lispy-define-key map "m" 'lispy-move-and-slurp-actions)
     (lispy-define-key map "P" 'lispy-paste)
-    (lispy-define-key map "y" 'lispy-occur)
+    (lispy-define-key map "/" 'lispy-occur)
     (lispy-define-key map "z" 'lh-knight/body)
     ;; Paredit transformations
     (lispy-define-key map ">" 'lispy-slurp)
