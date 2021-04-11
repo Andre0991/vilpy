@@ -4252,6 +4252,10 @@ Sexp is obtained by exiting the list ARG times."
         (forward-char 1))
       (lispy-mark-symbol))))
 
+(defun lispy-ace-symbol-beginning-of-defun ()
+  (interactive)
+  (lispy-ace-symbol 99))
+
 (defun lispy-ace-subword (arg)
   "Mark sub-word within a sexp.
 Sexp is obtained by exiting list ARG times."
@@ -7179,7 +7183,8 @@ k: Slurp up
     (lispy-define-key map "e" 'lispy-eval)
     (lispy-define-key map "E" 'lispy-eval-defun)
     (lispy-define-key map "g" 'lispy-goto)
-    (lispy-define-key map "F" 'lispy-follow t)
+    (lispy-define-key map "F" 'lispy-ace-symbol-beginning-of-defun)
+    (lispy-define-key map "G" 'lispy-follow t)
     (lispy-define-key map "d" 'lispy-delete)
     (lispy-define-key map "D" 'lispy-kill)
     ;; (lispy-define-key map "D" 'pop-tag-mark)
