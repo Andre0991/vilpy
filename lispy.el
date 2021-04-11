@@ -6165,9 +6165,13 @@ k: Slurp up
   (cl-case (read-char-from-minibuffer "Actions:\n
 g: Go to beginning of buffer
 d: Go to definition
+[: Go to previous error
+]: Go to next error
 \n")
     (?g (beginning-of-buffer))
     (?d (call-interactively 'lispy-follow))
+    (?\[ (call-interactively 'flymake-goto-prev-error))
+    (?\] (call-interactively 'flymake-goto-next-error))
     (t (lispy--complain-unrecognized-key))))
 
 (defun lispy-window-actions ()
