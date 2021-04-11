@@ -6244,8 +6244,9 @@ j: Select down window.
     (define-key map (kbd "SPC") 'lispy-space)
     (lispy-define-key map "w" 'lispy-window-actions)
     (lispy-define-key map "i" 'lispy-tab)
-    (lispy-define-key map "N" 'lispy-narrow)
-    (lispy-define-key map "W" 'lispy-widen)
+    (lispy-define-key map "W" 'lispy-knight-up)
+    (lispy-define-key map "S" 'lispy-knight-down)
+    ;; (lispy-define-key map "W" 'lispy-widen)
     (lispy-define-key map "c" 'lispy-clone)
     (lispy-define-key map "u" 'lispy-undo)
     (lispy-define-key map "q" 'lispy-ace-paren
