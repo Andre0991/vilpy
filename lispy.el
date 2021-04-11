@@ -5289,6 +5289,9 @@ Defaults to `error'."
 (defun lispy--complain-not-supported ()
   (lispy--complain "Command not supported for current mode."))
 
+(defun lispy--complain-unrecognized-key ()
+  (lispy--complain "Ignoring unmapped key."))
+
 ;;* Utilities: rest
 (defun lispy--indent-region (beg end)
   "Indent region BEG END without reporting progress."
@@ -6154,7 +6157,8 @@ k: Slurp up
     (?h (call-interactively 'lispy-move-left))
     (?j (call-interactively 'lispy-down-slurp))
     (?k (call-interactively 'lispy-up-slurp))
-    (?l (call-interactively 'lispy-move-right))))
+    (?l (call-interactively 'lispy-move-right))
+    (t (lispy--complain-unrecognized-key))))
 
 (defun lispy-g ()
   (interactive)
@@ -6163,7 +6167,9 @@ g: Go to beginning of buffer
 d: Go to definition
 \n")
     (?g (beginning-of-buffer))
-    (?d (call-interactively 'lispy-follow))))
+    (?d (call-interactively 'lispy-follow))
+    (?o (other-window 1))
+    (t (lispy--complain-unrecognized-key))))
 
 (defhydra lh-knight ()
   "knight"
