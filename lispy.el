@@ -297,27 +297,6 @@ The hint will consist of the possible nouns that apply to the verb."
   "Keys for jumping."
   :type '(repeat :tag "Keys" (character :tag "char")))
 
-(defface lispy-command-name-face
-  '((((class color) (background light))
-     :background "#d8d8f7" :inherit font-lock-function-name-face)
-    (((class color) (background dark))
-     :background "#333333" :inherit font-lock-function-name-face))
-  "Face for Elisp commands."
-  :group 'lispy-faces)
-
-(defface lispy-cursor-face
-  '((((class color) (background light))
-     :background "#000000" :foreground "#ffffff")
-    (((class color) (background dark))
-     :background "#ffffff" :foreground "#000000"))
-  "Face for `lispy-view-test'."
-  :group 'lispy-faces)
-
-(defface lispy-test-face
-  '((t (:inherit lispy-face-hint)))
-  "Face for `lispy-view-test'."
-  :group 'lispy-faces)
-
 (defvar lispy-mode-map (make-sparse-keymap))
 
 (defvar lispy-known-verbs nil
@@ -2238,22 +2217,9 @@ to all the functions, while maintaining the parens in a pretty state."
   (when (lispy-occur-action-goto-end x)
     (goto-char (match-beginning 0))))
 
-(defun lispy-occur-action-mc (_x)
-  "Make a fake cursor for each `lispy-occur' candidate."
-  (let ((cands (nreverse ivy--old-cands))
-        cand)
-    (while (setq cand (pop cands))
-      (goto-char lispy--occur-beg)
-      (forward-line (read cand))
-      (re-search-forward (ivy--regex ivy-text) (line-end-position) t)
-      (when cands
-        (mc/create-fake-cursor-at-point))))
-  (multiple-cursors-mode 1))
-
 (ivy-set-actions
  'lispy-occur
- '(("m" lispy-occur-action-mc "multiple-cursors")
-   ("j" lispy-occur-action-goto-beg "goto start")
+ '(("j" lispy-occur-action-goto-beg "goto start")
    ("k" lispy-occur-action-goto-end "goto end")))
 
 (defvar ivy-last)
@@ -6133,14 +6099,6 @@ If `lispy-safe-paste' is non-nil, any unmatched delimiters will be added to it."
 ;;* Key definitions
 (defvar ac-trigger-commands '(self-insert-command))
 
-(defvar mc/cmds-to-run-for-all nil)
-(defvar mc/cmds-to-run-once nil)
-(mapc (lambda (x) (add-to-list 'mc/cmds-to-run-once x))
-      '(lispy-cursor-down))
-(mapc (lambda (x) (add-to-list 'mc/cmds-to-run-for-all x))
-      '(lispy-parens lispy-brackets lispy-braces lispy-quotes
-        lispy-kill lispy-delete))
-
 (defadvice ac-handle-post-command (around ac-post-command-advice activate)
   "Don't `auto-complete' when region is active."
   (unless (region-active-p)
@@ -6175,8 +6133,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
   (let ((func (defalias (intern (concat "special-" (symbol-name def)))
                 (lispy--insert-or-call def plist))))
     (add-to-list 'ac-trigger-commands func)
-    (unless (memq func mc/cmds-to-run-once)
-      (add-to-list 'mc/cmds-to-run-for-all func))
     (eldoc-add-command func)
     (define-key keymap (kbd key) func)))
 
