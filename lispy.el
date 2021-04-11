@@ -7180,6 +7180,7 @@ k: Slurp up
     (lispy-define-key map "E" 'lispy-eval-defun)
     (lispy-define-key map "g" 'lispy-goto)
     (lispy-define-key map "F" 'lispy-follow t)
+    (lispy-define-key map "d" 'lispy-delete)
     (lispy-define-key map "D" 'pop-tag-mark)
     (lispy-define-key map "A" 'lispy-beginning-of-defun)
     (lispy-define-key map "_" 'lispy-underscore)
