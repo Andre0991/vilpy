@@ -139,7 +139,6 @@
   (require 'ediff-util))
 (require 'mode-local)
 (require 'help-fns)
-(require 'edebug)
 (require 'outline)
 (require 'avy)
 (require 'newcomment)
@@ -329,7 +328,7 @@ The hint will consist of the possible nouns that apply to the verb."
 (defvar lispy-ignore-whitespace nil
   "When set to t, function `lispy-right' will not clean up whitespace.")
 
-(defcustom lispy-compat '(edebug)
+(defcustom lispy-compat '()
   "List of package compatibility options.
 Enabling them adds overhead, so make sure that you are actually
 using those packages."
@@ -337,7 +336,6 @@ using those packages."
           (choice
            (const :tag "god-mode" god-mode)
            (const :tag "magit-blame-mode" magit-blame-mode)
-           (const :tag "edebug" edebug)
            (const :tag "cider" cider)
            (const :tag "macrostep" macrostep))))
 
@@ -1836,9 +1834,7 @@ If jammed between parens, \"(|(\" unjam: \"(| (\". If after an opening delimiter
 and before a space (after wrapping a sexp, for example), do the opposite and
 delete the extra space, \"(| foo)\" to \"(|foo)\"."
   (interactive "p")
-  (cond ((bound-and-true-p edebug-active)
-         (edebug-step-mode))
-        ((region-active-p)
+  (cond ((region-active-p)
          (goto-char (region-end))
          (deactivate-mark)
          (insert " "))
@@ -4714,94 +4710,6 @@ Second region and buffer are the current ones."
                (lispy--mark bnd-2)
              (lispy--complain "can't descend further"))))))
 
-;;* Locals: edebug
-(declare-function lispy--clojure-debug-quit "le-clojure")
-(defun lispy-edebug-stop ()
-  "Stop edebugging, while saving current function arguments."
-  (interactive)
-  (cond ((memq major-mode lispy-elisp-modes)
-         (if (bound-and-true-p edebug-active)
-             (save-excursion
-               (lispy-left 99)
-               (if (looking-at
-                    "(\\(?:cl-\\)?def\\(?:un\\|macro\\)")
-                   (progn
-                     (goto-char (match-end 0))
-                     (search-forward "(")
-                     (backward-char 1)
-                     (forward-sexp 1)
-                     (let ((sexps
-                            (mapcar
-                             (lambda (x!)
-                               (when (consp x!)
-                                 (setq x! (car x!)))
-                               (cons x!
-                                     (let ((expr x!))
-                                       (edebug-eval expr))))
-                             (mapcar (lambda (x)
-                                       (if (consp x)
-                                           (car x)
-                                         x))
-                                     (delq '&allow-other-keys
-                                           (delq '&key
-                                                 (delq '&optional
-                                                       (delq '&rest
-                                                             (lispy--preceding-sexp))))))))
-                           (wnd (current-window-configuration))
-                           (pt (point)))
-                       (run-with-timer
-                        0 nil
-                        `(lambda ()
-                           (mapc (lambda (x!) (set (car x!) (cdr x!))) ',sexps)
-                           (set-window-configuration ,wnd)
-                           (goto-char ,pt)))
-                       (top-level)))))
-           (self-insert-command 1)))
-        ((eq major-mode 'clojure-mode)
-         (lispy--clojure-debug-quit))))
-
-(declare-function cider-debug-defun-at-point "ext:cider-debug")
-(declare-function lispy-python-set-breakpoint "le-python")
-
-(defun lispy-edebug (arg)
-  "Start/stop edebug of current thing depending on ARG.
-ARG is 1: `edebug-defun' on this function.
-ARG is 2: `eval-defun' on this function.
-ARG is 3: `edebug-defun' on the function from this sexp.
-ARG is 4: `eval-defun' on the function from this sexp."
-  (interactive "p")
-  (cond ((= arg 1)
-         (cond ((memq major-mode lispy-elisp-modes)
-                (edebug-defun))
-               ((eq major-mode 'clojure-mode)
-                (cider-debug-defun-at-point))
-               ((eq major-mode 'python-mode)
-                (lispy-python-set-breakpoint))
-               (t
-                (error "Can't debug for %S" major-mode))))
-        ((= arg 2)
-         (eval-defun nil))
-        (t
-         (let* ((expr (lispy--read (lispy--string-dwim)))
-                (fun (car expr)))
-           (if (fboundp fun)
-               (let* ((fnd (find-definition-noselect fun nil))
-                      (buf (car fnd))
-                      (pt (cdr fnd)))
-                 (with-current-buffer buf
-                   (goto-char pt)
-                   (cond ((= arg 3)
-                          (edebug-defun))
-                         ((= arg 4)
-                          (eval-defun nil))
-                         (t
-                          (error "Argument = %s isn't supported" arg)))))
-             (error "%s isn't bound" fun))))))
-
-(declare-function lispy-eval-python-bnd "le-python")
-(declare-function lispy-eval-python-str "le-python")
-(declare-function lispy-set-python-process "le-python")
-
 ;;* Locals: miscellanea
 (declare-function lispy--eval-python "le-python")
 
@@ -4824,7 +4732,6 @@ ARG is 4: `eval-defun' on the function from this sexp."
   ("b" lispy-bind-variable "bind variable")
   ("C" lispy-cleanup "cleanup")
   ("D" lispy-extract-defun "extract defun")
-  ("e" lispy-edebug "edebug")
   ("f" lispy-flatten "flatten")
   ("F" lispy-let-flatten "let-flatten")
   ;; ("g" nil)
@@ -6781,32 +6688,6 @@ Use only the part bounded by BND."
       (setq ediff-temp-indirect-buffer t)
       (list (current-buffer) (point-min) (point-max)))))
 
-(defvar lispy--edebug-command nil
-  "Command that corresponds to currently pressed key.")
-
-(defvar lispy--cider-debug-command nil
-  "Command that corresponds to currently pressed key.")
-
-(defun lispy--edebug-commandp ()
-  "Return true if `this-command-keys' should be forwarded to edebug."
-  (when (and (bound-and-true-p edebug-active)
-             (not (minibufferp))
-             (= 1 (length (this-command-keys))))
-    (let ((char (aref (this-command-keys) 0)))
-      (setq lispy--edebug-command
-            (cdr (or (assq char edebug-mode-map)
-                     (assq char global-edebug-map)))))))
-
-(defvar cider--debug-mode-map)
-
-(defun lispy--cider-debug-commandp ()
-  "Return true if `this-command-keys' should be forwarded to cider-debug."
-  (when (and (bound-and-true-p cider--debug-mode)
-             (= 1 (length (this-command-keys))))
-    (let ((char (aref (this-command-keys) 0)))
-      (setq lispy--cider-debug-command
-            (cdr (assq char cider--debug-mode-map))))))
-
 (defvar macrostep-keymap)
 (defvar lispy--compat-cmd nil
   "Store the looked up compat command.")
@@ -6834,16 +6715,6 @@ PLIST currently accepts:
                       (cdr override))
                      (t
                       (error "Unexpected :override %S" override)))
-
-             ,@(when (memq 'edebug lispy-compat)
-                     '(((lispy--edebug-commandp)
-                        (call-interactively
-                         lispy--edebug-command))))
-
-             ,@(when (memq 'cider lispy-compat)
-                 '(((lispy--cider-debug-commandp)
-                    (call-interactively
-                     lispy--cider-debug-command))))
 
              ,@(when (memq 'god-mode lispy-compat)
                      '(((and (or (bound-and-true-p god-global-mode)
@@ -7207,7 +7078,6 @@ k: Slurp up
     (lispy-define-key map "b" 'lispy-back)
     ;; (lispy-define-key map "B" 'lispy-ediff-regions)
     (lispy-define-key map "x" 'lispy-splice)
-    (lispy-define-key map "Z" 'lispy-edebug-stop)
     (lispy-define-key map "V" 'lispy-visit)
     (lispy-define-key map "-" 'lispy-ace-subword)
     (lispy-define-key map "." 'lispy-repeat)
