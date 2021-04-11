@@ -7197,6 +7197,7 @@ k: Slurp up
                         (View-quit))))
     (lispy-define-key map "Q" 'lispy-ace-char)
     ;; (lispy-define-key map "v" 'lispy-view)
+    (lispy-define-key map "y" 'lispy-new-copy)
     (lispy-define-key map "t" 'lispy-teleport)
     (lispy-define-key map "n" 'lispy-new-copy)
     (lispy-define-key map "b" 'lispy-back)
