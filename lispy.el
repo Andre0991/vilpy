@@ -7173,7 +7173,7 @@ k: Slurp up
     (lispy-define-key map "S" 'lispy-stringify)
     ;; marking
     (lispy-define-key map "f" 'lispy-ace-symbol)
-    (lispy-define-key map "H" 'lispy-describe)
+    (lispy-define-key map "K" 'lispy-describe)
     (lispy-define-key map "m" 'lispy-mark-list)
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
