@@ -6234,7 +6234,6 @@ d: Go to definition
     (lispy-define-key map "y" 'lispy-new-copy)
     (lispy-define-key map "t" 'lispy-teleport)
     (lispy-define-key map "b" 'lispy-back)
-    ;; (lispy-define-key map "B" 'lispy-ediff-regions)
     (lispy-define-key map "x" 'lispy-splice)
     (lispy-define-key map "V" 'lispy-visit)
     (lispy-define-key map "-" 'lispy-ace-subword)
