@@ -2251,13 +2251,13 @@ Insert KEY if there's no command."
   (message "lispy-ace-symbol")
   (let ((avy-keys-alist nil))
     (should (string= (lispy-with "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"
-                                 (execute-kbd-macro (kbd "ab")))
+                                 (execute-kbd-macro (kbd "fb")))
                      "(progn (~setq| type 'norwegian-blue)\n       (setq plumage-type 'lovely))"))
     (should (string= (lispy-with "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"
-                                 (execute-kbd-macro (kbd "ac")))
+                                 (execute-kbd-macro (kbd "fc")))
                      "(progn (setq ~type| 'norwegian-blue)\n       (setq plumage-type 'lovely))"))
     (should (string= (lispy-with "(progn (setq type 'norwegian-blue)\n       |(setq plumage-type 'lovely))"
-                                 (execute-kbd-macro (kbd "aa")))
+                                 (execute-kbd-macro (kbd "fa")))
                      "(progn (setq type 'norwegian-blue)\n       (~setq| plumage-type 'lovely))"))))
 
 (ert-deftest lispy-ace-subword ()
