@@ -83,7 +83,7 @@
 ;; | >   | `lispy-slurp'            | <          | `lispy-barf'      |
 ;; | c   | `lispy-clone'            | C-d or DEL |                   |
 ;; | C   | `lispy-convolute'        | C          | reverses itself   |
-;; | d   | `lispy-different'        | d          | reverses itself   |
+;; | d   | `lispy-other'        | d          | reverses itself   |
 ;; | M-j | `lispy-split'            | +          | `lispy-join'      |
 ;; | O   | `lispy-oneline'          | M          | `lispy-multiline' |
 ;; | S   | `lispy-stringify'        | C-u "      | `lispy-quotes'    |
@@ -508,12 +508,12 @@ Otherwise return the amount of times executed."
   (let ((at-start (cl-gensym "at-start")))
     `(let ((,at-start (lispy--leftp)))
        (unless ,at-start
-         (lispy-different))
+         (lispy-other))
        (unwind-protect
             (lispy-save-excursion
               ,@body)
          (unless (eq ,at-start (lispy--leftp))
-           (lispy-different))))))
+           (lispy-other))))))
 
 (defmacro lispy-flet (binding &rest body)
   "Temporarily override BINDING and execute BODY."
@@ -817,9 +817,9 @@ Return nil if can't move."
                  ((lispy--symbolp (lispy--string-dwim))
                   (lispy-dotimes arg
                     (when (lispy-slurp 1)
-                      (lispy-different)
+                      (lispy-other)
                       (lispy-barf 1)
-                      (lispy-different))))
+                      (lispy-other))))
 
                  ((looking-at "[\n ]+\\(;\\)")
                   (deactivate-mark)
@@ -829,14 +829,14 @@ Return nil if can't move."
                  (t
                   (lispy-dotimes arg
                     (forward-sexp 1)
-                    (lispy-different)
+                    (lispy-other)
                     (if (lispy--in-comment-p)
                         (progn
                           (goto-char (1+ (cdr (lispy--bounds-comment))))
                           (skip-chars-forward "\n"))
                       (forward-sexp 2)
                       (forward-sexp -1))
-                    (lispy-different))))
+                    (lispy-other))))
            (when leftp
              (exchange-point-and-mark))))
 
@@ -847,7 +847,7 @@ Return nil if can't move."
            (if (lispy-forward 1)
                (lispy-backward 1)
              (goto-char pt)
-             (lispy-different))))
+             (lispy-other))))
 
         ((lispy-right-p)
          (let ((pt (point)))
@@ -893,20 +893,20 @@ Return nil if can't move."
                  ((lispy--symbolp (lispy--string-dwim))
                   (lispy-dotimes arg
                     (when (lispy-slurp 1)
-                      (lispy-different)
+                      (lispy-other)
                       (lispy-barf 1)
-                      (lispy-different))))
+                      (lispy-other))))
                  (t
                   (lispy-dotimes arg
                     (backward-sexp 1)
-                    (lispy-different)
+                    (lispy-other)
                     (if (lispy--in-comment-p)
                         (progn
                           (goto-char (1- (car (lispy--bounds-comment))))
                           (skip-chars-backward "\n"))
                       (backward-sexp 2)
                       (backward-sexp -1))
-                    (lispy-different))))
+                    (lispy-other))))
            (unless leftp
              (exchange-point-and-mark))))
 
@@ -921,7 +921,7 @@ Return nil if can't move."
            (if (lispy-backward 1)
                (lispy-forward 1)
              (goto-char pt)
-             (lispy-different))))
+             (lispy-other))))
 
         ((or (looking-at lispy-outline)
              (and (bolp) (looking-at (lispy-comment-char))))
@@ -1001,7 +1001,7 @@ If position isn't special, move to previous or error."
   "Make a knight-like move: down and right."
   (interactive)
   (cond ((lispy-right-p)
-         (lispy-different))
+         (lispy-other))
         ((lispy-left-p))
         (t (lispy-backward 1)))
   (let ((pt (point))
@@ -1022,7 +1022,7 @@ If position isn't special, move to previous or error."
   "Make a knight-like move: up and right."
   (interactive)
   (cond ((lispy-right-p)
-         (lispy-different))
+         (lispy-other))
         ((lispy-left-p))
         (t (lispy-backward 1)))
   (let ((pt (point))
@@ -1039,7 +1039,7 @@ If position isn't special, move to previous or error."
                (goto-char (1- (match-end 0)))
                (throw 'done t)))))))
 
-(defun lispy-different ()
+(defun lispy-other ()
   "Switch to the different side of current sexp."
   (interactive)
   (cond ((and (region-active-p)
@@ -1505,7 +1505,7 @@ When ARG is more than 1, mark ARGth element."
         ((lispy-right-p)
          (lispy--mark
           (lispy--bounds-dwim))
-         (lispy-different))
+         (lispy-other))
         ((and (lispy-bolp) (looking-at (lispy-comment-char)))
          (lispy--mark (lispy--bounds-comment))))
   (setq this-command 'lispy-mark-list))
@@ -1846,13 +1846,13 @@ delete the extra space, \"(| foo)\" to \"(|foo)\"."
          (call-interactively 'self-insert-command))
         ((eq arg 4)
          (when (lispy--leftp)
-           (lispy-different))
+           (lispy-other))
          (backward-char)
          (unless (lispy-bolp)
            (newline-and-indent)))
         ((or (eq arg 2)
              (when (eq arg 3)
-               (lispy-different)
+               (lispy-other)
                t))
 
          (if (lispy-left-p)
@@ -1929,12 +1929,12 @@ For Clojure modes, toggle #_ sexp comment."
   (if (memq major-mode lispy-clojure-modes)
       (let ((leftp (lispy--leftp)))
         (unless leftp
-          (lispy-different))
+          (lispy-other))
         (if (lispy-after-string-p "#_")
             (delete-char -2)
           (insert "#_"))
         (unless leftp
-          (lispy-different)))
+          (lispy-other)))
     (self-insert-command arg)))
 
 (defun lispy-backtick ()
@@ -2128,7 +2128,7 @@ to all the functions, while maintaining the parens in a pretty state."
                        (bolp))
                (lispy-right 1)))
             ((lispy-left-p)
-             (lispy-different))
+             (lispy-other))
             ((lispy-looking-back "^ +")
              (if (re-search-forward lispy-right (line-end-position) t)
                  (backward-char 1)
@@ -2487,7 +2487,7 @@ to the next level and adjusting the parentheses accordingly."
          (list-start (when (eq empty-line-p 'right)
                        (save-excursion
                          (re-search-forward lispy-right)
-                         (lispy-different)
+                         (lispy-other)
                          (point))))
          (failp (when list-start
                   (= list-start
@@ -2539,7 +2539,7 @@ to the next level and adjusting the parentheses accordingly."
       (if endp
           (goto-char (cdr bnd))
         (if (region-active-p)
-            (lispy-different)
+            (lispy-other)
           (goto-char (car bnd)))))))
 
 (defun lispy-indent-adjust-parens (arg)
@@ -2564,7 +2564,7 @@ If indenting does not adjust indentation or move the point, call
         (lispy-up-slurp))
       (when (and (not bnd)
                  (region-active-p))
-        (ignore-errors (lispy-different))
+        (ignore-errors (lispy-other))
         (deactivate-mark)))))
 
 (defun lispy--backward-sexp-or-comment ()
@@ -2718,7 +2718,7 @@ Otherwise, move to the next sexp."
                    (point)))
             (beg (save-excursion
                    (lispy-up 1)
-                   (lispy-different)
+                   (lispy-other)
                    (1- (point)))))
         (save-excursion
           (forward-list)
@@ -2750,7 +2750,7 @@ Otherwise, move to the next sexp."
                (1+ (point))))
         (beg (save-excursion
                (lispy-up 1)
-               (lispy-different)
+               (lispy-other)
                (1- (point)))))
     (save-excursion
       (forward-list)
@@ -2805,7 +2805,7 @@ Do so ARG times."
       ;; re-indent first
       (lispy-save-excursion (lispy--out-forward 1))
       (unless leftp
-        (lispy-different))
+        (lispy-other))
       (setq bnd1 (lispy--bounds-dwim))
       (deactivate-mark)
       (lispy--out-forward 1)
@@ -2819,7 +2819,7 @@ Do so ARG times."
         (lispy-from-left
          (indent-sexp)))
       (unless (eq leftp (lispy--leftp))
-        (lispy-different)))))
+        (lispy-other)))))
 
 (defun lispy-raise-some ()
   "Use current sexps as replacement for their parent.
@@ -2876,14 +2876,14 @@ When ARG is nil, convolute only the part above sexp."
            (lispy--reindent arg))
           (unless only-upper
             (lispy-from-left
-             (lispy-different)
+             (lispy-other)
              (setq beg (point))
              (setq end (lispy--out-forward arg))
              (lispy--out-forward 1)
              (lispy--swap-regions (cons beg end)
                                   (cons (point) (point)))
              (ignore-errors
-               (lispy-different))
+               (lispy-other))
              (lispy--reindent (1+ arg)))))
       (error "Not enough depth to convolute"))))
 
@@ -3093,15 +3093,15 @@ Precondition: the region is active and the point is at `region-beginning'."
   "Move current expression up ARG times.  Don't exit parent list."
   (let ((at-start (lispy--leftp)))
     (unless (or at-start (looking-at lispy-outline))
-      (lispy-different))
+      (lispy-other))
     (cond ((region-active-p)
            (lispy--move-up-region arg))
           (t
            (lispy--mark (lispy--bounds-dwim))
            (lispy-move-up arg)
            (deactivate-mark)
-           (lispy-different)))
-    (unless at-start (lispy-different))))
+           (lispy-other)))
+    (unless at-start (lispy-other))))
 
 (defun lispy--move-down-region (arg)
   "Swap the marked region ARG positions down.
@@ -3155,13 +3155,13 @@ Precondition: the region is active and the point is at `region-beginning'."
         (cdr
          (lispy--swap-regions
           bnd1 (lispy--bounds-dwim))))
-       (lispy-different)))))
+       (lispy-other)))))
 
 (defun lispy--move-down-special (arg)
   "Move current expression down ARG times.  Don't exit parent list."
   (let ((at-start (lispy--leftp)))
     (unless (or at-start (looking-at lispy-outline))
-      (lispy-different))
+      (lispy-other))
     (cond ((region-active-p)
            (lispy--move-down-region arg))
           ((looking-at lispy-outline)
@@ -3179,8 +3179,8 @@ Precondition: the region is active and the point is at `region-beginning'."
            (lispy--mark (lispy--bounds-dwim))
            (lispy-move-down arg)
            (deactivate-mark)
-           (lispy-different)))
-    (unless at-start (lispy-different))))
+           (lispy-other)))
+    (unless at-start (lispy-other))))
 
 (defun lispy-move-left (arg)
   "Move region left ARG times."
@@ -3216,7 +3216,7 @@ Precondition: the region is active and the point is at `region-beginning'."
               (when leftp
                 (exchange-point-and-mark)))
           (when leftp
-            (lispy-different)))))))
+            (lispy-other)))))))
 
 (defun lispy-move-right (arg)
   "Move region right ARG times."
@@ -3240,7 +3240,7 @@ Precondition: the region is active and the point is at `region-beginning'."
                               (match-end 1))))
         (lispy--out-backward 1)
         (deactivate-mark)
-        (lispy-different)
+        (lispy-other)
         (newline-and-indent)
         (setq pt (point))
         (insert str)
@@ -3252,7 +3252,7 @@ Precondition: the region is active and the point is at `region-beginning'."
               (when leftp
                 (exchange-point-and-mark)))
           (when leftp
-            (lispy-different)))))))
+            (lispy-other)))))))
 
 (defun lispy-dedent-adjust-parens (arg)
   "Move region or all the following sexps in the current list right.
@@ -3280,7 +3280,7 @@ the parentheses accordingly."
            (set-mark (point))
            (lispy-slurp 0)
            (lispy-move-right arg)
-           (lispy-different)
+           (lispy-other)
            (deactivate-mark)))))
 
 (defun lispy-clone (arg)
@@ -3930,7 +3930,7 @@ Quote newlines if ARG isn't 1."
             (set-mark (point))
             (insert (read str))
             (when leftp
-              (lispy-different)))
+              (lispy-other)))
         (lispy--complain "the current region isn't a string"))
     (let* ((bnd (lispy--bounds-string))
            (str (lispy--string-dwim bnd))
@@ -4525,11 +4525,11 @@ Macro used may be customized in `lispy-thread-last-macro', which see."
   "Transform current last-threaded expression to equivalent unthreaded expression."
   (lispy-from-left
    (lispy-flow 1)
-   (lispy-different)
+   (lispy-other)
    (while (lispy-forward 1)
      (lispy-move-up 1)
      (lispy-slurp 1))
-   (lispy-different)
+   (lispy-other)
    (lispy-flow 1)
    (lispy-raise 1)))
 
@@ -4668,7 +4668,7 @@ Second region and buffer are the current ones."
   "Go left ARG times and mark."
   (interactive "p")
   (if (lispy-mark-right arg)
-      (lispy-different)
+      (lispy-other)
     (when (= (point) (region-end))
       (exchange-point-and-mark))))
 
@@ -5030,11 +5030,11 @@ When ARG is given, paste at that place in the current list."
             (goto-char pt)
             (cond ((lispy-right-p)
                    (setq p2 (1- (point)))
-                   (lispy-different)
+                   (lispy-other)
                    (setq p1 (point)))
                   ((lispy-left-p)
                    (setq p1 (point))
-                   (lispy-different)
+                   (lispy-other)
                    (setq p2 (1- (point)))))
             (when p2
               (save-excursion
@@ -7151,7 +7151,7 @@ k: Slurp up
     (lispy-define-key map "l" 'lispy-flow)
     (lispy-define-key map "j" 'lispy-down)
     (lispy-define-key map "k" 'lispy-up)
-    (lispy-define-key map "d" 'lispy-different)
+    (lispy-define-key map "o" 'lispy-other)
     ;; (lispy-define-key map "m" 'lispy-move-and-slurp-actions)
     (lispy-define-key map "P" 'lispy-paste)
     (lispy-define-key map "y" 'lispy-occur)
@@ -7280,7 +7280,7 @@ quote of a string, move backward."
              (fixup-whitespace))
            (backward-char)
            (save-excursion
-             (lispy-different)
+             (lispy-other)
              (delete-char -1))
            (lispy--delete-leading-garbage)
            (delete-char 1))
@@ -7313,7 +7313,7 @@ quote of a string, move forward."
            (lispy-delete arg))
           ((looking-at lispy-left)
            (save-excursion
-             (lispy-different)
+             (lispy-other)
              (delete-char -1))
            (lispy--delete-leading-garbage)
            (delete-char 1))
@@ -7492,7 +7492,7 @@ When ARG is non-nil, unquote the current string."
           (lispy-right-p))
       (lispy-raise 1)
     (lispy-mark-symbol)
-    (lispy-different)
+    (lispy-other)
     (lispy-raise 1)
     (deactivate-mark)))
 

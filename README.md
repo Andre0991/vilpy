@@ -155,7 +155,7 @@ The purpose of the wiki is to list configurations and tips that do not belong to
 
 ## `paredit-forward-up`
 The equivalent `lispy-lite` command for `paredit-forward-up` is `lispy-right`.
-It is not bound to any key by in the special mode map because it's equivalent to `ho` (`lispy-left` and`lispy-different`).
+It is not bound to any key by in the special mode map because it's equivalent to `ho` (`lispy-left` and`lispy-other`).
 
 That said, you can bind to it some key of your preference:
 

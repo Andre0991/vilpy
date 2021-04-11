@@ -499,13 +499,13 @@ Insert KEY if there's no command."
   (should (string= (lispy-with "(~foo| bar)" "k")
                    "(~foo| bar)")))
 
-(ert-deftest lispy-different ()
-  (message "lispy-different")
-  (should (string= (lispy-with "((a) (b) (c)|)" "d")
+(ert-deftest lispy-other ()
+  (message "lispy-other")
+  (should (string= (lispy-with "((a) (b) (c)|)" (lispy-other))
                    "((a) (b) |(c))"))
-  (should (string= (lispy-with "((a) (b) (c)|)" "dd")
+  (should (string= (lispy-with "((a) (b) (c)|)" (progn (lispy-other) (lispy-other)))
                    "((a) (b) (c)|)"))
-  (should (string= (lispy-with "((a) (b) (c))|" "d")
+  (should (string= (lispy-with "((a) (b) (c))|" (lispy-other))
                    "|((a) (b) (c))")))
 
 (ert-deftest lispy-kill ()
