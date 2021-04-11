@@ -7551,6 +7551,7 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "M-DEL") 'lispy-backward-kill-word)
     ;; misc
     (define-key map (kbd "(") 'lispy-parens)
+    (define-key map (kbd "[") 'lispy-brackets)
     (define-key map (kbd ";") 'lispy-comment)
     (define-key map (kbd "M-q") 'lispy-fill)
     (define-key map (kbd "C-j") 'lispy-newline-and-indent)
@@ -7664,11 +7665,16 @@ When ARG is non-nil, unquote the current string."
 
 (declare-function View-quit "view")
 
+(defun lispy-special ()
+  (interactive)
+  (cond ((lispy-left-p) (lispy-other))
+        ((lispy-right-p) (lispy-other))
+        ('t (lispy-backward 1))))
+
 (defvar lispy-mode-map-lispy
   (let ((map (copy-keymap lispy-mode-map-base)))
     ;; navigation
-    (define-key map (kbd "]") 'lispy-forward)
-    (define-key map (kbd "[") 'lispy-backward)
+    (define-key map (kbd "TAB") 'lispy-special)
     (define-key map (kbd ")") 'lispy-right-nostring)
     ;; kill-related
     (define-key map (kbd "C-y") 'lispy-yank)
