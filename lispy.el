@@ -7174,7 +7174,7 @@ k: Slurp up
     ;; marking
     (lispy-define-key map "f" 'lispy-ace-symbol)
     (lispy-define-key map "K" 'lispy-describe)
-    (lispy-define-key map "m" 'lispy-mark-list)
+    (lispy-define-key map "v" 'lispy-mark-list)
     ;; dialect-specific
     (lispy-define-key map "e" 'lispy-eval)
     (lispy-define-key map "E" 'lispy-eval-defun)
@@ -7194,7 +7194,7 @@ k: Slurp up
       :override '(cond ((bound-and-true-p view-mode)
                         (View-quit))))
     (lispy-define-key map "Q" 'lispy-ace-char)
-    (lispy-define-key map "v" 'lispy-view)
+    ;; (lispy-define-key map "v" 'lispy-view)
     (lispy-define-key map "t" 'lispy-teleport)
     (lispy-define-key map "n" 'lispy-new-copy)
     (lispy-define-key map "b" 'lispy-back)
