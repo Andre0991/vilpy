@@ -2,18 +2,10 @@
 
 **Important: Work in progress. Expect things to break.**
 
-This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode.
-The motivation is not loading `le-clojure.clj` (or any other language-specific file), which relies on injecting dependencies to cider and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552).
+This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode. Think of it as a `lispy-core`, which is lighter, but no less . `vilpy` strives to be vimmier (though no less suited for non-Evil users) and smaller (no refactoring and debugging features, fewer external dependencies). For a complete description, please consult the [alternatives](#alternatives) section.
 
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
-Design goals (mostly not taken into practice yet):
-- Be vimmier: avoid using modifier keys and prefer composability over specialization
-- Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features. Refactoring commands can be leveraged from other packages.
-- Prefer to leverage Emacs built-in functions whenever possible.
-- Implement a uniform API that works well with all supported languages. Alternatively: avoid language-specific commands.
-- Rely on fewer external dependencies.
-- Drop support for non-lisps languages.
 
 ## Differences with `lispy`
 
@@ -103,7 +95,7 @@ However, some keybindings have been changed. For the time being, please consult 
 ## TODO: Transformation
 
 ### Evil
-`lispy` disputes keybindings with `evil-mode`, so in some cases its commands are overwritten.
+`lispy` disputes keybindings with `evil-mode`, so in some cases, its commands are overwritten.
 Using [lispyville](https://github.com/noctuid/lispyville) is a typical solution for making both packages work together.
 Personally, I'm fine with the default `lispy` bindings working only in `insert-mode`.
 I simply use these customizations for making `lispy` take precedence over `evil` in some specific keys:
@@ -116,8 +108,6 @@ I simply use these customizations for making `lispy` take precedence over `evil`
       (setq minor-mode-map-alist
             (cons x (delq mode minor-mode-map-alist))))))
             
-            
-;; prevents `/` (`lispy-splice`) from being overriden
 (raise-minor-mode 'lispy-mode)
 
 ;; TODO: `map!` is a Doom-emacs macro - not sure how
@@ -135,25 +125,58 @@ This section presents some common ways that `vilpy` can be configured.
 
 There is also the [wiki](#Wiki), with additional configuration examples.
 
-### Defining bindings
+### Keybindings
+#### Single-key bindings
 Use `lispy-define-key` for overriding a default binding.
 
-For example, let's say you want to override `H`, which is originally bound to `lispy-describe`, to `my-function`, but only if `inf-clojure-minor-mode` is enabled.
+For calling `my-function` with the key `H`, use
+
+``` emacs-lisp
+(lispy-define-key lispy-mode-map "H" 'apt-lispy-describe)
+```
+
+#### Multi-key bindings
+You may wish to override keybinding that reads two characters - for example, `wo`, which goes to the other window.
+
+There is no way to do that without modifying the whole prefix (`w`, in this example).
+
+That said, you can simply copy the current function that lists those bindings to your init file and modify it as you wish - and there is nothing wrong with that.
+
+For doing that, please consult `lispy-mode-map-special` and check which function is called for the prefix you are going to change. Then, copy it to your configuration, as exemplified below.
+
+``` emacs-lisp
+(defun lispy-window-actions ()
+  (interactive)
+  (cl-case (read-char-from-minibuffer "Actions:\n
+o: Select other window.
+h: Select left window.
+\n")
+    (?o (other-window 1))
+    (?h (windmove-left))
+    (t (lispy--complain-unrecognized-key))))
+    
+(lispy-define-key map "w" 'lispy-window-actions)
+```
+
+#### Overring behavior
+You may want to override some default behavior based on some conditions.
+For example, suppose you want to change `H`, which is originally bound to `lispy-foo`, to `my-function`, but only if `inf-clojure-minor-mode` is enabled.
 
 You would use this:
 
 ``` emacs-lisp
-(defun apt-lispy-describe ()
+(defun my-override-lispy-describe ()
   (interactive)
   (if (bound-and-true-p inf-clojure-minor-mode)
       (call-interactively 'my-function)
-    (call-interactively 'lispy-describe)))
+    (call-interactively 'lispy-foo)))
 
-(lispy-define-key lispy-mode-map "H" 'apt-lispy-describe)
+(lispy-define-key lispy-mode-map "H" 'my-override-lispy-describe)
 ```
 
+
 ## Wiki
-TODO: Move to GitHub Wiki. Keeping it here for the time being because it's more convient to edit while the keybindings are still changing.
+TODO: Move to GitHub Wiki. Keeping it here for the time being because it's more convenient to edit while the keybindings are still changing.
 
 `vilpy` is documented in the README.
 
@@ -161,10 +184,25 @@ The purpose of the wiki is to list configurations and tips that do not belong to
 
 ## `paredit-forward-up`
 The equivalent `vilpy` command for `paredit-forward-up` is `lispy-right`.
-It is not bound to any key by in the special mode map because it's equivalent to `ho` (`lispy-left` and`lispy-other`).
+It is not bound to any key in the special mode map because it's equivalent to `ho` (`lispy-left` and`lispy-other`).
 
 That said, you can bind to it some key of your preference:
 
 ``` emacs-lisp
 (lispy-define-key lispy-mode-map "m" 'lispy-right)
 ```
+
+## Alternatives
+### `lispy`
+`vilpy` has some important differences from its big brother.
+
+In particular, it attempts to respect the following design goals (mostly not taken into practice yet):
+- Be vimmier: avoid using modifier keys and prefer composability over specialization
+- Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features. Refactoring commands can be leveraged from other packages.
+- Prefer to leverage Emacs built-in functions whenever possible.
+- Implement a uniform API that works well with all supported languages. Alternatively: avoid language-specific commands.
+- Rely on fewer external dependencies.
+- Drop support for non-lisps languages.
+- Do not load `le-clojure.clj` (or any other language-specific file), which relies on injecting dependencies to cider and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552).
+
+That said, `lispy` has more features, including debugging and refactoring capabilities and support more languages. If you want a more featureful package, go for it.
