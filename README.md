@@ -123,7 +123,7 @@ I simply use these customizations for making `lispy` take precedence over `evil`
 ## Customization
 This section presents some common ways that `vilpy` can be configured.
 
-There is also the [wiki](#Wiki), with additional configuration examples.
+There is also the [wiki](https://github.com/Andre0991/vilpy/wiki), with additional configuration examples.
 
 ### Keybindings
 #### Single-key bindings
@@ -172,24 +172,6 @@ You would use this:
     (call-interactively 'lispy-foo)))
 
 (lispy-define-key lispy-mode-map "H" 'my-override-lispy-describe)
-```
-
-
-## Wiki
-TODO: Move to GitHub Wiki. Keeping it here for the time being because it's more convenient to edit while the keybindings are still changing.
-
-`vilpy` is documented in the README.
-
-The purpose of the wiki is to list configurations and tips that do not belong to the main documentation.
-
-## `paredit-forward-up`
-The equivalent `vilpy` command for `paredit-forward-up` is `lispy-right`.
-It is not bound to any key in the special mode map because it's equivalent to `ho` (`lispy-left` and`lispy-other`).
-
-That said, you can bind to it some key of your preference:
-
-``` emacs-lisp
-(lispy-define-key lispy-mode-map "m" 'lispy-right)
 ```
 
 ## Alternatives
