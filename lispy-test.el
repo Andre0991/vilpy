@@ -1540,11 +1540,18 @@ Insert KEY if there's no command."
                                (execute-kbd-macro (kbd "t ESC")))
                    "((a) |b~)")))
 
-;; `lispy-eval` does not return anything,
-;; just checking if it does not throw an error
 (ert-deftest lispy-eval ()
   (message "lispy-eval")
-  (lispy-with-v el "(+ 2 2)|" (lispy-eval 1)))
+  (should (= 4 (lispy-with-v el "(+ 2 2)|" (lispy-eval))))
+  (should (= 4 (lispy-with-v el "|(+ 2 2)" (lispy-eval))))
+  (should (= 4 (lispy-with-v el "~(+ 2 2)|" (lispy-eval))))
+  (should (= 4 (lispy-with-v el "(+ ~2 2)|" (lispy-eval)))))
+
+(ert-deftest lispy-eval-defun ()
+  (message "lispy-eval-defun")
+  (should (= 5 (lispy-with-v el "(+ 1 (+ 2 2))|" (lispy-eval-defun))))
+  (should (= 5 (lispy-with-v el "(+ 1 (+ 2 2)|)" (lispy-eval-defun))))
+  (should (= 5 (lispy-with-v el "(+ 1 |(+ 2 2))" (lispy-eval-defun)))))
 
 (ert-deftest lispy-quotes ()
   (message "lispy-quotes")

@@ -43,6 +43,11 @@ This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo
 
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
+## Supported languages
+The navigation features are tested with `emacs-lisp` and `clojure`, but they are likely to work with other lisps.
+
+`emacs-lisp` and `Clojure` (`cider` and `inf-clojure`) also support evaluation, describing the symbol at point and identation.
+These features can be added to other languages by setting the proper handlers in the variable `lispy--handlers-alist`.
 
 ## Differences with `lispy`
 
@@ -222,6 +227,7 @@ In particular, it attempts to respect the following design goals (mostly not tak
 - Implement a uniform API that works well with all supported languages. Alternatively: avoid language-specific commands.
 - Rely on fewer external dependencies.
 - Drop support for non-lisps languages.
+- Use less magic. For example, in the original `lispy`, the function for evaluating the last sexp also uses `setq` when evaluating `defvars`. `vilpy` does not try to guess your intent. `vilpy` is intentionally dumber.
 - Do not load `le-clojure.clj` (or any other language-specific file), which relies on injecting dependencies to cider and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552).
 
 That said, `lispy` has more features, including debugging and refactoring capabilities and support more languages. If you want a more featureful package, go for it.

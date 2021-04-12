@@ -143,58 +143,44 @@
 (require 'delsel)
 (require 'swiper)
 (require 'pcase)
+(require 'cl-lib)
 
-;;* Features for suported languages
+
+;;; Langugages configuration
 
-(defvar lispy--eval-last-sexp-handlers-alist
-      '((:emacs-lisp . (lambda () (call-interactively 'eval-last-sexp)))
-        (:clojure . lispy--clojure-eval-last-sexp)))
-
-(defvar lispy--eval-defun-handlers-alist
-      '((:emacs-lisp . (lambda ()
-                         (call-interactively 'eval-defun)))
-        (:clojure . lispy--clojure-eval-defun)))
-
-(defvar lispy--eval-region-handlers-alist
-      '((:emacs-lisp . (lambda ()
-                         (call-interactively 'eval-region)))
-        (:clojure . lispy--clojure-eval-region)))
-
-(setq lispy--describe-handlers-alist
-  '((:emacs-lisp . lispy--emacs-lisp-describe-symbol)
-    (:clojure . lispy--clojure-describe-symbol)))
-
-(defun lispy--lang ()
-  "Return the language that is being used, based on the current major and minor mode."
-  (cond
-   ((or (derived-mode-p 'emacs-lisp-mode)
-        (memq major-mode lispy-elisp-modes))
-    :emacs-lisp)
-   ((or (derived-mode-p 'clojure-mode)
-        (memq major-mode lispy-clojure-modes))
-    :clojure)))
-
-(defun lispy--clojure-eval-last-sexp ()
-  (cond ((bound-and-true-p inf-clojure-minor-mode)
-         (call-interactively 'inf-clojure-eval-last-sexp))
-        ((bound-and-true-p cider-mode)
-         (call-interactively 'cider-eval-last-sexp))))
-
-(defun lispy--clojure-eval-region ()
-  (cond ((bound-and-true-p inf-clojure-minor-mode)
-         (call-interactively 'inf-clojure-eval-region))
-        ((bound-and-true-p cider-mode)
-         (call-interactively 'cider-eval-region))))
-
-(defun lispy--clojure-eval-defun ()
-  (cond ((bound-and-true-p inf-clojure-minor-mode)
-         (call-interactively 'inf-clojure-eval-defun))
-        ((bound-and-true-p cider-mode)
-         (call-interactively 'cider-eval-defun-at-point))))
-
-(defsubst lispy-looking-back (regexp)
-  "Forward to (`looking-back' REGEXP)."
-  (looking-back regexp (line-beginning-position)))
+(defvar lispy--handlers-alist
+  '((:emacs-lisp . ((:decider-fn . (lambda () (or (derived-mode-p 'emacs-lisp-mode)
+                                                  (derived-mode-p 'lisp-interaction-mode))))
+                    (:eval-last-sexp . eval-last-sexp)
+                    (:eval-defun . eval-defun)
+                    (:eval-region . eval-region)
+                    (:describe-symbol . lispy--emacs-lisp-describe-symbol)
+                    (:indent-sexp . lispy--prettify-emacs-lisp-sexp)))
+    (:inf-clojure . ((:decider-fn . (lambda () (bound-and-true-p inf-clojure-minor-mode)))
+                     (:eval-last-sexp . inf-clojure-eval-last-sexp)
+                     (:eval-defun . inf-clojure-eval-defun)
+                     (:eval-region . inf-clojure-eval-region)
+                     (:indent-sexp . clojure-align)))
+    (:cider . ((:decider-fn . (lambda () (bound-and-true-p cider-mode)))
+               (:eval-last-sexp . cider-eval-last-sexp)
+               (:describe-symbol . lispy--cider-describe-symbol)
+               (:eval-defun . cider-eval-defun-at-point)
+               (:eval-region . cider-eval-region)
+               (:indent-sexp . clojure-align)))
+    ;; Fallback for clojure, in case `cider` and `inf-clojure` are not activated
+    ;; Do not move this up to in this list - that would always ignore cider and inf-clojure,
+    ;; which should have higher priority.
+    (:clojure . ((:decider-fn . (lambda () (memq major-mode lispy-clojure-modes)))
+                 (:indent-sexp . clojure-align))))
+  "An alist that determine which functions will run for language specific features.
+Some commands (eg. `lispy-eval`) consider this list for deciding the appropriate handler
+for some feature.
+The alist keys are arbitrary, but they tipically represent major or minor modes.
+The values are describe below:
+`decider-fn`: A function with no arguments that returns non-nil if the set of commands
+in this list is appropriate for the current buffer.
+`eval-last-sexp`, `eval-defun`, `eval-region`, `describe-symbol` and
+`indent-sexp` should be interactive functions.")
 
 (defvar lispy-elisp-modes
   '(emacs-lisp-mode
@@ -498,6 +484,97 @@ Otherwise return the amount of times executed."
        (setcdr
         (nthcdr (1- ,n) (prog1 ,lst (setq ,lst (nthcdr ,n ,lst))))
         nil))))
+
+
+;;; Handlers helpers
+
+
+(defun lispy--get-handlers ()
+  "Return the appropriate handlers for the current buffer.
+This is done by iterating over `lispy--handlers-alist` and finding
+the first value for which `decider-fn` returns a truthy value, or `nil`
+if there is no such value."
+  (cl-find-if (lambda (e)
+                (let* ((config (cdr e))
+                       (decider-fn (assoc-default :decider-fn config)))
+                  (funcall decider-fn)))
+              lispy--handlers-alist))
+
+
+;;; Evaluation
+
+(defun lispy-eval ()
+  "Evaluate the current sexp after point (if the point is right before a sexp),
+before it (if the point is right after a sexp) or the current region (if the region is active).
+
+The evaluation function is defined by `lispy--handlers-alist`."
+  (interactive)
+  (let ((eval-last-sexp-handler (assoc-default :eval-last-sexp (lispy--get-handlers)))
+        (eval-region-handler (assoc-default :eval-region (lispy--get-handlers))))
+    (cond
+     ((and (region-active-p)
+           (not eval-region-handler))
+      (lispy--complain-not-supported))
+     ((and (not (region-active-p))
+           (not eval-last-sexp-handler))
+      (lispy--complain-not-supported))
+     ((lispy-left-p)
+      (save-excursion
+        (lispy-forward 1)
+        (call-interactively eval-last-sexp-handler)))
+     ((lispy-right-p)
+      (call-interactively eval-last-sexp-handler)))))
+
+(defun lispy-eval-defun ()
+  "Evaluate the top level form.
+
+The evaluation function is defined by `lispy--handlers-alist`."
+  (interactive)
+  (if-let ((handler (assoc-default :eval-defun (lispy--get-handlers))))
+      (call-interactively handler)
+    (lispy--complain-not-supported)))
+
+
+;;; Describe symbol
+
+(declare-function cider-doc-lookup "ext:cider-doc")
+(defun lispy--cider-describe-symbol ()
+  (interactive)
+  (require 'cider-doc)
+  (cider-doc-lookup (lispy--current-function)))
+
+(defun lispy-describe ()
+  "Describes the symbol at point.
+
+The function used for describing is defined by `lispy--handlers-alist`."
+  (interactive)
+  (if-let ((handler (assoc-default :describe-symbol (lispy--get-handlers))))
+      (call-interactively handler)
+    (lispy--complain-not-supported)))
+
+(defun lispy--emacs-lisp-describe-symbol ()
+  (interactive)
+  (let ((symbol (intern-soft (lispy--current-function))))
+    (cond ((fboundp symbol)
+           (describe-function symbol))
+          ((boundp symbol)
+           (describe-variable symbol)))))
+
+
+;;; Pretty printing
+
+(defun lispy--prettify-1 ()
+  "Normalize/prettify current sexp."
+  (lispy--trim-whitespace-at-bol)
+  (when-let ((handler (assoc-default :indent-sexp (lispy--get-handlers))))
+    ;; if `handler` is not set, simply do nothing - no need to make lispy complain,
+    ;; since this function is used internally and we don't want to spam the *Messages* buffer.
+    (call-interactively handler)))
+
+(defsubst lispy-looking-back (regexp)
+  "Forward to (`looking-back' REGEXP)."
+  (looking-back regexp (line-beginning-position)))
+
 
 ;;* Globals: navigation
 (defsubst lispy-right-p ()
@@ -3900,47 +3977,10 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
           (const :tag "message" message)
           (const :tag "overlay" overlay)))
 
-(defvar lispy-eval-output nil
-  "The eval function may set this when there's output.")
-
 (declare-function cider--display-interactive-eval-result "ext:cider-overlays")
 (declare-function eros--eval-overlay "ext:eros")
 
 (define-error 'eval-error "Eval error")
-
-(defun lispy--get-eval-last-sexp-or-region-handler ()
-  "Gets the most appropriate evaluation handler, depending on the region and the current major/minor modes."
-  (assoc-default (lispy--lang)
-                 (if (region-active-p)
-                     lispy--eval-region-handlers-alist
-                   lispy--eval-last-sexp-handlers-alist)))
-
-(defun lispy--get-eval-defun-handler ()
-  "Gets the most appropriate evaluation handler, depending on the region and the current major/minor modes."
-  (assoc-default (lispy--lang)
-                 lispy--eval-defun-handlers-alist))
-
-(defun lispy-eval (arg)
-  "Eval the current sexp and display the result."
-  (interactive "p")
-  ;; if point is at the end of the sexp.
-  ;; TODO: region is active, point is at the begging of sexp
-  (setq lispy-eval-output nil)
-  (when-let ((handler (lispy--get-eval-last-sexp-or-region-handler)))
-    (cond
-     ((or (region-active-p)
-          (lispy-right-p))
-      (funcall handler))
-     ((lispy-left-p)
-      (save-excursion
-        (lispy-forward 1)
-        (funcall handler))))))
-
-(defun lispy-eval-defun ()
-  "Evaluate the top level form."
-  (interactive)
-  (when-let ((handler (lispy--get-eval-defun-handler)))
-    (funcall handler)))
 
 (defvar lispy-message-limit 4000
   "String length limit for `lispy-message' to pop up a window.
@@ -3967,38 +4007,6 @@ If STR is too large, pop it to a buffer instead."
     (condition-case nil
         (message str)
       (error (message (replace-regexp-in-string "%" "%%" str))))))
-
-
-;;; Describe
-;;;
-
-(defun lispy-describe ()
-  "Display documentation for `lispy--current-function'."
-  (interactive)
-  (if-let ((handler (lispy--get-describe-handler)))
-      (funcall handler)
-    (lispy--complain-not-supported)))
-
-(defun lispy--emacs-lisp-describe-symbol ()
-  (message "in describe")
-  (let ((symbol (intern-soft (lispy--current-function))))
-    (cond ((fboundp symbol)
-           (describe-function symbol))
-          ((boundp symbol)
-           (describe-variable symbol)))))
-
-(defun lispy--get-describe-handler ()
-  "Gets the most appropriate function for describing the thing at point, depending on the region and the current major/minor modes."
-  (assoc-default (lispy--lang)
-                 lispy--describe-handlers-alist))
-
-(declare-function cider-doc-lookup "ext:cider-doc")
-(defun lispy--clojure-describe-symbol ()
-  (cond ((bound-and-true-p cider-mode)
-         (require 'cider-doc)
-         (cider-doc-lookup (lispy--current-function)))
-        ('t
-         (lispy--complain-not-supported))))
 
 (defvar lispy--pams (make-hash-table))
 
@@ -4158,7 +4166,7 @@ Use STYLE function to update the overlays."
 (declare-function ediff-regions-internal "ediff")
 
 (defun lispy-tab ()
-  "Indent code and hide/show outlines.
+  "Indent code.
 When region is active, call `lispy-mark-car'."
   (interactive)
   (if (region-active-p)
@@ -5204,7 +5212,7 @@ Defaults to `error'."
              msg)))
 
 (defun lispy--complain-not-supported ()
-  (lispy--complain "Command not supported for current mode."))
+  (lispy--complain "Command not supported for current mode. Please consult the variable `lispy--handlers-alist`."))
 
 (defun lispy--complain-unrecognized-key ()
   (lispy--complain "Ignoring unmapped key."))
@@ -5589,6 +5597,7 @@ The outer delimiters are stripped."
     lisp-indent-function))
 
 (defun lispy--prettify-emacs-lisp-sexp ()
+  (interactive)
   (let* ((lisp-indent-function (lispy--get-lisp-indent-function))
          (bnd (lispy--bounds-dwim))
          (str (lispy--string-dwim bnd))
@@ -5608,14 +5617,6 @@ The outer delimiters are stripped."
                  (insert new-str))
                (when was-left
                  (backward-list))))))))
-
-(defun lispy--prettify-1 ()
-  "Normalize/prettify current sexp."
-  (lispy--trim-whitespace-at-bol)
-  (cond ((memq major-mode lispy-clojure-modes)
-         (call-interactively 'clojure-align))
-        ((eq 'emacs-lisp-mode major-mode)
-         (lispy--prettify-emacs-lisp-sexp))))
 
 (defun lispy--sexp-trim-trailing-newlines (foo comment)
   "Trim trailing (ly-raw newline) from FOO.
