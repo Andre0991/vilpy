@@ -1,5 +1,12 @@
 # vilpy
 
+<p align="center">
+<img src="imgs/torta-holandesa.jpg"
+   alt="vilpy logo"/>
+</p>
+
+> creamy & even shorter lisp editing
+
 <!-- For regenerating the table of contents, run: -->
 <!-- gh-md-toc README.md -->
 
