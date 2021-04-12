@@ -1,5 +1,35 @@
 # vilpy
 
+<!-- For regenerating the table of contents, run: -->
+<!-- gh-md-toc README.md -->
+
+* [vilpy](#vilpy)
+  * [Differences with lispy](#differences-with-lispy)
+    * [Keybinding changes](#keybinding-changes)
+    * [Behavior changes](#behavior-changes)
+      * [lispy\-eval (e)](#lispy-eval-e)
+      * [lispy\-eval\-and\-insert (E)](#lispy-eval-and-insert-e)
+      * [lispy\-follow (F)](#lispy-follow-f)
+      * [lispy\-goto (g)](#lispy-goto-g)
+      * [lispy\-tab (i)](#lispy-tab-i)
+    * [Removed functions](#removed-functions)
+    * [Other](#other)
+  * [Installation](#installation)
+    * [with load\-path](#with-load-path)
+    * [with use\-package](#with-use-package)
+  * [Usage](#usage)
+  * [TODO: Special mode](#todo-special-mode)
+  * [TODO: Navigation](#todo-navigation)
+  * [TODO: Transformation](#todo-transformation)
+    * [Evil](#evil)
+  * [Customization](#customization)
+    * [Keybindings](#keybindings)
+      * [Single\-key bindings](#single-key-bindings)
+      * [Multi\-key bindings](#multi-key-bindings)
+      * [Overring behavior](#overring-behavior)
+  * [Alternatives](#alternatives)
+    * [lispy](#lispy)
+
 **Important: Work in progress. Expect things to break.**
 
 This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode. Think of it as a `lispy-core`, which is lighter, but no less sweet. `vilpy` strives to be vimmier (though no less suited for non-Evil users) and smaller (no refactoring and debugging features, fewer external dependencies). For a complete description, please consult the [alternatives](#alternatives) section.
