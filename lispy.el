@@ -251,12 +251,6 @@ These messages are similar to \"Beginning of buffer\" error for
   :type 'boolean
   :group 'lispy)
 
-(defcustom lispy-verbose-verbs t
-  "If t, verbs produced by `lispy-defverb' will have a hint in the echo area.
-The hint will consist of the possible nouns that apply to the verb."
-  :type 'boolean
-  :group 'lispy)
-
 (defcustom lispy-close-quotes-at-end-p nil
   "If t, when pressing the `\"' at the end of a quoted string, it will move you past the end quote."
   :type 'boolean
@@ -297,9 +291,6 @@ The hint will consist of the possible nouns that apply to the verb."
   :type '(repeat :tag "Keys" (character :tag "char")))
 
 (defvar lispy-mode-map (make-sparse-keymap))
-
-(defvar lispy-known-verbs nil
-  "List of registered verbs.")
 
 (defvar lispy-ignore-whitespace nil
   "When set to t, function `lispy-right' will not clean up whitespace.")
@@ -431,10 +422,7 @@ backward through lists, which is useful to move into special.
                (setq-local outline-regexp "#\\*+")
                (setq-local outline-heading-end-regexp "\n"))
               (t
-               (setq-local outline-regexp (substring lispy-outline 1))))
-        (when (called-interactively-p 'any)
-          (mapc #'lispy-raise-minor-mode
-                (cons 'lispy-mode lispy-known-verbs))))
+               (setq-local outline-regexp (substring lispy-outline 1)))))
     (when lispy-old-outline-settings
       (setq outline-regexp (car lispy-old-outline-settings))
       (setq outline-level (cdr lispy-old-outline-settings))
@@ -510,71 +498,6 @@ Otherwise return the amount of times executed."
        (setcdr
         (nthcdr (1- ,n) (prog1 ,lst (setq ,lst (nthcdr ,n ,lst))))
         nil))))
-
-;;* Verb related
-(defun lispy-disable-verbs-except (verb)
-  "Disable all verbs except VERB."
-  (mapc
-   (lambda (v) (funcall v -1))
-   (remq verb lispy-known-verbs)))
-
-(defun lispy-quit ()
-  "Remove modifiers."
-  (interactive)
-  (lispy-disable-verbs-except nil))
-
-(defmacro lispy-defverb (name grammar)
-  "Define the verb NAME.
-GRAMMAR is a list of nouns that work with this verb."
-  (let* ((sym (intern (format "lispy-%s-mode" name)))
-         (keymap (intern (format "lispy-%s-mode-map" name)))
-         (doc (format "%s verb.\n\n \\{lispy-%s-mode-map}"
-                      (capitalize name) name))
-         (lighter (format " [%s]" name))
-         (verb (intern (format "lispy-%s-verb" name)))
-         (msg (format "[%s]: %s" name
-                      (mapconcat #'car grammar " "))))
-    `(progn
-       (defvar ,sym nil
-         ,(format "Non-nil if Lispy-%s mode is enabled.
-Use the command `%s' to change this variable."
-                  (capitalize name)
-                  sym))
-       (make-variable-buffer-local ',sym)
-       (defvar ,keymap (make-sparse-keymap))
-       (defun ,sym (&optional arg)
-         ,doc
-         (interactive (list (or current-prefix-arg 'toggle)))
-         (let ((last-message (current-message)))
-           (setq ,sym (if (eq arg 'toggle)
-                          (not ,sym)
-                        (> (prefix-numeric-value arg)
-                           0)))
-           (cond (,sym (lispy-disable-verbs-except ',sym))
-                 (t nil))
-           (if (called-interactively-p 'any)
-               (unless (and (current-message)
-                            (not (equal last-message (current-message))))
-                 (if ,sym
-                     (when lispy-verbose-verbs
-                       (message ,msg))
-                   (message "")))))
-         (force-mode-line-update))
-       (mapc (lambda (x)
-               (lispy-define-key
-                   ,keymap
-                   (car x) (cadr x)
-                 :disable ',sym))
-             ',grammar)
-       (unless (memq ',sym lispy-known-verbs)
-         (push ',sym lispy-known-verbs))
-       (defun ,verb ()
-         (interactive)
-         (if (bound-and-true-p ,sym)
-             (,sym -1)
-           (,sym 1)))
-       (with-no-warnings
-         (add-minor-mode ',sym ,lighter ,keymap nil nil)))))
 
 ;;* Globals: navigation
 (defsubst lispy-right-p ()
@@ -3970,11 +3893,6 @@ When you press \"t\" in `lispy-teleport', this will be bound to t temporarily.")
              (backward-char 1)
              (lispy--teleport beg end endp regionp))))))
 
-(defun lispy-goto ()
-  "Invoke `imenu."
-  (interactive "p")
-  (call-interactively #'imenu))
-
 ;;* Locals: dialect-related
 (defcustom lispy-eval-display-style 'message
   "Choose a function to display the eval result."
@@ -6137,13 +6055,6 @@ FUNC is obtained from (`lispy--insert-or-call' DEF PLIST)."
     (add-to-list 'ac-trigger-commands func)
     (eldoc-add-command func)
     (define-key keymap (kbd key) func)))
-
-(lispy-defverb
- "goto"
- (("d" lispy-goto)
-  ("f" lispy-follow)
-  ("b" pop-tag-mark)
-  ("q" lispy-quit)))
 
 (defun lispy-move-and-slurp-actions ()
   (interactive)
