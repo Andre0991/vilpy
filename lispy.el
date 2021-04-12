@@ -143,7 +143,6 @@
 (require 'delsel)
 (require 'swiper)
 (require 'pcase)
-(require 'hydra)
 
 ;;* Features for suported languages
 
@@ -6196,12 +6195,6 @@ j: Select down window.
     (?k (windmove-up))
     (t (lispy--complain-unrecognized-key))))
 
-(defhydra lh-knight ()
-  "knight"
-  ("j" lispy-knight-down)
-  ("k" lispy-knight-up)
-  ("z" nil))
-
 (setq lispy-mode-map-special
   (let ((map (make-sparse-keymap)))
     ;; navigation
@@ -6213,7 +6206,6 @@ j: Select down window.
     (lispy-define-key map "m" 'lispy-move-and-slurp-actions)
     (lispy-define-key map "P" 'lispy-paste)
     (lispy-define-key map "o" 'lispy-occur)
-    (lispy-define-key map "z" 'lh-knight/body)
     ;; Paredit transformations
     (lispy-define-key map ">" 'lispy-slurp)
     (lispy-define-key map "<" 'lispy-barf)
