@@ -41,9 +41,6 @@
 
 This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode. Think of it as a `lispy-core`, which is lighter, but no less sweet. `vilpy` strives to be vimmier (though no less suited for non-Evil users) and smaller (no refactoring and debugging features, fewer external dependencies). For a complete description, please consult the [alternatives](#alternatives) section.
 
-I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
-
-
 ## Differences with `lispy`
 
 ### Keybinding changes
@@ -123,15 +120,25 @@ You can consult all dependencies in the list of `requires` in `lispy.el`.
    :config (add-hook 'lispy-mode-hook #'turn-off-smartparens-mode))
 ```
 
-## Usage
+## Usage (work in progress)
 You can refer to the original [lispy documentation](https://github.com/abo-abo/lispy) and [function reference](http://oremacs.com/lispy/).
 However, some keybindings have been changed. For the time being, please consult `lispy-mode-map-special`.
 
-## TODO: Special mode
-## TODO: Navigation
-## TODO: Transformation
+### Special mode
 
-### Evil
+### Navigation
+
+| Command         | Keybinding      |
+| --------------- | --------------- |
+| <kbd>h</kbd>  | lispy-left  |
+| Row 2 Column 1  | Row 2 Column 2  |
+| Row 3 Column 1  | Row 3 Column 2  |
+
+
+### Transformation
+
+## Evil
+
 `lispy` disputes keybindings with `evil-mode`, so in some cases, its commands are overwritten.
 Using [lispyville](https://github.com/noctuid/lispyville) is a typical solution for making both packages work together.
 Personally, I'm fine with the default `lispy` bindings working only in `insert-mode`.
@@ -223,5 +230,7 @@ In particular, it attempts to respect the following design goals (mostly not tak
 - Rely on fewer external dependencies.
 - Drop support for non-lisps languages.
 - Do not load `le-clojure.clj` (or any other language-specific file), which relies on injecting dependencies to cider and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552).
+
+I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects (note that Clojure support remains, though - the difference is that `le-clojure.clj` is not loaded).
 
 That said, `lispy` has more features, including debugging and refactoring capabilities and support more languages. If you want a more featureful package, go for it.
