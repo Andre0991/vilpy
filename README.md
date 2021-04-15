@@ -45,7 +45,18 @@ You can consult all dependencies in the list of `requires` in `vilpy.el`.
           (clojure-mode . vilpy-mode)))
 ```
 
-## Usage
+## Configuration
+
+### Evil
+We recommend the following settings for `evil` users:
+
+``` emacs-lisp
+;; allows setting marks and jumping to them in vilpy special mode
+(vilpy-define-key vilpy-mode-map "m" 'evil-set-marker)
+(vilpy-define-key vilpy-mode-map "`" 'evil-goto-mark)
+```
+
+## Usage (WIP)
 You can refer to the original [lispy documentation](https://github.com/abo-abo/lispy) and [function reference](http://oremacs.com/lispy/).
 However, some keybindings have been changed. For the time being, please consult `vilpy-mode-map-special`.
 

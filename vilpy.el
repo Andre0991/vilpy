@@ -6023,7 +6023,7 @@ j: Select down window.
     (vilpy-define-key map "j" 'vilpy-down)
     (vilpy-define-key map "k" 'vilpy-up)
     (vilpy-define-key map "A" 'vilpy-insert-at-end-of-sexp)
-    (vilpy-define-key map "m" 'vilpy-move-and-slurp-actions)
+    (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
     (vilpy-define-key map "P" 'vilpy-paste)
     (vilpy-define-key map "s" 'vilpy-occur)
     (vilpy-define-key map "o" 'vilpy-open-parens-below)
