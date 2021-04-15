@@ -6068,7 +6068,8 @@ j: Select down window.
     ;; miscellanea
     (define-key map (kbd "SPC") 'vilpy-space)
     (vilpy-define-key map "w" 'vilpy-window-actions)
-    (vilpy-define-key map "i" 'vilpy-tab)
+    (vilpy-define-key map "=" 'vilpy-tab)
+    (vilpy-define-key map "i" 'imenu)
     (vilpy-define-key map "W" 'vilpy-knight-up)
     (vilpy-define-key map "S" 'vilpy-knight-down)
     ;; (vilpy-define-key map "W" 'vilpy-widen)
