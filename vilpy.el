@@ -309,13 +309,6 @@ backward through lists, which is useful to move into special.
       (setq outline-level (cdr vilpy-old-outline-settings))
       (setq vilpy-old-outline-settings nil))))
 
-(defun vilpy-raise-minor-mode (mode)
-  "Make MODE the first on `minor-mode-map-alist'."
-  (let ((x (assq mode minor-mode-map-alist)))
-    (when x
-      (setq minor-mode-map-alist
-            (cons x (delq mode minor-mode-map-alist))))))
-
 ;;* Macros
 (defmacro vilpy-dotimes (n &rest bodyform)
   "Execute N times the BODYFORM unless an error is signaled.
