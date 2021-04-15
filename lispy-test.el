@@ -1596,6 +1596,26 @@ Insert KEY if there's no command."
                                (lispy--prettify-1))
                    "|(expr ~(expr) ~'expr '~(expr) ~'(expr) ~@(expr))")))
 
+(ert-deftest lispy-open-parens-below ()
+  (should (string= (lispy-with "|(foo)" (lispy-open-parens-below))
+                   "(foo)\n(|)"))
+  (should (string= (lispy-with "(foo)|" (lispy-open-parens-below))
+                   "(foo)\n(|)"))
+  (should (string= (lispy-with "(foo\n|(bar)\n(baz)" (lispy-open-parens-below))
+                   "(foo\n(bar)\n(|)\n(baz)")))
+
+(ert-deftest lispy-open-parens-above ()
+  (let ((result (lispy-with "(foo\n|(bar))" (lispy-open-parens-above)))
+        (expected "(foo\n (|)\n(bar))"))
+    (print "result")
+    (print result)
+    (print "expected")
+    (print expected)
+    (should (string= (lispy-with "(foo\n|(bar))" (lispy-open-parens-above))
+                     "(foo\n (|)\n(bar))"))
+    (should (string= (lispy-with "(foo\n(bar)|)" (lispy-open-parens-above))
+                     "(foo\n (|)\n(bar))"))))
+
 (ert-deftest lispy--sexp-normalize ()
   (message "lispy--sexp-normalize")
   (should (equal

@@ -1783,6 +1783,26 @@ otherwise the whole string is unquoted."
              (backward-char 1))
            (backward-char)))))
 
+(defun lispy-open-parens-below ()
+  "Insert parenthesis in an empty line below the current line and move the point to them."
+  (interactive)
+  (end-of-line)
+  (open-line 1)
+  (forward-char)
+  (insert "()")
+  (backward-char)
+  (lispy--indent-for-tab))
+
+(defun lispy-open-parens-above ()
+  "Insert parenthesis in an empty line above the current line and move the point to them."
+  (interactive)
+  (end-of-line 0)
+  (open-line 1)
+  (forward-char)
+  (insert "()")
+  (backward-char)
+  (lispy--indent-for-tab))
+
 (defun lispy-parens-down ()
   "Exit the current sexp, and start a new sexp below."
   (interactive)
@@ -6117,7 +6137,9 @@ j: Select down window.
     (lispy-define-key map "A" 'lispy-insert-at-end-of-sexp)
     (lispy-define-key map "m" 'lispy-move-and-slurp-actions)
     (lispy-define-key map "P" 'lispy-paste)
-    (lispy-define-key map "o" 'lispy-occur)
+    (lispy-define-key map "s" 'lispy-occur)
+    (lispy-define-key map "o" 'lispy-open-parens-below)
+    (lispy-define-key map "O" 'lispy-open-parens-above)
     ;; Paredit transformations
     (lispy-define-key map ">" 'lispy-slurp)
     (lispy-define-key map "<" 'lispy-barf)
