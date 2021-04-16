@@ -5999,22 +5999,6 @@ w: Widen
     (?w (call-interactively 'vilpy-widen))
     (t (vilpy--complain-unrecognized-key))))
 
-(defun vilpy-window-actions ()
-  (interactive)
-  (cl-case (read-char-from-minibuffer "Actions:\n
-o: Select other window.
-h: Select left window.
-l: Select right window.
-k: Select up window.
-j: Select down window.
-\n")
-    (?o (other-window 1))
-    (?h (windmove-left))
-    (?l (windmove-right))
-    (?j (windmove-down))
-    (?k (windmove-up))
-    (t (vilpy--complain-unrecognized-key))))
-
 (setq vilpy-mode-map-special
   (let ((map (make-sparse-keymap)))
     ;; navigation
@@ -6060,13 +6044,12 @@ j: Select down window.
     (vilpy-define-key map "_" 'vilpy-underscore)
     ;; miscellanea
     (define-key map (kbd "SPC") 'vilpy-space)
-    (vilpy-define-key map "w" 'vilpy-window-actions)
+    (vilpy-define-key map "w" 'vilpy-clone)
     (vilpy-define-key map "=" 'vilpy-tab)
     (vilpy-define-key map "i" 'imenu)
     (vilpy-define-key map "W" 'vilpy-knight-up)
     (vilpy-define-key map "S" 'vilpy-knight-down)
     ;; (vilpy-define-key map "W" 'vilpy-widen)
-    (vilpy-define-key map "c" 'vilpy-clone)
     (vilpy-define-key map "u" 'vilpy-undo)
     (vilpy-define-key map "q" 'vilpy-ace-paren
       :override '(cond ((bound-and-true-p view-mode)
