@@ -7,7 +7,7 @@
 
 > creamy & even shorter lisp editing
 
-**Important: Work in progress. Expect things to break and keybindings to change**
+**Important: Work in progress. Expect things to break and keybindings to change. I don't even recommend using this right now, but stay tuned!**
 
 This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode. Think of it as a `lispy-core`, which is lighter, but no less sweet. `vilpy` strives to be vimmier (though no less suited for non-Evil users) and smaller (no refactoring and debugging features, fewer external dependencies). For more differences with `lispy`, please consult the [alternatives](#alternatives) section.
 
@@ -58,14 +58,18 @@ We recommend the following settings for `evil` users:
 ```
 
 ## Usage (WIP)
-You can refer to the original [lispy documentation](https://github.com/abo-abo/lispy) and [function reference](http://oremacs.com/lispy/).
-However, some keybindings have been changed. For the time being, please consult `vilpy-mode-map-special`.
+Many `lispy` keybindings have been changed.
+`vilpy` will have proper documentation when the keybindings get stable.
+If you are an early adapter and want to use this package right now (not recommended yet!), please consult `vilpy-mode-map-special`.
 
-## TODO: Special mode
-## TODO: Navigation
-## TODO: Transformation
+### TODO: Special mode
 
-### Evil
+### TODO: Navigation
+
+### TODO: Transformation
+
+## Evil
+
 `vilpy` disputes keybindings with `evil-mode`, so in some cases, its commands are overwritten.
 Using [lispyville](https://github.com/noctuid/lispyville) is a typical solution for making both packages work together.
 Personally, I'm fine with the default `vilpy` bindings working only in `insert-mode`.
