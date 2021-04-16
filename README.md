@@ -20,9 +20,10 @@ The navigation features are tested with `emacs-lisp` and `clojure`, but they are
 These features can be added to other languages by setting the proper handlers in the variable `vilpy--handlers-alist`.
 
 ## Installation
-You can simply download the `.el` file and put it into your load path.
+`vilpy` must be installed manually as of now.
 
 Note that `vilpy` has some dependencies, you might need to get them as well.
+
 You can consult all dependencies in the list of `requires` in `vilpy.el`.
 
 ### with `load-path`
@@ -31,7 +32,7 @@ You can consult all dependencies in the list of `requires` in `vilpy.el`.
 (let ((vilpy-path "vilpy-load-path"))
   (add-to-list 'load-path vilpy-path)
   (require 'vilpy))
-  
+
 (add-hook 'emacs-lisp-mode-hook (lambda () (vilpy-mode 1)))
 (add-hook 'clojure-mode-hook (lambda () (vilpy-mode 1)))
 ```
@@ -51,9 +52,9 @@ You can consult all dependencies in the list of `requires` in `vilpy.el`.
 We recommend the following settings for `evil` users:
 
 ``` emacs-lisp
-;; allows setting marks and jumping to them in vilpy special mode
 (vilpy-define-key vilpy-mode-map "m" 'evil-set-marker)
 (vilpy-define-key vilpy-mode-map "`" 'evil-goto-mark)
+(vilpy-define-key vilpy-mode-map "c" 'vilpy-execute-in-normal-state)
 ```
 
 ## Usage (WIP)

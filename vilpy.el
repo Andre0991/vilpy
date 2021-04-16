@@ -1372,6 +1372,16 @@ When ARG is more than 1, mark ARGth element."
          (vilpy--mark (vilpy--bounds-comment))))
   (setq this-command 'vilpy-mark-list))
 
+(declare-function evil-execute-in-normal-state "ext:evil-execute-in-normal-state")
+(defun vilpy-execute-in-normal-state ()
+  "Execute `evil-execute-in-normal-state` and restore the previous evil state."
+  (interactive)
+  ;; `evil-execute-in-normal-state` uses `this-command` internally for deciding if the
+  ;; previous position will be restored. We need to to set it here, otherwise `this-command`
+  ;; would get a `special` prefix and the it wouldn't get back to insert state.
+  (setq this-command 'evil-execute-in-normal-state)
+  (evil-execute-in-normal-state))
+
 (defvar-local vilpy-bind-var-in-progress nil)
 
 (defun vilpy-mark-symbol ()
