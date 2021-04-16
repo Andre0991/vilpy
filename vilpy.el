@@ -373,97 +373,6 @@ Otherwise return the amount of times executed."
         (nthcdr (1- ,n) (prog1 ,lst (setq ,lst (nthcdr ,n ,lst))))
         nil))))
 
-
-;;; Handlers helpers
-
-
-(defun vilpy--get-handlers ()
-  "Return the appropriate handlers for the current buffer.
-This is done by iterating over `vilpy--handlers-alist` and finding
-the first value for which `decider-fn` returns a truthy value, or `nil`
-if there is no such value."
-  (cl-find-if (lambda (e)
-                (let* ((config (cdr e))
-                       (decider-fn (assoc-default :decider-fn config)))
-                  (funcall decider-fn)))
-              vilpy--handlers-alist))
-
-
-;;; Evaluation
-
-(defun vilpy-eval ()
-  "Evaluate the current sexp after point (if the point is right before a sexp),
-before it (if the point is right after a sexp) or the current region (if the region is active).
-
-The evaluation function is defined by `vilpy--handlers-alist`."
-  (interactive)
-  (let ((eval-last-sexp-handler (assoc-default :eval-last-sexp (vilpy--get-handlers)))
-        (eval-region-handler (assoc-default :eval-region (vilpy--get-handlers))))
-    (cond
-     ((and (region-active-p)
-           (not eval-region-handler))
-      (vilpy--complain-not-supported))
-     ((and (not (region-active-p))
-           (not eval-last-sexp-handler))
-      (vilpy--complain-not-supported))
-     ((vilpy-left-p)
-      (save-excursion
-        (vilpy-forward 1)
-        (call-interactively eval-last-sexp-handler)))
-     ((vilpy-right-p)
-      (call-interactively eval-last-sexp-handler)))))
-
-(defun vilpy-eval-defun ()
-  "Evaluate the top level form.
-
-The evaluation function is defined by `vilpy--handlers-alist`."
-  (interactive)
-  (if-let ((handler (assoc-default :eval-defun (vilpy--get-handlers))))
-      (call-interactively handler)
-    (vilpy--complain-not-supported)))
-
-
-;;; Describe symbol
-
-(declare-function cider-doc-lookup "ext:cider-doc")
-(defun vilpy--cider-describe-symbol ()
-  (interactive)
-  (require 'cider-doc)
-  (cider-doc-lookup (vilpy--current-function)))
-
-(defun vilpy-describe ()
-  "Describes the symbol at point.
-
-The function used for describing is defined by `vilpy--handlers-alist`."
-  (interactive)
-  (if-let ((handler (assoc-default :describe-symbol (vilpy--get-handlers))))
-      (call-interactively handler)
-    (vilpy--complain-not-supported)))
-
-(defun vilpy--emacs-lisp-describe-symbol ()
-  (interactive)
-  (let ((symbol (intern-soft (vilpy--current-function))))
-    (cond ((fboundp symbol)
-           (describe-function symbol))
-          ((boundp symbol)
-           (describe-variable symbol)))))
-
-
-;;; Pretty printing
-
-(defun vilpy--prettify-1 ()
-  "Normalize/prettify current sexp."
-  (vilpy--trim-whitespace-at-bol)
-  (when-let ((handler (assoc-default :indent-sexp (vilpy--get-handlers))))
-    ;; if `handler` is not set, simply do nothing - no need to make vilpy complain,
-    ;; since this function is used internally and we don't want to spam the *Messages* buffer.
-    (call-interactively handler)))
-
-(defsubst vilpy-looking-back (regexp)
-  "Forward to (`looking-back' REGEXP)."
-  (looking-back regexp (line-beginning-position)))
-
-
 ;;* Globals: navigation
 (defsubst vilpy-right-p ()
   "Return t if after variable `vilpy-right'."
@@ -473,6 +382,10 @@ The function used for describing is defined by `vilpy--handlers-alist`."
 (defsubst vilpy-left-p ()
   "Return t if before variable `vilpy-left'."
   (looking-at vilpy-left))
+
+(defsubst vilpy-looking-back (regexp)
+  "Forward to (`looking-back' REGEXP)."
+  (looking-back regexp (line-beginning-position)))
 
 (defun vilpy-forward (arg)
   "Move forward list ARG times or until error.
@@ -4658,17 +4571,8 @@ or to the beginning of the line."
   "Find the definition for the symbol at point or at the next char.
 
 Relies on `xref-find-definitions`."
-  (interactive)
-  ;; HACK: Prevent this `xref` command from prompting for input.
-  ;; The issue boils down to `xref--prompt-p`, which decides if the
-  ;; prompt should be displayed. If `xref-prompt-for-identifier` is
-  ;; a list and starts with `not`, the subsequent values represent a
-  ;; whitelist. We add `special-vilpy-follow` to that list, since this
-  ;; is the value of `this-command` when `xref-prompt-for-identifier`
-  ;; is invoked with `call-interactively`.
-  (when (and (listp xref-prompt-for-identifier)
-             (eq 'not (car xref-prompt-for-identifier)))
-    (add-to-list 'xref-prompt-for-identifier 'special-vilpy-follow 't))
+  (interactive (list (or (thing-at-point 'symbol t)
+                         (vilpy--current-function))))
   (when (buffer-narrowed-p)
     (widen))
   (cond ((vilpy-left-p)
@@ -5935,6 +5839,92 @@ If `vilpy-safe-paste' is non-nil, any unmatched delimiters will be added to it."
     (progn (vilpy-other)
            (backward-char))))
 
+
+;;; Handlers helpers
+
+
+(defun vilpy--get-handlers ()
+  "Return the appropriate handlers for the current buffer.
+This is done by iterating over `vilpy--handlers-alist` and finding
+the first value for which `decider-fn` returns a truthy value, or `nil`
+if there is no such value."
+  (cl-find-if (lambda (e)
+                (let* ((config (cdr e))
+                       (decider-fn (assoc-default :decider-fn config)))
+                  (funcall decider-fn)))
+              vilpy--handlers-alist))
+
+
+;;; Evaluation
+
+(defun vilpy-eval ()
+  "Evaluate the current sexp after point (if the point is right before a sexp),
+before it (if the point is right after a sexp) or the current region (if the region is active).
+
+The evaluation function is defined by `vilpy--handlers-alist`."
+  (interactive)
+  (let ((eval-last-sexp-handler (assoc-default :eval-last-sexp (vilpy--get-handlers)))
+        (eval-region-handler (assoc-default :eval-region (vilpy--get-handlers))))
+    (cond
+     ((and (region-active-p)
+           (not eval-region-handler))
+      (vilpy--complain-not-supported))
+     ((and (not (region-active-p))
+           (not eval-last-sexp-handler))
+      (vilpy--complain-not-supported))
+     ((vilpy-left-p)
+      (save-excursion
+        (vilpy-forward 1)
+        (call-interactively eval-last-sexp-handler)))
+     ((vilpy-right-p)
+      (call-interactively eval-last-sexp-handler)))))
+
+(defun vilpy-eval-defun ()
+  "Evaluate the top level form.
+
+The evaluation function is defined by `vilpy--handlers-alist`."
+  (interactive)
+  (if-let ((handler (assoc-default :eval-defun (vilpy--get-handlers))))
+      (call-interactively handler)
+    (vilpy--complain-not-supported)))
+
+
+;;; Describe symbol
+
+(declare-function cider-doc-lookup "ext:cider-doc")
+(defun vilpy--cider-describe-symbol ()
+  (interactive)
+  (require 'cider-doc)
+  (cider-doc-lookup (vilpy--current-function)))
+
+(defun vilpy-describe ()
+  "Describes the symbol at point.
+
+The function used for describing is defined by `vilpy--handlers-alist`."
+  (interactive)
+  (if-let ((handler (assoc-default :describe-symbol (vilpy--get-handlers))))
+      (call-interactively handler)
+    (vilpy--complain-not-supported)))
+
+(defun vilpy--emacs-lisp-describe-symbol ()
+  (interactive)
+  (let ((symbol (intern-soft (vilpy--current-function))))
+    (cond ((fboundp symbol)
+           (describe-function symbol))
+          ((boundp symbol)
+           (describe-variable symbol)))))
+
+
+;;; Pretty printing
+
+(defun vilpy--prettify-1 ()
+  "Normalize/prettify current sexp."
+  (vilpy--trim-whitespace-at-bol)
+  (when-let ((handler (assoc-default :indent-sexp (vilpy--get-handlers))))
+    ;; if `handler` is not set, simply do nothing - no need to make vilpy complain,
+    ;; since this function is used internally and we don't want to spam the *Messages* buffer.
+    (call-interactively handler)))
+
 ;;* Key definitions
 (defvar ac-trigger-commands '(self-insert-command))
 
@@ -6000,7 +5990,7 @@ SPC: Go to file in project
 n: Narrow
 w: Widen
 \n")
-    (?g (beginning-of-buffer))
+    (?g (goto-char (point-min)))
     (?d (call-interactively 'vilpy-follow))
     (?\s (call-interactively 'project-find-file))
     (?\[ (call-interactively 'flymake-goto-prev-error))
@@ -6009,7 +5999,7 @@ w: Widen
     (?w (call-interactively 'vilpy-widen))
     (t (vilpy--complain-unrecognized-key))))
 
-(setq vilpy-mode-map-special
+(defvar vilpy-mode-map-special
   (let ((map (make-sparse-keymap)))
     ;; navigation
     (vilpy-define-key map "h" 'vilpy-left)

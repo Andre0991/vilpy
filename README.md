@@ -94,7 +94,7 @@ I simply use these customizations for making `vilpy` take precedence over `evil`
 ## Customization
 This section presents some common ways that `vilpy` can be configured.
 
-There is also the [wiki](https://github.com/Andre0991/vilpy/wiki), with additional configuration examples.
+There is also the [wiki](https://github.com/Andre0991/vilpy/wiki), with additional configuration examples and tips.
 
 ### Keybindings
 #### Single-key bindings
