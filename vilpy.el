@@ -5753,8 +5753,7 @@ The function used for describing is defined by `vilpy--handlers-alist`."
 (defun vilpy-scroll-line-to-center ()
   "Scrolls the current line to the top the window."
   (interactive)
-  (let ((line (line-number-at-pos (point)))
-        (col (current-column)))
+  (let ((col (current-column)))
     (recenter nil)
     (move-to-column col)))
 
@@ -5764,9 +5763,9 @@ The function used for describing is defined by `vilpy--handlers-alist`."
   (let ((line (line-number-at-pos (point)))
         (col (current-column)))
     (goto-char (point-min))
-    (forward-line (1- line)))
-  (recenter (- (max 1 scroll-margin)))
-  (move-to-column col))
+    (forward-line (1- line))
+    (recenter (- (max 1 scroll-margin)))
+    (move-to-column col)))
 
 (defun vilpy-scroll-actions ()
   (interactive)
@@ -5775,9 +5774,12 @@ z: Scroll line to center
 t: Scroll line to top
 b: Scroll line to bottom
 \n")
-    (?z (call-interactively 'vilpy-scroll-line-to-center))
-    (?t (call-interactively 'vilpy-scroll-line-to-top))
-    (?b (call-interactively 'vilpy-scroll-line-to-bottom))
+    (?z (progn (call-interactively 'vilpy-scroll-line-to-center)
+               (message nil)))
+    (?t (progn (call-interactively 'vilpy-scroll-line-to-top)
+               (message nil)))
+    (?b (progn (call-interactively 'vilpy-scroll-line-to-bottom)
+               (message nil)))
     (t (vilpy--complain-unrecognized-key))))
 
 
@@ -5839,10 +5841,14 @@ l: Move right
 j: Slurp down
 k: Slurp up
 \n")
-    (?h (call-interactively 'vilpy-move-left))
-    (?j (call-interactively 'vilpy-down-slurp))
-    (?k (call-interactively 'vilpy-up-slurp))
-    (?l (call-interactively 'vilpy-move-right))
+    (?h (progn (call-interactively 'vilpy-move-left)
+               (message nil)))
+    (?j (progn (call-interactively 'vilpy-down-slurp)
+               (message nil)))
+    (?k (progn (call-interactively 'vilpy-up-slurp)
+               (message nil)))
+    (?l (progn (call-interactively 'vilpy-move-right)
+               (message nil)))
     (t (vilpy--complain-unrecognized-key))))
 
 (defun vilpy-go-actions ()
@@ -5856,13 +5862,20 @@ SPC: Go to file in project
 n: Narrow
 w: Widen
 \n")
-    (?g (goto-char (point-min)))
-    (?d (call-interactively 'vilpy-follow))
-    (?\s (call-interactively 'project-find-file))
-    (?\[ (call-interactively 'flymake-goto-prev-error))
-    (?\] (call-interactively 'flymake-goto-next-error))
-    (?n (call-interactively 'vilpy-narrow))
-    (?w (call-interactively 'vilpy-widen))
+    (?g (progn (goto-char (point-min))
+               (message nil)))
+    (?d (progn (call-interactively 'vilpy-follow)
+               (message nil)))
+    (?\s (progn (call-interactively 'project-find-file)
+                (message nil)))
+    (?\[ (progn (call-interactively 'flymake-goto-prev-error)
+                (message nil)))
+    (?\] (progn (call-interactively 'flymake-goto-next-error)
+                (message nil)))
+    (?n (progn (call-interactively 'vilpy-narrow)
+               (message nil)))
+    (?w (progn (call-interactively 'vilpy-widen)
+               (message nil)))
     (t (vilpy--complain-unrecognized-key))))
 
 (defvar vilpy-mode-map-special
