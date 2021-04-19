@@ -36,7 +36,6 @@
 (require 'avy)
 (require 'newcomment)
 (require 'delsel)
-(require 'swiper)
 (require 'pcase)
 (require 'cl-lib)
 
@@ -1958,183 +1957,6 @@ to all the functions, while maintaining the parens in a pretty state."
     (insert (replace-regexp-in-string "\n" "\\\\n" str))))
 
 ;;* Locals: navigation
-;;** Occur
-(defcustom vilpy-occur-backend 'ivy
-  "Method to navigate to a line with `vilpy-occur'."
-  :type '(choice
-          (const :tag "Ivy" ivy)
-          (const :tag "Helm" helm)))
-
-(defvar vilpy--occur-beg 1
-  "Start position of the top level sexp during `vilpy-occur'.")
-
-(defvar vilpy--occur-end 1
-  "End position of the top level sexp during `vilpy-occur'.")
-
-(defun vilpy--occur-candidates (&optional bnd)
-  "Return the candidates for `vilpy-occur'."
-  (setq bnd (or bnd (save-excursion
-                      (unless (and (bolp)
-                                   (vilpy-left-p))
-                        (beginning-of-defun))
-                      (vilpy--bounds-dwim))))
-  (let ((line-number -1)
-        candidates)
-    (setq vilpy--occur-beg (car bnd))
-    (setq vilpy--occur-end (cdr bnd))
-    (save-excursion
-      (goto-char vilpy--occur-beg)
-      (while (< (point) vilpy--occur-end)
-        (push (format "%-3d %s"
-                      (cl-incf line-number)
-                      (buffer-substring
-                       (line-beginning-position)
-                       (line-end-position)))
-              candidates)
-        (forward-line 1)))
-    (nreverse candidates)))
-
-(defun vilpy--occur-preselect ()
-  "Initial candidate regex for `vilpy-occur'."
-  (format "^%d"
-          (-
-           (line-number-at-pos (point))
-           (line-number-at-pos vilpy--occur-beg))))
-
-(defvar helm-input)
-(declare-function helm "ext:helm")
-
-(defun vilpy-occur-action-goto-paren (x)
-  "Goto line X for `vilpy-occur'."
-  (setq x (read x))
-  (goto-char vilpy--occur-beg)
-  (let ((input (if (eq vilpy-occur-backend 'helm)
-                   helm-input
-                 ivy-text))
-        str-or-comment)
-    (cond ((string= input "")
-           (forward-line x)
-           (back-to-indentation)
-           (when (re-search-forward vilpy-left (line-end-position) t)
-             (goto-char (match-beginning 0))))
-
-          ((setq str-or-comment
-                 (progn
-                   (forward-line x)
-                   (re-search-forward (ivy--regex input)
-                                      (line-end-position) t)
-                   (vilpy--in-string-or-comment-p)))
-           (goto-char str-or-comment))
-
-          ((re-search-backward vilpy-left (line-beginning-position) t)
-           (goto-char (match-beginning 0)))
-
-          ((re-search-forward vilpy-left (line-end-position) t)
-           (goto-char (match-beginning 0)))
-
-          (t
-           (back-to-indentation)))))
-
-(defun vilpy-occur-action-goto-end (x)
-  "Goto line X for `vilpy-occur'."
-  (setq x (read x))
-  (goto-char vilpy--occur-beg)
-  (forward-line x)
-  (re-search-forward (ivy--regex ivy-text) (line-end-position) t))
-
-(defun vilpy-occur-action-goto-beg (x)
-  "Goto line X for `vilpy-occur'."
-  (when (vilpy-occur-action-goto-end x)
-    (goto-char (match-beginning 0))))
-
-(ivy-set-actions
- 'vilpy-occur
- '(("j" vilpy-occur-action-goto-beg "goto start")
-   ("k" vilpy-occur-action-goto-end "goto end")))
-
-(defvar ivy-last)
-(declare-function ivy-state-window "ext:ivy")
-
-(defun vilpy-occur ()
-  "Select a line within current top level sexp.
-See `vilpy-occur-backend' for the selection back end."
-  (interactive)
-  (swiper--init)
-  (cond ((eq vilpy-occur-backend 'helm)
-         (require 'helm)
-         (add-hook 'helm-move-selection-after-hook
-                   #'vilpy--occur-update-input-helm)
-         (add-hook 'helm-update-hook
-                   #'vilpy--occur-update-input-helm)
-         (unwind-protect
-              (helm :sources
-                    `((name . "this defun")
-                      (candidates . ,(vilpy--occur-candidates))
-                      (action . vilpy-occur-action-goto-paren)
-                      (match-strict .
-                                    (lambda (x)
-                                      (ignore-errors
-                                        (string-match
-                                         (ivy--regex helm-input) x)))))
-                    :preselect (vilpy--occur-preselect)
-                    :buffer "*vilpy-occur*")
-           (swiper--cleanup)
-           (remove-hook 'helm-move-selection-after-hook
-                        #'vilpy--occur-update-input-helm)
-           (remove-hook 'helm-update-hook
-                        #'vilpy--occur-update-input-helm)))
-        ((eq vilpy-occur-backend 'ivy)
-         (unwind-protect
-              (ivy-read "pattern: "
-                        (vilpy--occur-candidates)
-                        :preselect (vilpy--occur-preselect)
-                        :require-match t
-                        :update-fn (lambda ()
-                                     (vilpy--occur-update-input
-                                      ivy-text
-                                      (ivy-state-current ivy-last)))
-                        :action #'vilpy-occur-action-goto-paren
-                        :caller 'vilpy-occur)
-           (swiper--cleanup)
-           (when (null ivy-exit)
-             (goto-char swiper--opoint))))
-        (t
-         (error "Bad `vilpy-occur-backend': %S" vilpy-occur-backend))))
-
-(defun vilpy--occur-update-input-helm ()
-  "Update selection for `vilpy-occur' using `helm' back end."
-  (vilpy--occur-update-input
-   helm-input
-   (buffer-substring-no-properties
-    (line-beginning-position)
-    (line-end-position))))
-
-(defun vilpy--occur-update-input (input str)
-  "Update selection for `ivy-occur'.
-INPUT is the current input text.
-STR is the full current candidate."
-  (swiper--cleanup)
-  (let ((re (ivy--regex input))
-        (num (if (string-match "^[0-9]+" str)
-                 (string-to-number (match-string 0 str))
-               0)))
-    (with-selected-window (ivy-state-window ivy-last)
-      (goto-char vilpy--occur-beg)
-      (when (cl-plusp num)
-        (forward-line num)
-        (unless (<= (point) vilpy--occur-end)
-          (recenter)))
-      (let ((ov (make-overlay (line-beginning-position)
-                              (1+ (line-end-position)))))
-        (overlay-put ov 'face 'swiper-line-face)
-        (overlay-put ov 'window (ivy-state-window ivy-last))
-        (push ov swiper--overlays))
-      (re-search-forward re (line-end-position) t)
-      (swiper--add-overlays
-       re
-       vilpy--occur-beg
-       vilpy--occur-end))))
-
 ;;* Locals: Paredit transformations
 (defun vilpy--sub-slurp-forward (arg)
   "Grow current marked symbol by ARG words forwards.
@@ -6053,7 +5875,6 @@ w: Widen
     (vilpy-define-key map "A" 'vilpy-insert-at-end-of-sexp)
     (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
     (vilpy-define-key map "P" 'vilpy-paste)
-    (vilpy-define-key map "s" 'vilpy-occur)
     (vilpy-define-key map "o" 'vilpy-open-parens-below)
     (vilpy-define-key map "O" 'vilpy-open-parens-above)
     ;; Paredit transformations
