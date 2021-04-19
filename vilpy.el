@@ -5915,6 +5915,50 @@ The function used for describing is defined by `vilpy--handlers-alist`."
            (describe-variable symbol)))))
 
 
+;;; Recentering
+
+;; mostly taken from evil-scroll-line-to-{top, center, bottom}
+(defun vilpy-scroll-line-to-top ()
+  "Scrolls the current line to the top the window."
+  (interactive)
+  (let ((line (line-number-at-pos (point)))
+        (col (current-column)))
+    (goto-char (point-min))
+    (forward-line (1- line))
+    (recenter (1- (max 1 scroll-margin)))
+    (move-to-column col)))
+
+(defun vilpy-scroll-line-to-center ()
+  "Scrolls the current line to the top the window."
+  (interactive)
+  (let ((line (line-number-at-pos (point)))
+        (col (current-column)))
+    (recenter nil)
+    (move-to-column col)))
+
+(defun vilpy-scroll-line-to-bottom ()
+  "Scrolls the current line to the bottom of the window."
+  (interactive)
+  (let ((line (line-number-at-pos (point)))
+        (col (current-column)))
+    (goto-char (point-min))
+    (forward-line (1- line)))
+  (recenter (- (max 1 scroll-margin)))
+  (move-to-column col))
+
+(defun vilpy-scroll-actions ()
+  (interactive)
+  (cl-case (read-char-from-minibuffer "Actions:\n
+z: Scroll line to center
+t: Scroll line to top
+b: Scroll line to bottom
+\n")
+    (?z (call-interactively 'vilpy-scroll-line-to-center))
+    (?t (call-interactively 'vilpy-scroll-line-to-top))
+    (?b (call-interactively 'vilpy-scroll-line-to-bottom))
+    (t (vilpy--complain-unrecognized-key))))
+
+
 ;;; Pretty printing
 
 (defun vilpy--prettify-1 ()
@@ -6060,6 +6104,7 @@ w: Widen
     (vilpy-define-key map "t" 'vilpy-teleport)
     (vilpy-define-key map "b" 'vilpy-back)
     (vilpy-define-key map "x" 'vilpy-splice)
+    (vilpy-define-key map "z" 'vilpy-scroll-actions)
     (vilpy-define-key map "V" 'vilpy-visit)
     (vilpy-define-key map "-" 'vilpy-ace-subword)
     (vilpy-define-key map "." 'vilpy-repeat)
