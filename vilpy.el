@@ -54,18 +54,18 @@
                      (:eval-last-sexp . inf-clojure-eval-last-sexp)
                      (:eval-defun . inf-clojure-eval-defun)
                      (:eval-region . inf-clojure-eval-region)
-                     (:indent-sexp . clojure-align)))
+                     (:indent-sexp . vilpy-clojure-indent)))
     (:cider . ((:decider-fn . (lambda () (bound-and-true-p cider-mode)))
                (:eval-last-sexp . cider-eval-last-sexp)
                (:describe-symbol . vilpy--cider-describe-symbol)
                (:eval-defun . cider-eval-defun-at-point)
                (:eval-region . cider-eval-region)
-               (:indent-sexp . clojure-align)))
+               (:indent-sexp . vilpy-clojure-indent)))
     ;; Fallback for clojure, in case `cider` and `inf-clojure` are not activated
     ;; Do not move this up to in this list - that would always ignore cider and inf-clojure,
     ;; which should have higher priority.
     (:clojure . ((:decider-fn . (lambda () (memq major-mode vilpy-clojure-modes)))
-                 (:indent-sexp . clojure-align))))
+                 (:indent-sexp . vilpy-clojure-indent))))
   "An alist that determine which functions will run for language specific features.
 Some commands (eg. `vilpy-eval`) consider this list for deciding the appropriate handler
 for some feature.
@@ -5222,7 +5222,6 @@ The outer delimiters are stripped."
     (indent-sexp)
     (forward-list)))
 
-(declare-function clojure-align "ext:clojure-mode")
 
 (defun vilpy--trim-whitespace-at-bol ()
   "If the point is at '(', remove whitespace (tab and blank space) before point."
@@ -5792,6 +5791,21 @@ b: Scroll line to bottom
     ;; if `handler` is not set, simply do nothing - no need to make vilpy complain,
     ;; since this function is used internally and we don't want to spam the *Messages* buffer.
     (call-interactively handler)))
+
+(declare-function clojure-align "ext:clojure-mode")
+(declare-function clojure-indent-region "ext:clojure-mode")
+(defun vilpy-clojure-indent ()
+  "Indents the next or previous sexp, depending on the point."
+  (interactive)
+  (if (not (or (vilpy-right-p) (vilpy-left-p)))
+      (vilpy-complain "Point is not at beginning or end of sexp.")
+    (let* ((beg (if (vilpy-right-p)
+                    (save-excursion (backward-sexp) (point))
+                  (point)))
+           (end (if (vilpy-right-p)
+                    (point)
+                  (save-excursion (forward-sexp) (point)))))
+      (clojure-indent-region beg end))))
 
 ;;* Key definitions
 (defvar ac-trigger-commands '(self-insert-command))
