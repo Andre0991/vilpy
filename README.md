@@ -22,9 +22,7 @@ These features can be added to other languages by setting the proper handlers in
 ## Installation
 `vilpy` must be installed manually as of now.
 
-Note that `vilpy` has some dependencies, you might need to get them as well.
-
-You can consult all dependencies in the list of `requires` in `vilpy.el`.
+Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might need to get it as well.
 
 ### with `load-path`
 ``` emacs-lisp

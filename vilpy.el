@@ -28,16 +28,18 @@
 ;;; Code:
 
 ;;* Requires
+; built-in
 (eval-when-compile
   (require 'eldoc))
 (require 'mode-local)
 (require 'help-fns)
 (require 'outline)
-(require 'avy)
 (require 'newcomment)
 (require 'delsel)
 (require 'pcase)
 (require 'cl-lib)
+; external
+(require 'avy)
 
 
 ;;; Langugages configuration
