@@ -30,7 +30,6 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might ne
 (let ((vilpy-path "vilpy-load-path"))
   (add-to-list 'load-path vilpy-path)
   (require 'vilpy))
-
 (add-hook 'emacs-lisp-mode-hook (lambda () (vilpy-mode 1)))
 (add-hook 'clojure-mode-hook (lambda () (vilpy-mode 1)))
 ```

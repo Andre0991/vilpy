@@ -6424,7 +6424,7 @@ When ARG is non-nil, unquote the current string."
 (defvar vilpy-mode-map-vilpy
   (let ((map (copy-keymap vilpy-mode-map-base)))
     ;; navigation
-    (define-key map (kbd "TAB") 'vilpy-special)
+    (define-key map (kbd "<backtab>") 'vilpy-special)
     (define-key map (kbd ")") 'vilpy-right-nostring)
     ;; kill-related
     (define-key map (kbd "C-y") 'vilpy-yank)
