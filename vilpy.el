@@ -54,6 +54,7 @@
                     (:indent-sexp . vilpy--prettify-emacs-lisp-sexp)))
     (:inf-clojure . ((:decider-fn . (lambda () (bound-and-true-p inf-clojure-minor-mode)))
                      (:eval-last-sexp . inf-clojure-eval-last-sexp)
+		     (:describe-symbol . vilpy--inf-clojure-describe-symbol)
                      (:eval-defun . inf-clojure-eval-defun)
                      (:eval-region . inf-clojure-eval-region)
                      (:indent-sexp . vilpy-clojure-indent)))
@@ -5728,6 +5729,12 @@ The function used for describing is defined by `vilpy--handlers-alist`."
   (if-let ((handler (assoc-default :describe-symbol (vilpy--get-handlers))))
       (call-interactively handler)
     (vilpy--complain-not-supported)))
+
+(defun vilpy--inf-clojure-describe-symbol ()
+  (interactive)
+  (save-excursion
+    (forward-char 1)
+    (call-interactively 'inf-clojure-show-var-documentation)))
 
 (defun vilpy--emacs-lisp-describe-symbol ()
   (interactive)
