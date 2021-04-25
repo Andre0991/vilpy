@@ -139,12 +139,6 @@ These messages are similar to \"Beginning of buffer\" error for
   :type 'boolean
   :group 'vilpy)
 
-(defcustom vilpy-visit-method 'ffip
-  "Method to switch to a file in the current project."
-  :type '(choice
-          (const :tag "Find File in Project" ffip)
-          (const :tag "Projectile" projectile)))
-
 (defcustom vilpy-avy-style-char 'pre
   "Method of displaying the overlays for a char during visual selection."
   :type '(choice
@@ -3934,27 +3928,6 @@ If already there, return it to previous position."
         'elisp--preceding-sexp
       'preceding-sexp))
 
-(declare-function projectile-find-file "ext:projectile")
-(declare-function projectile-find-file-other-window "ext:projectile")
-(declare-function projectile-mode "ext:projectile")
-(declare-function projectile-project-root "ext:projectile")
-(defvar projectile-mode)
-(declare-function find-file-in-project "ext:find-file-in-project")
-
-(defun vilpy-visit (arg)
-  "Forward to find file in project depending on ARG."
-  (interactive "p")
-  (if (eq vilpy-visit-method 'ffip)
-      (find-file-in-project)
-    (unless projectile-mode
-      (projectile-mode 1))
-    (cond ((= arg 1)
-           (projectile-find-file nil))
-          ((= arg 2)
-           (projectile-find-file-other-window))
-          (t
-           (projectile-find-file arg)))))
-
 (defun vilpy-narrow (arg)
   "Narrow ARG sexps or region."
   (interactive "p")
@@ -5962,7 +5935,6 @@ w: Widen
     (vilpy-define-key map "b" 'vilpy-back)
     (vilpy-define-key map "x" 'vilpy-splice)
     (vilpy-define-key map "z" 'vilpy-scroll-actions)
-    (vilpy-define-key map "V" 'vilpy-visit)
     (vilpy-define-key map "-" 'vilpy-ace-subword)
     (vilpy-define-key map "." 'vilpy-repeat)
     (vilpy-define-key map "~" 'vilpy-tilde)
