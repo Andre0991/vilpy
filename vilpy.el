@@ -4365,25 +4365,6 @@ or to the beginning of the line."
                               "^"))
   (goto-char (match-end 0)))
 
-(defun vilpy-follow ()
-  "Find the definition for the symbol at point or at the next char.
-
-Relies on `xref-find-definitions`."
-  (interactive (list (or (thing-at-point 'symbol t)
-                         (vilpy--current-function))))
-  (when (buffer-narrowed-p)
-    (widen))
-  (cond ((vilpy-left-p)
-         (let ((next-symbol (save-excursion
-                              (forward-char 1)
-                              (thing-at-point 'symbol 't))))
-           (xref-find-definitions next-symbol)))
-        ((region-active-p)
-         (deactivate-mark)
-         (call-interactively 'xref-find-definitions))
-        ('t
-         (call-interactively 'xref-find-definitions))))
-
 ;;* Utilities: slurping and barfing
 (defun vilpy--slurp-forward ()
   "Grow current sexp forward by one sexp."
@@ -5859,8 +5840,6 @@ n: Narrow
 w: Widen
 \n")
     (?g (progn (goto-char (point-min))
-               (message nil)))
-    (?d (progn (call-interactively 'vilpy-follow)
                (message nil)))
     (?\s (progn (call-interactively 'project-find-file)
                 (message nil)))
