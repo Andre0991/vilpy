@@ -14,9 +14,9 @@ This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
 ## Supported languages
-The navigation features are tested with `emacs-lisp` and `clojure`, but they are likely to work with other lisps.
+The navigation features are tested with emacs-lisp and Clojure, but they are likely to work with other lisps.
 
-`emacs-lisp` and `Clojure` (`cider` and `inf-clojure`) also support evaluation, describing the symbol at point and identation.
+emacs-lisp and Clojure (`cider` and `inf-clojure`) also support evaluation, describing the symbol at point and identation.
 These features can be added to other languages by setting the proper handlers in the variable `vilpy--handlers-alist`.
 
 ## Installation
@@ -24,7 +24,6 @@ These features can be added to other languages by setting the proper handlers in
 
 Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might need to get it as well.
 
-### with `load-path`
 ``` emacs-lisp
 ;; replace `vilpy-load-path` by the directory that has `vilpy.el`
 (let ((vilpy-path "vilpy-load-path"))
@@ -32,38 +31,102 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might ne
   (require 'vilpy))
 (add-hook 'emacs-lisp-mode-hook (lambda () (vilpy-mode 1)))
 (add-hook 'clojure-mode-hook (lambda () (vilpy-mode 1)))
-```
 
-### with `use-package`
-``` emacs-lisp
-(use-package vilpy
-   ;; replace `vilpy-load-path` by the directory that has `vilpy.el`
-   :load-path "~/vilpy-load-path"
-   :hook ((emacs-lisp-mode . vilpy-mode)
-          (clojure-mode . vilpy-mode)))
-```
-
-## Configuration
-
-### Evil
-We recommend the following settings for `evil` users:
-
-``` emacs-lisp
+;; recommended settings for `evil` users
 (vilpy-define-key vilpy-mode-map "m" 'evil-set-marker)
 (vilpy-define-key vilpy-mode-map "`" 'evil-goto-mark)
 (vilpy-define-key vilpy-mode-map "c" 'vilpy-execute-in-normal-state)
 ```
 
-## Usage (WIP)
-Many `lispy` keybindings have been changed.
-`vilpy` will have proper documentation when the keybindings get stable.
-If you are an early adapter and want to use this package right now (not recommended yet!), please consult `vilpy-mode-map-special`.
+## Usage (work in progress)
 
-### TODO: Special mode
+### Special mode
+`vilpy` commands operate when special mode is active.
 
-### TODO: Navigation
+<details>
+Special-mode is activated when:
 
-### TODO: Transformation
+- the point is before an open paren: `(`, `[` or `{`
+- the point is after a close paren: `)`, `]` or `}`
+- the region is active
+
+In the examples below, consider that the point is represented by `|`.
+
+As the point is just before the parenthesis, keys will invoke `vilpy` commands.
+If you press `A`, for example, it will call `vilpy-insert-at-end-of-sexp`.
+
+```
+|(foo)
+```
+
+After `A`:
+
+```
+(foo|)
+```
+
+However, if the point is not at a position that activates special-mode, pressing `A` will self-insert the letter `A`, as usual.
+
+```
+(|foo)
+```
+
+After `A`:
+```
+(A|foo)
+```
+</details>
+
+#### Getting in special mode
+| command         | binding            |
+|-----------------|--------------------|
+| `vilpy-special` | <kbd>backtab</kbd> |
+
+
+<details>
+</details>
+
+#### Getting out of special mode
+
+| command                       | binding        |
+|-------------------------------|----------------|
+| `forward-char`                | <kbd>a</kbd>   |
+| `vilpy-insert-at-end-of-sexp` | <kbd>A</kbd>   |
+| `vilpy-open-parens-below`     | <kbd>o</kbd>   |
+| `vilpy-open-parens-above`     | <kbd>O</kbd>   |
+| `backward-char`               | <kbd>C-b</kbd> |
+
+<details>
+
+##### vilpy-insert-at-end-of-sexp (<kbd>A</kbd>)
+Starting with
+
+```
+|(foo bar)
+```
+
+after <kbd>A</kbd>:
+```
+(foo bar|)
+```
+</details>
+
+### Navigation
+| command                    | binding      |
+|----------------------------|--------------|
+| `vilpy-step-out`           | <kbd>h</kbd> |
+| `vilpy-step-in`            | <kbd>l</kbd> |
+| `vilpy-down`               | <kbd>j</kbd> |
+| `vilpy-up`                 | <kbd>k</kbd> |
+| `vilpy-beginning-of-defun` | <kbd>B</kbd> |
+
+### Evaluation
+| command            | binding      |
+|--------------------|--------------|
+| `vilpy-eval`       | <kbd>e</kbd> |
+| `vilpy-eval-defun` | <kbd>E</kbd> |
+
+### Transformation
 
 ## Evil
 
@@ -84,8 +147,7 @@ I simply use these customizations for making `vilpy` take precedence over `evil`
 
 ;; TODO: `map!` is a Doom-emacs macro - not sure how
 ;; to do this with vanilla Evil.
-(map! :map vilpy-mode-map
-      :i "C-d" 'vilpy-delete)
+(map! :map vilpy-mode-map :i "C-d" 'vilpy-delete)
 (map! :map vilpy-mode-map
       :i "C-k" 'vilpy-kill)
 (map! :map vilpy-mode-map
