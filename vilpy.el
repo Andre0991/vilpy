@@ -551,7 +551,7 @@ Return the amount of successful moves, or nil otherwise."
       (- count to-move))))
 
 ;;* Locals: navigation
-(defun vilpy-flow (arg)
+(defun vilpy-step-in (arg)
   "Move inside list ARG times.
 Don't enter strings or comments.
 Return nil if can't move."
@@ -2315,7 +2315,7 @@ Otherwise, move to the next sexp."
     (if (memq major-mode vilpy-clojure-modes)
         (vilpy-splice-let-clojure)
       (let ((child-binds (save-excursion
-                           (vilpy-flow 1)
+                           (vilpy-step-in 1)
                            (read (vilpy--string-dwim))))
             (parent-binds
              (mapcar (lambda (x) (if (consp x) (car x) x))
@@ -2323,7 +2323,7 @@ Otherwise, move to the next sexp."
                        (vilpy-up 1)
                        (read (vilpy--string-dwim)))))
             (end (save-excursion
-                   (vilpy-flow 2)
+                   (vilpy-step-in 2)
                    (point)))
             (beg (save-excursion
                    (vilpy-up 1)
@@ -2347,7 +2347,7 @@ Otherwise, move to the next sexp."
             (t
              (error "unexpected"))))
         (vilpy--prettify-1)
-        (vilpy-flow 2)
+        (vilpy-step-in 2)
         (when parent-binds
           (vilpy-down (length parent-binds))))
       t)))
@@ -2355,7 +2355,7 @@ Otherwise, move to the next sexp."
 (defun vilpy-splice-let-clojure ()
   "Join the current Clojure `let' form into the parent `let'."
   (let ((end (save-excursion
-               (vilpy-flow 1)
+               (vilpy-step-in 1)
                (1+ (point))))
         (beg (save-excursion
                (vilpy-up 1)
@@ -2605,7 +2605,7 @@ Useful for propagating `let' bindings."
       (insert ")\n(let (")
       (vilpy--out-backward 3)
       (vilpy--prettify-1))
-    (vilpy-flow 1)
+    (vilpy-step-in 1)
     (vilpy-down 1)
     t))
 
@@ -3067,7 +3067,7 @@ When ARG is `fill', do nothing for short expressions."
                (member '(ly-raw newline) expr))
            (let ((pt (point)))
              (vilpy-forward 1)
-             (while (and (vilpy-flow 1) (> (point) pt))
+             (while (and (vilpy-step-in 1) (> (point) pt))
                (unless (looking-at "\]\\|)\\|\n")
                  (when (looking-at " *")
                    (replace-match "\n")
@@ -5861,7 +5861,7 @@ w: Widen
     (vilpy-define-key map "O" 'vilpy-open-parens-above)
     ;; navigation
     (vilpy-define-key map "h" 'vilpy-step-out)
-    (vilpy-define-key map "l" 'vilpy-flow)
+    (vilpy-define-key map "l" 'vilpy-step-in)
     (vilpy-define-key map "j" 'vilpy-down)
     (vilpy-define-key map "k" 'vilpy-up)
     ;; Paredit transformations
