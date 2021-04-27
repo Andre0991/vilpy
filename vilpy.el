@@ -469,7 +469,7 @@ Self-insert otherwise."
       (self-insert-command arg)
     (vilpy--out-forward arg)))
 
-(defun vilpy-left (arg)
+(defun vilpy-step-out (arg)
   "Move outside list forwards ARG times.
 Return nil on failure, t otherwise."
   (interactive "p")
@@ -1034,7 +1034,7 @@ will kill the whole sexp (string or list).")
              (delete-char arg)))
 
           ((looking-at vilpy-right)
-           (vilpy-left 1)
+           (vilpy-step-out 1)
            (when vilpy-delete-sexp-from-within
              (vilpy-delete arg)))
 
@@ -2335,7 +2335,7 @@ Otherwise, move to the next sexp."
         (delete-region beg end)
         (when parent-binds
           (newline-and-indent))
-        (vilpy-left 2)
+        (vilpy-step-out 2)
         (when (cl-find-if (lambda (v) (vilpy-find v child-binds))
                           parent-binds)
           (cond
@@ -2503,7 +2503,7 @@ Useful for propagating `let' bindings."
   (if (region-active-p)
       (progn
         (vilpy-convolute 1)
-        (vilpy-left 1))
+        (vilpy-step-out 1))
     (user-error "region must be active")))
 
 (defvar vilpy-repeat--command nil
@@ -2544,7 +2544,7 @@ Useful for propagating `let' bindings."
              (delete-char 1)
              (vilpy-save-excursion
                (forward-char 1)
-               (vilpy-left 2)
+               (vilpy-step-out 2)
                (vilpy--prettify-1))))
           ((and (setq bnd (vilpy--bounds-string))
                 (or (save-excursion
@@ -5855,17 +5855,18 @@ w: Widen
 
 (defvar vilpy-mode-map-special
   (let ((map (make-sparse-keymap)))
+    ;; getting out of special mode
+    (vilpy-define-key map "A" 'vilpy-insert-at-end-of-sexp)
+    (vilpy-define-key map "o" 'vilpy-open-parens-below)
+    (vilpy-define-key map "O" 'vilpy-open-parens-above)
     ;; navigation
-    (vilpy-define-key map "h" 'vilpy-left)
+    (vilpy-define-key map "h" 'vilpy-step-out)
     (vilpy-define-key map "l" 'vilpy-flow)
     (vilpy-define-key map "j" 'vilpy-down)
     (vilpy-define-key map "k" 'vilpy-up)
-    (vilpy-define-key map "A" 'vilpy-insert-at-end-of-sexp)
+    ;; Paredit transformations
     (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
     (vilpy-define-key map "P" 'vilpy-paste)
-    (vilpy-define-key map "o" 'vilpy-open-parens-below)
-    (vilpy-define-key map "O" 'vilpy-open-parens-above)
-    ;; Paredit transformations
     (vilpy-define-key map ">" 'vilpy-slurp)
     (vilpy-define-key map "<" 'vilpy-barf)
     (vilpy-define-key map "x" 'vilpy-splice)
@@ -6301,7 +6302,7 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "C-{") 'vilpy-backward-barf-sexp)
     (define-key map (kbd "M-S") 'vilpy-split)
     (define-key map (kbd "M-J") 'vilpy-join)
-    (define-key map (kbd "C-M-u") 'vilpy-left)
+    (define-key map (kbd "C-M-u") 'vilpy-step-out)
     (define-key map (kbd "C-M-n") 'vilpy-right)
     map))
 
