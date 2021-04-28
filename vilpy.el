@@ -5857,6 +5857,7 @@ w: Widen
   (let ((map (make-sparse-keymap)))
     ;; getting out of special mode
     (vilpy-define-key map "A" 'vilpy-insert-at-end-of-sexp)
+    (vilpy-define-key map "a" 'forward-char)
     (vilpy-define-key map "o" 'vilpy-open-parens-below)
     (vilpy-define-key map "O" 'vilpy-open-parens-above)
     ;; navigation
@@ -5864,45 +5865,47 @@ w: Widen
     (vilpy-define-key map "l" 'vilpy-step-in)
     (vilpy-define-key map "j" 'vilpy-down)
     (vilpy-define-key map "k" 'vilpy-up)
-    ;; Paredit transformations
-    (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
-    (vilpy-define-key map "P" 'vilpy-paste)
-    (vilpy-define-key map ">" 'vilpy-slurp)
-    (vilpy-define-key map "<" 'vilpy-barf)
-    (vilpy-define-key map "x" 'vilpy-splice)
-    (vilpy-define-key map "r" 'vilpy-raise)
-    (vilpy-define-key map "R" 'vilpy-raise-some)
-    (vilpy-define-key map "+" 'vilpy-join)
-    ;; more transformations
-    (vilpy-define-key map "C" 'vilpy-convolute)
-    (vilpy-define-key map "X" 'vilpy-convolute-left)
-    (vilpy-define-key map "p" 'vilpy-move-up)
-    (vilpy-define-key map "n" 'vilpy-move-down)
-    (vilpy-define-key map "J" 'vilpy-oneline)
-    (vilpy-define-key map "M" 'vilpy-alt-multiline)
-    (vilpy-define-key map "S" 'vilpy-stringify)
-    ;; marking
-    (vilpy-define-key map "f" 'vilpy-ace-symbol)
-    (vilpy-define-key map "K" 'vilpy-describe)
-    (vilpy-define-key map "v" 'vilpy-mark-list)
-    ;; dialect-specific
+    (vilpy-define-key map "B" 'vilpy-beginning-of-defun)
+    (vilpy-define-key map "W" 'vilpy-knight-up)
+    (vilpy-define-key map "S" 'vilpy-knight-down)
+    (vilpy-define-key map "b" 'vilpy-back)
+    ;; evaluation
     (vilpy-define-key map "e" 'vilpy-eval)
     (vilpy-define-key map "E" 'vilpy-eval-defun)
+    ;; transformations
+    (vilpy-define-key map "r" 'vilpy-raise)
+    (vilpy-define-key map "R" 'vilpy-raise-some)
+    (vilpy-define-key map "p" 'vilpy-move-up)
+    (vilpy-define-key map "n" 'vilpy-move-down)
+    (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
+    (vilpy-define-key map "<" 'vilpy-barf)
+    (vilpy-define-key map "x" 'vilpy-splice)
+    (vilpy-define-key map "+" 'vilpy-join)
+    (vilpy-define-key map "C" 'vilpy-convolute)
+    (vilpy-define-key map "X" 'vilpy-convolute-left)
+    (vilpy-define-key map "J" 'vilpy-oneline)
+    (vilpy-define-key map "M" 'vilpy-alt-multiline)
+    (vilpy-define-key map "t" 'vilpy-teleport)
+    (vilpy-define-key map "x" 'vilpy-splice)
+    ;; marking
+    (vilpy-define-key map "f" 'vilpy-ace-symbol)
+    (vilpy-define-key map "P" 'vilpy-paste)
+    (vilpy-define-key map ">" 'vilpy-slurp)
+    (vilpy-define-key map "K" 'vilpy-describe)
+    (vilpy-define-key map "v" 'vilpy-mark-list)
     (vilpy-define-key map "g" 'vilpy-go-actions)
     (vilpy-define-key map "F" 'vilpy-ace-symbol-beginning-of-defun)
     (vilpy-define-key map "G" 'end-of-buffer)
     (vilpy-define-key map "d" 'vilpy-delete)
     (vilpy-define-key map "D" 'vilpy-kill)
+    ;; (vilpy-define-key map "S" 'vilpy-stringify)
     ;; (vilpy-define-key map "D" 'pop-tag-mark)
-    (vilpy-define-key map "B" 'vilpy-beginning-of-defun)
     (vilpy-define-key map "_" 'vilpy-underscore)
     ;; miscellanea
     (define-key map (kbd "SPC") 'vilpy-space)
     (vilpy-define-key map "w" 'vilpy-clone)
     (vilpy-define-key map "=" 'vilpy-tab)
     (vilpy-define-key map "i" 'imenu)
-    (vilpy-define-key map "W" 'vilpy-knight-up)
-    (vilpy-define-key map "S" 'vilpy-knight-down)
     ;; (vilpy-define-key map "W" 'vilpy-widen)
     (vilpy-define-key map "u" 'vilpy-undo)
     (vilpy-define-key map "q" 'vilpy-ace-paren
@@ -5911,14 +5914,10 @@ w: Widen
     (vilpy-define-key map "Q" 'vilpy-ace-char)
     ;; (vilpy-define-key map "v" 'vilpy-view)
     (vilpy-define-key map "y" 'vilpy-new-copy)
-    (vilpy-define-key map "t" 'vilpy-teleport)
-    (vilpy-define-key map "b" 'vilpy-back)
-    (vilpy-define-key map "x" 'vilpy-splice)
     (vilpy-define-key map "z" 'vilpy-scroll-actions)
     (vilpy-define-key map "-" 'vilpy-ace-subword)
     (vilpy-define-key map "." 'vilpy-repeat)
     (vilpy-define-key map "~" 'vilpy-tilde)
-    (vilpy-define-key map "a" 'forward-char)
     ;; digit argument
     (mapc (lambda (x) (vilpy-define-key map (format "%d" x) 'digit-argument))
           (number-sequence 0 9))
@@ -6041,215 +6040,6 @@ quote of a string, move forward."
           (t
            (vilpy-delete arg)))))
 
-;;* Paredit compat
-(defun vilpy-close-round-and-newline (arg)
-  "Forward to (`vilpy-out-forward-newline' ARG).
-Insert \")\" in strings and comments."
-  (interactive "p")
-  (if (or (vilpy--in-string-or-comment-p)
-          (vilpy-after-string-p "?\\"))
-      (insert ")")
-    (vilpy-out-forward-newline arg)))
-
-(defun vilpy-open-square (arg)
-  "Forward to (`vilpy-brackets' ARG).
-Insert \"[\" in strings and comments."
-  (interactive "P")
-  (if (vilpy--in-string-or-comment-p)
-      (insert "[")
-    (vilpy-brackets arg)))
-
-(defun vilpy-open-curly (arg)
-  "Forward to( `vilpy-braces' ARG).
-Insert \"{\" in strings and comments."
-  (interactive "P")
-  (if (vilpy--in-string-or-comment-p)
-      (insert "{")
-    (vilpy-braces arg)))
-
-(defun vilpy-close-square (arg)
-  "Forward to function `vilpy-right' with ARG.
-Insert \"]\" in strings and comments."
-  (interactive "p")
-  (if (vilpy--in-string-or-comment-p)
-      (insert "]")
-    (vilpy-right arg)))
-
-(defun vilpy-close-curly (arg)
-  "Forward to function `vilpy-right' with ARG.
-Insert \"}\" in strings and comments."
-  (interactive "p")
-  (if (vilpy--in-string-or-comment-p)
-      (insert "}")
-    (vilpy-right arg)))
-
-(defun vilpy-doublequote (arg)
-  "Insert a pair of quotes around the point.
-When ARG is non-nil, unquote the current string."
-  (interactive "P")
-  (let (bnd)
-    (cond ((region-active-p)
-           (if arg
-               (vilpy-unstringify)
-             (vilpy-stringify)))
-
-          ((and (setq bnd (vilpy--bounds-string))
-                (not (= (point) (car bnd))))
-           (if (= (point) (1- (cdr bnd)))
-               (forward-char 1)
-             (if arg
-                 (vilpy-unstringify)
-               (insert "\\\""))))
-
-          (arg
-           (vilpy-stringify))
-
-          ((vilpy-after-string-p "?\\")
-           (self-insert-command 1))
-
-          ((vilpy--in-comment-p)
-           (insert "\""))
-
-          (t
-           (vilpy--space-unless "^\\|\\s-\\|\\s(\\|[#]")
-           (insert "\"\"")
-           (unless (looking-at "\n\\|)\\|}\\|\\]\\|$")
-             (just-one-space)
-             (backward-char 1))
-           (backward-char)))))
-
-(defun vilpy-meta-doublequote (arg)
-  "Stringify current expression or forward to (`vilpy-meta-doublequote' ARG)."
-  (interactive "P")
-  (let ((bnd (vilpy--bounds-string)))
-    (if bnd
-        (goto-char (cdr bnd))
-      (if (vilpy-left-p)
-          (vilpy-stringify)
-        (vilpy-doublequote arg)))))
-
-(defun vilpy-forward-delete (arg)
-  "Delete ARG sexps."
-  (interactive "p")
-  (let (bnd)
-    (cond ((vilpy-left-p)
-           (forward-char 1))
-          ((looking-at vilpy-right)
-           (forward-char 1)
-           (setq bnd (vilpy--bounds-dwim))
-           (delete-region (car bnd) (cdr bnd)))
-          ((setq bnd (vilpy--bounds-string))
-           (cond ((eq (point) (car bnd))
-                  (forward-char 1))
-                 ((= 2 (- (cdr bnd) (car bnd)))
-                  (delete-region (car bnd) (cdr bnd)))
-                 (t
-                  (vilpy-delete arg))))
-          (t
-           (vilpy-delete arg)))))
-
-(defun vilpy-backward-delete (arg)
-  "Delete ARG sexps backward."
-  (interactive "p")
-  (let (bnd)
-    (cond
-      ((vilpy--in-comment-p)
-       (backward-delete-char-untabify arg))
-      ((and (eq (char-before) ?\")
-            (null (vilpy--bounds-string)))
-       (backward-char 1))
-      ((vilpy-looking-back vilpy-left)
-       (backward-char)
-       (delete-region
-        (point)
-        (save-excursion
-          (forward-sexp 1)
-          (point))))
-      ((vilpy-right-p)
-       (backward-char 1))
-      ((and (setq bnd (vilpy--bounds-string))
-            (= 2 (- (cdr bnd) (car bnd))))
-       (delete-region (car bnd) (cdr bnd)))
-      (t (vilpy-delete-backward arg)))))
-
-(defun vilpy-wrap-round (arg)
-  "Forward to `vilpy-parens' with a default ARG of 1."
-  (interactive "P")
-  (vilpy-parens (or arg 1)))
-
-(defun vilpy-splice-sexp-killing-backward ()
-  "Forward to `vilpy-raise'."
-  (interactive)
-  (let ((bnd (vilpy--bounds-list)))
-    (if (eq (point) (car bnd))
-        (vilpy-raise-some)
-      (vilpy--mark (cons (point) (1- (cdr bnd))))
-      (vilpy-raise 1)
-      (deactivate-mark))))
-
-(defun vilpy-splice-sexp-killing-forward ()
-  "Forward to `vilpy-raise'."
-  (interactive)
-  (if (vilpy-right-p)
-      (vilpy-raise-some)
-    (let ((bnd (vilpy--bounds-list)))
-      (if (eq (point) (car bnd))
-          (vilpy-raise-some)
-        (vilpy--mark (cons (1+ (car bnd)) (point)))
-        (vilpy-raise 1)
-        (deactivate-mark)))))
-
-(defun vilpy-raise-sexp ()
-  "Forward to `vilpy-raise'."
-  (interactive)
-  (if (or (vilpy-left-p)
-          (vilpy-right-p))
-      (vilpy-raise 1)
-    (vilpy-mark-symbol)
-    (vilpy-other)
-    (vilpy-raise 1)
-    (deactivate-mark)))
-
-(defun vilpy-convolute-sexp ()
-  "Forward to `vilpy-convolute'."
-  (interactive)
-  (unless (vilpy-left-p)
-    (vilpy--out-backward 1))
-  (vilpy-convolute 1)
-  (vilpy--out-backward 1))
-
-(defun vilpy-forward-slurp-sexp (arg)
-  "Forward to (`vilpy-slurp' ARG)."
-  (interactive "p")
-  (save-excursion
-    (unless (vilpy-right-p)
-      (vilpy--out-forward 1))
-    (vilpy-slurp arg)))
-
-(defun vilpy-forward-barf-sexp (arg)
-  "Forward to (`vilpy-barf' ARG)."
-  (interactive "p")
-  (save-excursion
-    (unless (vilpy-left-p)
-      (vilpy--out-forward 1))
-    (vilpy-barf arg)))
-
-(defun vilpy-backward-slurp-sexp (arg)
-  "Forward to (`vilpy-slurp' ARG)."
-  (interactive "p")
-  (save-excursion
-    (unless (vilpy-left-p)
-      (vilpy--out-backward 1))
-    (vilpy-slurp arg)))
-
-(defun vilpy-backward-barf-sexp (arg)
-  "Forward to (`vilpy-barf' ARG)."
-  (interactive "p")
-  (save-excursion
-    (unless (vilpy-left-p)
-      (vilpy--out-backward 1))
-    (vilpy-barf arg)))
-
 (defvar vilpy-mode-map-base
   (let ((map (make-sparse-keymap)))
     ;; navigation
@@ -6268,42 +6058,6 @@ When ARG is non-nil, unquote the current string."
     (define-key map (kbd "RET") 'vilpy-newline-and-indent-plain)
     ;; tags
     (define-key map (kbd "M-,") 'pop-tag-mark)
-    map))
-
-(defvar vilpy-mode-map-paredit
-  (let ((map (copy-keymap vilpy-mode-map-base)))
-    (define-key map (kbd "M-)") 'vilpy-close-round-and-newline)
-    (define-key map (kbd "C-M-n") 'vilpy-forward)
-    (define-key map (kbd "C-M-p") 'vilpy-backward)
-    (define-key map (kbd "[") 'vilpy-open-square)
-    (define-key map (kbd "]") 'vilpy-close-square)
-    (define-key map (kbd "{") 'vilpy-open-curly)
-    (define-key map (kbd "}") 'vilpy-close-curly)
-    (define-key map (kbd ")") 'vilpy-right-nostring)
-    (define-key map (kbd "\"") 'vilpy-doublequote)
-    (define-key map (kbd "M-\"") 'vilpy-meta-doublequote)
-    (define-key map (kbd "C-d") 'vilpy-forward-delete)
-    (define-key map (kbd "DEL") 'vilpy-backward-delete)
-    (define-key map (kbd "C-M-f") 'vilpy-forward)
-    (define-key map (kbd "C-M-b") 'vilpy-backward)
-    (define-key map (kbd "M-(") 'vilpy-wrap-round)
-    (define-key map (kbd "M-s") 'vilpy-splice)
-    (define-key map (kbd "M-<up>") 'vilpy-splice-sexp-killing-backward)
-    (define-key map (kbd "M-<down>") 'vilpy-splice-sexp-killing-forward)
-    (define-key map (kbd "M-r") 'vilpy-raise-sexp)
-    (define-key map (kbd "M-?") 'vilpy-convolute-sexp)
-    (define-key map (kbd "C-)") 'vilpy-forward-slurp-sexp)
-    (define-key map (kbd "C-<right>") 'vilpy-forward-slurp-sexp)
-    (define-key map (kbd "C-}") 'vilpy-forward-barf-sexp)
-    (define-key map (kbd "C-<left>") 'vilpy-forward-barf-sexp)
-    (define-key map (kbd "C-(") 'vilpy-backward-slurp-sexp)
-    (define-key map (kbd "C-M-<left>") 'vilpy-backward-slurp-sexp)
-    (define-key map (kbd "C-M-<right>") 'vilpy-backward-barf-sexp)
-    (define-key map (kbd "C-{") 'vilpy-backward-barf-sexp)
-    (define-key map (kbd "M-S") 'vilpy-split)
-    (define-key map (kbd "M-J") 'vilpy-join)
-    (define-key map (kbd "C-M-u") 'vilpy-step-out)
-    (define-key map (kbd "C-M-n") 'vilpy-right)
     map))
 
 (defvar vilpy-mode-map-parinfer
@@ -6328,20 +6082,8 @@ When ARG is non-nil, unquote the current string."
 
 (defvar vilpy-mode-map-evilcp
   (let ((map (copy-keymap vilpy-mode-map-base)))
-    (define-key map (kbd "M-)") 'vilpy-close-round-and-newline)
-    (define-key map (kbd "[") 'vilpy-open-square)
-    (define-key map (kbd "]") 'vilpy-close-square)
-    (define-key map (kbd "{") 'vilpy-open-curly)
-    (define-key map (kbd "}") 'vilpy-close-curly)
     (define-key map (kbd ")") 'vilpy-right-nostring)
-    (define-key map (kbd "\"") 'vilpy-doublequote)
-    (define-key map (kbd "M-\"") 'vilpy-meta-doublequote)
-    (define-key map (kbd "DEL") 'vilpy-backward-delete)
     (define-key map (kbd "M-s") 'vilpy-splice)
-    (define-key map (kbd "M-<up>") 'vilpy-splice-sexp-killing-backward)
-    (define-key map (kbd "M-<down>") 'vilpy-splice-sexp-killing-backward)
-    (define-key map (kbd "M-r") 'vilpy-raise-sexp)
-    (define-key map (kbd "M-?") 'vilpy-convolute-sexp)
     (define-key map (kbd "M-S") 'vilpy-split)
     (define-key map (kbd "M-J") 'vilpy-join)
     (define-key map (kbd "{") 'vilpy-braces)
@@ -6430,21 +6172,19 @@ When ARG is non-nil, unquote the current string."
     (const special)
     (radio
      (const vilpy)
-     (const paredit)
      (const evilcp))
     (const c-digits)
     (const oleh)))
 
 (defun vilpy-set-key-theme (theme)
   "Set `vilpy-mode-map' for according to THEME.
-THEME is a list of choices: 'special, 'vilpy, 'paredit, 'evilcp, 'c-digits."
+THEME is a list of choices: 'special, 'vilpy, 'evilcp, 'c-digits."
   (setq vilpy-mode-map
         (make-composed-keymap
          (delq nil
                (list
                 (when (memq 'special theme) vilpy-mode-map-special)
                 (when (memq 'vilpy theme) vilpy-mode-map-vilpy)
-                (when (memq 'paredit theme) vilpy-mode-map-paredit)
                 (when (memq 'parinfer theme) vilpy-mode-map-parinfer)
                 (when (memq 'evilcp theme) vilpy-mode-map-evilcp)
                 (when (memq 'c-digits theme) vilpy-mode-map-c-digits)
