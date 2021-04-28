@@ -13,11 +13,13 @@ This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo
 
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
 
-## Supported languages
+## Supported languages & compatibility with other modes
 The navigation features are tested with emacs-lisp and Clojure, but they are likely to work with other lisps.
 
 emacs-lisp and Clojure (`cider` and `inf-clojure`) also support evaluation, describing the symbol at point and identation.
 These features can be added to other languages by setting the proper handlers in the variable `vilpy--handlers-alist`.
+
+`vilpy` defines its own keybindings that might conflict with `parinfer`, `paredit` and other structural editing modes.
 
 ## Installation
 `vilpy` must be installed manually as of now.
