@@ -43,6 +43,8 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might ne
 ### Special mode
 `vilpy` commands operate when special mode is active.
 
+If you know `vi`, think of special mode as `vilpy`'s normal mode.
+
 <details>
 Special-mode is activated when:
 
@@ -82,8 +84,48 @@ After `A`:
 |-----------------|--------------------|
 | `vilpy-special` | <kbd>backtab</kbd> |
 
+Note that <kbd>backtab</kbd> is <kbd>shift</kbd> and <kbd>tab</kbd>.
 
 <details>
+
+**If not in special mode** 
+
+Move the point to the nearest leftmost paren.
+
+Starting with:
+
+```
+(foo |bar)
+```
+
+after <kbd>backtab</kbd>:
+
+```
+|(foo bar)
+```
+
+**If already in special mode** 
+
+Cycle through parens.
+
+Starting with:
+
+```
+|(foo bar)
+```
+
+after <kbd>backtab</kbd>:
+
+```
+(foo bar)|
+```
+
+after <kbd>backtab</kbd>:
+
+```
+|(foo bar)
+```
+
 </details>
 
 #### Getting out of special mode
