@@ -2151,31 +2151,6 @@ to the next level and adjusting the parentheses accordingly."
             (vilpy-other)
           (goto-char (car bnd)))))))
 
-(defun vilpy-indent-adjust-parens (arg)
-  "Indent the line if it is incorrectly indented or act as `vilpy-up-slurp'.
-If indenting does not adjust indentation or move the point, call
-`vilpy-up-slurp' ARG times."
-  (interactive "p")
-  (let ((tick (buffer-chars-modified-tick))
-        (pt (point))
-        (bnd (when (region-active-p)
-               (cons (region-beginning)
-                     (region-end)))))
-    (indent-for-tab-command)
-    (when (and (= tick (buffer-chars-modified-tick))
-               (= pt (point)))
-      (if bnd
-          (vilpy--mark bnd)
-        (unless (vilpy--empty-line-p)
-          (set-mark (point))
-          (vilpy-slurp -1)))
-      (dotimes (_ arg)
-        (vilpy-up-slurp))
-      (when (and (not bnd)
-                 (region-active-p))
-        (ignore-errors (vilpy-other))
-        (deactivate-mark)))))
-
 (defun vilpy--backward-sexp-or-comment ()
   "When in comment, move to the comment start.
 Otherwise, move to the previous sexp."
@@ -2369,38 +2344,6 @@ Otherwise, move to the next sexp."
     (vilpy--out-backward 2)
     (vilpy--prettify-1)
     t))
-
-(defun vilpy-barf-to-point (arg)
-  "Barf to the closest sexp before the point.
-When ARG is non-nil, barf from the left."
-  (interactive "P")
-  (if (and (not arg)
-           (looking-at vilpy-right))
-      (forward-char)
-    (unless (or (not (cadr (syntax-ppss)))
-                (let ((str (vilpy--bounds-string)))
-                  (and str
-                       (not (= (car str) (point))))))
-      (let ((line-number (line-number-at-pos))
-            split-moved-point-down)
-        (vilpy-split)
-        (when (and arg
-                   (not (= (line-number-at-pos) line-number)))
-          (setq split-moved-point-down t))
-        (vilpy--prettify-1)
-        (cond (arg
-               (save-excursion
-                 (vilpy-up 1)
-                 (vilpy-splice 1))
-               (when split-moved-point-down
-                 (vilpy-delete-backward 1)))
-              (t
-               (save-excursion
-                 (vilpy-splice 1))
-               (join-line)
-               (when (looking-at " $")
-                 (delete-char 1))))
-        (vilpy--reindent 1)))))
 
 (defun vilpy-raise (arg)
   "Use current sexp or region as replacement for its parent.
@@ -2862,35 +2805,6 @@ Precondition: the region is active and the point is at `region-beginning'."
                 (exchange-point-and-mark)))
           (when leftp
             (vilpy-other)))))))
-
-(defun vilpy-dedent-adjust-parens (arg)
-  "Move region or all the following sexps in the current list right.
-This can be of thought as dedenting the code to the previous level and adjusting
-the parentheses accordingly."
-  (interactive "p")
-  (let ((line-type (vilpy--empty-line-p)))
-    (cond ((eq line-type 'right)
-           (unless (looking-at vilpy-right)
-             (re-search-forward vilpy-right)
-             (backward-char))
-           (vilpy-dotimes arg
-             (when (looking-at "$")
-               (error "No longer in sexp"))
-             (unless (save-excursion
-                       (forward-line -1)
-                       (end-of-line)
-                       (vilpy--in-comment-p))
-               (vilpy-delete-backward 1))
-             (forward-char)
-             (newline-and-indent)))
-          ((region-active-p)
-           (vilpy-move-right arg))
-          ((not line-type)
-           (set-mark (point))
-           (vilpy-slurp 0)
-           (vilpy-move-right arg)
-           (vilpy-other)
-           (deactivate-mark)))))
 
 (defun vilpy-clone (arg)
   "Clone sexp ARG times.
@@ -5923,123 +5837,6 @@ w: Widen
           (number-sequence 0 9))
     map))
 
-;;* Parinfer compat
-(defun vilpy--auto-wrap (func arg preceding-syntax-alist)
-  "Helper to create versions of the `vilpy-pair' commands that wrap by default."
-  (cond ((not arg)
-         (setq arg -1))
-        ((or (eq arg '-)
-             (and (numberp arg)
-                  (= arg -1)))
-         (setq arg nil)))
-  (let (bounds)
-    (when (and (numberp arg)
-               (= arg -1)
-               (setq bounds (vilpy--bounds-dwim))
-               (= (point) (cdr bounds)))
-      (vilpy--delimiter-space-unless preceding-syntax-alist)))
-  (funcall func arg))
-
-(defun vilpy-parens-auto-wrap (arg)
-  "Like `vilpy-parens' but wrap to the end of the line by default.
-With an arg of -1, never wrap."
-  (interactive "P")
-  (vilpy--auto-wrap #'vilpy-parens arg vilpy-parens-preceding-syntax-alist))
-
-(defun vilpy-brackets-auto-wrap (arg)
-  "Like `vilpy-brackets' but wrap to the end of the line by default.
-With an arg of -1, never wrap."
-  (interactive "P")
-  (vilpy--auto-wrap #'vilpy-brackets arg vilpy-brackets-preceding-syntax-alist))
-
-(defun vilpy-braces-auto-wrap (arg)
-  "Like `vilpy-braces' but wrap to the end of the line by default.
-With an arg of -1, never wrap."
-  (interactive "P")
-  (vilpy--auto-wrap #'vilpy-braces arg vilpy-braces-preceding-syntax-alist))
-
-(defun vilpy-barf-to-point-nostring (arg)
-  "Call `vilpy-barf-to-point' with ARG unless in string or comment.
-Self-insert otherwise."
-  (interactive "P")
-  (if (or (vilpy--in-string-or-comment-p)
-          (vilpy-looking-back "?\\\\"))
-      (self-insert-command (prefix-numeric-value arg))
-    (vilpy-barf-to-point arg)))
-
-(defun vilpy-delete-backward-or-splice-or-slurp (arg)
-  "Call `vilpy-delete-backward' unless after a delimiter.
-After an opening delimiter, splice. After a closing delimiter, slurp to the end
-of the line without moving the point. When in a position where slurping will
-not have an effect such as after the final delimiters before the end of a line,
-move backward. In comments and strings, call `vilpy-delete-backward'. When after
-the opening quote of a string, delete the entire string. When after the closing
-quote of a string, move backward."
-  (interactive "p")
-  (let ((string-bounds (vilpy--bounds-string)))
-    (cond ((and (not string-bounds)
-                (save-excursion
-                  (backward-char)
-                  (vilpy--in-string-p)))
-           (backward-char))
-          ((and string-bounds
-                (= (1- (point)) (car string-bounds)))
-           (backward-char)
-           (vilpy-delete 1))
-          ((vilpy--in-string-or-comment-p)
-           (vilpy-delete-backward arg))
-          ((looking-back vilpy-left (1- (point)))
-           (when (looking-at "[[:space:]]")
-             (fixup-whitespace))
-           (backward-char)
-           (save-excursion
-             (vilpy-other)
-             (delete-char -1))
-           (vilpy--delete-leading-garbage)
-           (delete-char 1))
-          ((looking-back vilpy-right (1- (point)))
-           (let ((tick (buffer-chars-modified-tick)))
-             (save-excursion
-               (vilpy-slurp -1))
-             (when (= tick (buffer-chars-modified-tick))
-               (backward-char arg))))
-          (t
-           (vilpy-delete-backward arg)))))
-
-(defun vilpy-delete-or-splice-or-slurp (arg)
-  "Call `vilpy-delete' unless before a delimiter.
-Before an opening delimiter, splice. Before a closing delimiter, slurp to the
-end of the line without moving the point. When in a position where slurping will
-not have an effect such as at the final delimiters before the end of a line,
-move forward. In comments and strings, call `vilpy-delete'. When before the
-opening quote of a string, delete the entire string. When before the closing
-quote of a string, move forward."
-  (interactive "p")
-  (let ((string-bounds (vilpy--bounds-string)))
-    (cond ((and string-bounds
-                (= (1+ (point)) (cdr string-bounds)))
-           (forward-char))
-          ((and string-bounds
-                (= (point) (car string-bounds)))
-           (vilpy-delete 1))
-          ((vilpy--in-string-or-comment-p)
-           (vilpy-delete arg))
-          ((looking-at vilpy-left)
-           (save-excursion
-             (vilpy-other)
-             (delete-char -1))
-           (vilpy--delete-leading-garbage)
-           (delete-char 1))
-          ((looking-at vilpy-right)
-           (let ((tick (buffer-chars-modified-tick)))
-             (save-excursion
-               (forward-char)
-               (vilpy-slurp -1))
-             (when (= tick (buffer-chars-modified-tick))
-               (forward-char arg))))
-          (t
-           (vilpy-delete arg)))))
-
 (defvar vilpy-mode-map-base
   (let ((map (make-sparse-keymap)))
     ;; navigation
@@ -6058,26 +5855,6 @@ quote of a string, move forward."
     (define-key map (kbd "RET") 'vilpy-newline-and-indent-plain)
     ;; tags
     (define-key map (kbd "M-,") 'pop-tag-mark)
-    map))
-
-(defvar vilpy-mode-map-parinfer
-  (let ((map (copy-keymap vilpy-mode-map-base)))
-    (define-key map (kbd "(") 'vilpy-parens-auto-wrap)
-    (define-key map (kbd "[") 'vilpy-brackets-auto-wrap)
-    (define-key map (kbd "{") 'vilpy-braces-auto-wrap)
-    (define-key map (kbd "\"") 'vilpy-quotes)
-    (define-key map (kbd ")") 'vilpy-barf-to-point-nostring)
-    (define-key map (kbd "]") 'vilpy-barf-to-point-nostring)
-    (define-key map (kbd "}") 'vilpy-barf-to-point-nostring)
-    (define-key map (kbd "TAB") 'vilpy-indent-adjust-parens)
-    (define-key map (kbd "<backtab>") 'vilpy-dedent-adjust-parens)
-    (define-key map (kbd "DEL") 'vilpy-delete-backward-or-splice-or-slurp)
-    (define-key map (kbd "C-d") 'vilpy-delete-or-splice-or-slurp)
-    (define-key map (kbd ":") 'vilpy-colon)
-    (define-key map (kbd "^") 'vilpy-hat)
-    (define-key map (kbd "'") 'vilpy-tick)
-    (define-key map (kbd "`") 'vilpy-backtick)
-    (define-key map (kbd "#") 'vilpy-hash)
     map))
 
 (defvar vilpy-mode-map-evilcp
@@ -6172,7 +5949,6 @@ THEME is a list of choices: 'special, 'vilpy, 'evilcp, 'c-digits."
                (list
                 (when (memq 'special theme) vilpy-mode-map-special)
                 (when (memq 'vilpy theme) vilpy-mode-map-vilpy)
-                (when (memq 'parinfer theme) vilpy-mode-map-parinfer)
                 (when (memq 'evilcp theme) vilpy-mode-map-evilcp)
                 (when (memq 'c-digits theme) vilpy-mode-map-c-digits)))))
   (setcdr
