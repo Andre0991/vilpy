@@ -19,7 +19,7 @@ The navigation features are tested with emacs-lisp and Clojure, but they are lik
 emacs-lisp and Clojure (`cider` and `inf-clojure`) also support evaluation, describing the symbol at point and identation.
 These features can be added to other languages by setting the proper handlers in the variable `vilpy--handlers-alist`.
 
-`vilpy` defines its own keybindings that might conflict with `parinfer`, `paredit` and other structural editing modes.
+`vilpy` defines its own keybindings that might conflict with `parinfer`, `paredit` and other structural diting odes
 
 ## Installation
 `vilpy` must be installed manually as of now.
@@ -139,10 +139,24 @@ after <kbd>backtab</kbd>:
 | `vilpy-open-parens-below`     | <kbd>o</kbd>   |
 | `vilpy-open-parens-above`     | <kbd>O</kbd>   |
 | `backward-char`               | <kbd>C-b</kbd> |
+| `forward-char`                | <kbd>C-f</kbd> |
 
 <details>
 
-##### vilpy-insert-at-end-of-sexp (<kbd>A</kbd>)
+##### `forward-char` (<kbd>a</kbd>)
+Starting with
+
+```
+|(foo)
+```
+
+after <kbd>a</kbd>:
+
+```
+(|foo)
+```
+
+##### `vilpy-insert-at-end-of-sexp` (<kbd>A</kbd>)
 Starting with
 
 ```
@@ -153,6 +167,35 @@ after <kbd>A</kbd>:
 ```
 (foo bar|)
 ```
+
+##### `vilpy-open-parens-below` (<kbd>o</kbd>)
+Starting with
+
+```
+|(foo)
+```
+
+after <kbd>o</kbd>:
+```
+(foo)
+(|)
+```
+
+</details>
+
+##### `vilpy-open-parens-above` (<kbd>O</kbd>)
+Starting with
+
+```
+|(foo)
+```
+
+after <kbd>O</kbd>:
+```
+(|)
+(foo)
+```
+
 </details>
 
 ### Navigation
