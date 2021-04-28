@@ -5857,30 +5857,6 @@ w: Widen
     (define-key map (kbd "M-,") 'pop-tag-mark)
     map))
 
-(defvar vilpy-mode-map-evilcp
-  (let ((map (copy-keymap vilpy-mode-map-base)))
-    (define-key map (kbd ")") 'vilpy-right-nostring)
-    (define-key map (kbd "M-s") 'vilpy-splice)
-    (define-key map (kbd "M-S") 'vilpy-split)
-    (define-key map (kbd "M-J") 'vilpy-join)
-    (define-key map (kbd "{") 'vilpy-braces)
-    (define-key map (kbd "}") 'vilpy-brackets)
-    (define-key map (kbd "]") 'vilpy-forward)
-    (define-key map (kbd "[") 'vilpy-backward)
-    (define-key map (kbd "M-(") 'evil-cp-wrap-next-round)
-    (define-key map (kbd "M-{") 'evil-cp-wrap-next-curly)
-    (define-key map (kbd "M-}") 'evil-cp-wrap-next-square)
-    (define-key map (kbd "<") 'evil-cp-<)
-    (define-key map (kbd ">") 'evil-cp->)
-    (define-key map (kbd "y") 'vilpy-new-copy)
-    (define-key map (kbd "<C-return>") 'vilpy-open-line)
-    (define-key map (kbd "<M-return>") 'vilpy-meta-return)
-    (define-key map (kbd "M-k") 'vilpy-move-up)
-    (define-key map (kbd "M-j") 'vilpy-move-down)
-    (define-key map (kbd "M-p") 'vilpy-clone)
-    (define-key map (kbd "M-\"") 'paredit-meta-doublequote)
-    map))
-
 (defvar vilpy-mode-map-c-digits
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-1") 'vilpy-describe-inline)
@@ -5936,20 +5912,18 @@ w: Widen
   '(set
     (const special)
     (radio
-     (const vilpy)
-     (const evilcp))
+     (const vilpy))
     (const c-digits)))
 
 (defun vilpy-set-key-theme (theme)
   "Set `vilpy-mode-map' for according to THEME.
-THEME is a list of choices: 'special, 'vilpy, 'evilcp, 'c-digits."
+THEME is a list of choices: 'special, 'vilpy, 'c-digits."
   (setq vilpy-mode-map
         (make-composed-keymap
          (delq nil
                (list
                 (when (memq 'special theme) vilpy-mode-map-special)
                 (when (memq 'vilpy theme) vilpy-mode-map-vilpy)
-                (when (memq 'evilcp theme) vilpy-mode-map-evilcp)
                 (when (memq 'c-digits theme) vilpy-mode-map-c-digits)))))
   (setcdr
    (assq 'vilpy-mode minor-mode-map-alist)
