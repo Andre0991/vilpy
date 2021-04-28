@@ -6153,18 +6153,6 @@ quote of a string, move forward."
     (define-key map (kbd "M-RET") 'vilpy-meta-return)
     map))
 
-(defvar vilpy-mode-map-oleh
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "φ") 'vilpy-parens)
-    (define-key map (kbd "σ") 'vilpy-braces)
-    (define-key map (kbd "ρ") 'vilpy-brackets)
-    (define-key map (kbd "θ") 'vilpy-quotes)
-    (define-key map (kbd "χ") 'vilpy-right)
-    (define-key map (kbd "C-M-a") 'vilpy-beginning-of-defun)
-    (define-key map (kbd "<return>") 'vilpy-alt-line)
-    (define-key map (kbd "RET") 'vilpy-newline-and-indent-plain)
-    map))
-
 (defcustom vilpy-key-theme '(special vilpy c-digits)
   "List of key themes used to compose `vilpy-mode-map'."
   :type
@@ -6173,8 +6161,7 @@ quote of a string, move forward."
     (radio
      (const vilpy)
      (const evilcp))
-    (const c-digits)
-    (const oleh)))
+    (const c-digits)))
 
 (defun vilpy-set-key-theme (theme)
   "Set `vilpy-mode-map' for according to THEME.
@@ -6187,8 +6174,7 @@ THEME is a list of choices: 'special, 'vilpy, 'evilcp, 'c-digits."
                 (when (memq 'vilpy theme) vilpy-mode-map-vilpy)
                 (when (memq 'parinfer theme) vilpy-mode-map-parinfer)
                 (when (memq 'evilcp theme) vilpy-mode-map-evilcp)
-                (when (memq 'c-digits theme) vilpy-mode-map-c-digits)
-                (when (memq 'oleh theme) vilpy-mode-map-oleh)))))
+                (when (memq 'c-digits theme) vilpy-mode-map-c-digits)))))
   (setcdr
    (assq 'vilpy-mode minor-mode-map-alist)
    vilpy-mode-map))

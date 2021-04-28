@@ -2326,7 +2326,7 @@ Insert KEY if there's no command."
                    "#(|)"))
   (should (string= (vilpy-with clojure "#?@|" "(")
                    "#?@(|)"))
-  (vilpy-set-key-theme '(special vilpy c-digits oleh)))
+  (vilpy-set-key-theme '(special vilpy c-digits)))
 
 (ert-deftest vilpy-brackets-auto-wrap ()
   (message "vilpy-brackets-auto-wrap")
@@ -2340,7 +2340,7 @@ Insert KEY if there's no command."
                    "`[|]"))
   (should (string= (vilpy-with clojure "#my.klass_or_type_or_record|" "[")
                    "#my.klass_or_type_or_record[|]"))
-  (vilpy-set-key-theme '(special vilpy c-digits oleh)))
+  (vilpy-set-key-theme '(special vilpy c-digits)))
 
 (ert-deftest vilpy-braces-auto-wrap ()
   (message "vilpy-braces-auto-wrap")
@@ -2358,7 +2358,7 @@ Insert KEY if there's no command."
                    "#my.record{|}"))
   (should (string= (vilpy-with clojure "symbol|" "{")
                    "symbol {|}"))
-  (vilpy-set-key-theme '(special vilpy c-digits oleh)))
+  (vilpy-set-key-theme '(special vilpy c-digits)))
 
 (ert-deftest vilpy-barf-to-point-nostring ()
   (message "vilpy-barf-to-point-nostring")
@@ -2373,7 +2373,7 @@ Insert KEY if there's no command."
                    "(a \"b\")| c"))
   (should (string= (vilpy-with ";; |" ")")
                    ";; )|"))
-  (vilpy-set-key-theme '(special vilpy c-digits oleh)))
+  (vilpy-set-key-theme '(special vilpy c-digits)))
 
 (ert-deftest vilpy-delete-backward-or-splice-or-slurp ()
   (message "vilpy-delete-backward-or-splice-or-slurp")
@@ -2416,7 +2416,7 @@ Insert KEY if there's no command."
                    "(|)"))
   (should (string= (vilpy-with "#2A(|(a b) (0 1))" (kbd "DEL"))
                    "|(a b) (0 1)"))
-  (vilpy-set-key-theme '(special vilpy c-digits oleh)))
+  (vilpy-set-key-theme '(special vilpy c-digits)))
 
 (ert-deftest vilpy-delete-or-splice-or-slurp ()
   (message "vilpy-delete-or-splice-or-slurp")
@@ -2456,7 +2456,7 @@ Insert KEY if there's no command."
                    "(|)"))
   (should (string= (vilpy-with "#2A|((a b) (0 1))" (kbd "C-d"))
                    "|(a b) (0 1)"))
-  (vilpy-set-key-theme '(special vilpy c-digits oleh)))
+  (vilpy-set-key-theme '(special vilpy c-digits)))
 
 (ert-deftest vilpy-paste ()
   (message "vilpy-paste")
