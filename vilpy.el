@@ -5761,9 +5761,9 @@ w: Widen
     (vilpy-define-key map "l" 'vilpy-step-in)
     (vilpy-define-key map "j" 'vilpy-down)
     (vilpy-define-key map "k" 'vilpy-up)
-    (vilpy-define-key map "B" 'vilpy-beginning-of-defun)
     (vilpy-define-key map "W" 'vilpy-knight-up)
     (vilpy-define-key map "S" 'vilpy-knight-down)
+    (vilpy-define-key map "B" 'vilpy-beginning-of-defun)
     (vilpy-define-key map "b" 'vilpy-back)
     (vilpy-define-key map "L" 'vilpy-right)
     (vilpy-define-key map "G" 'end-of-buffer)
@@ -5777,9 +5777,9 @@ w: Widen
     (vilpy-define-key map "R" 'vilpy-raise-some)
     (vilpy-define-key map "p" 'vilpy-move-up)
     (vilpy-define-key map "n" 'vilpy-move-down)
-    (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
     (vilpy-define-key map ">" 'vilpy-slurp)
     (vilpy-define-key map "<" 'vilpy-barf)
+    (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
     (vilpy-define-key map "x" 'vilpy-splice)
     (vilpy-define-key map "+" 'vilpy-join)
     (vilpy-define-key map "C" 'vilpy-convolute)
@@ -5787,7 +5787,6 @@ w: Widen
     (vilpy-define-key map "J" 'vilpy-oneline)
     (vilpy-define-key map "M" 'vilpy-alt-multiline)
     (vilpy-define-key map "t" 'vilpy-teleport)
-    (vilpy-define-key map "x" 'vilpy-splice)
     ;; acing
     (vilpy-define-key map "f" 'vilpy-ace-symbol)
     (vilpy-define-key map "-" 'vilpy-ace-subword)
@@ -5798,12 +5797,11 @@ w: Widen
                         (View-quit))))
     ;; yanking
     (vilpy-define-key map "y" 'vilpy-new-copy)
-    (vilpy-define-key map "P" 'vilpy-paste)
+    (vilpy-define-key map "w" 'vilpy-clone)
     (vilpy-define-key map "D" 'vilpy-kill)
     (vilpy-define-key map "d" 'vilpy-delete)
-    (vilpy-define-key map "w" 'vilpy-clone)
+    (vilpy-define-key map "P" 'vilpy-paste)
     ;; marking
-
     (vilpy-define-key map "v" 'vilpy-mark-list)
     ;; misc
     (vilpy-define-key map "_" 'vilpy-underscore)
