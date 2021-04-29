@@ -5738,21 +5738,11 @@ k: Slurp up
   (interactive)
   (cl-case (read-char-from-minibuffer "Actions:\n
 g: Go to beginning of buffer
-d: Go to definition
-SPC: Go to file in project
-[: Go to previous error
-]: Go to next error
 n: Narrow
 w: Widen
 \n")
     (?g (progn (goto-char (point-min))
                (message nil)))
-    (?\s (progn (call-interactively 'project-find-file)
-                (message nil)))
-    (?\[ (progn (call-interactively 'flymake-goto-prev-error)
-                (message nil)))
-    (?\] (progn (call-interactively 'flymake-goto-next-error)
-                (message nil)))
     (?n (progn (call-interactively 'vilpy-narrow)
                (message nil)))
     (?w (progn (call-interactively 'vilpy-widen)
@@ -5775,8 +5765,8 @@ w: Widen
     (vilpy-define-key map "W" 'vilpy-knight-up)
     (vilpy-define-key map "S" 'vilpy-knight-down)
     (vilpy-define-key map "b" 'vilpy-back)
-    (vilpy-define-key map "G" 'end-of-buffer)
     (vilpy-define-key map "L" 'vilpy-right)
+    (vilpy-define-key map "G" 'end-of-buffer)
     ;; code actions
     (vilpy-define-key map "=" 'vilpy-tab)
     (vilpy-define-key map "e" 'vilpy-eval)
