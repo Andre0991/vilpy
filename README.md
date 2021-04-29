@@ -45,36 +45,13 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might ne
 (vilpy-define-key vilpy-mode-map "m" 'evil-set-marker)
 (vilpy-define-key vilpy-mode-map "`" 'evil-goto-mark)
 (vilpy-define-key vilpy-mode-map "c" 'vilpy-execute-in-normal-state)
+(evil-define-key 'insert 'vilpy-mode-map (kbd "C-k") 'vilpy-kill)
+(evil-define-key 'insert 'vilpy-mode-map (kbd "C-d") 'vilpy-delete)
+(evil-define-key 'insert 'vilpy-mode-map (kbd "C-y") 'vilpy-yank)
 ```
 
 ## Usage
 Please refer to the [function reference](/docs/reference.md) (work in progress).
-
-## Evil
-
-`vilpy` disputes keybindings with `evil-mode`, so in some cases, its commands are overwritten.
-Using [lispyville](https://github.com/noctuid/lispyville) is a typical solution for making both packages work together.
-Personally, I'm fine with the default `vilpy` bindings working only in `insert-mode`.
-I simply use these customizations for making `vilpy` take precedence over `evil` in some specific keys:
-
-``` emacs-lisp
-(defun raise-minor-mode (mode)
-  "Make MODE the first on `minor-mode-map-alist'."
-  (let ((x (assq mode minor-mode-map-alist)))
-    (when x
-      (setq minor-mode-map-alist
-            (cons x (delq mode minor-mode-map-alist))))))
-            
-(raise-minor-mode 'vilpy-mode)
-
-;; TODO: `map!` is a Doom-emacs macro - not sure how
-;; to do this with vanilla Evil.
-(map! :map vilpy-mode-map :i "C-d" 'vilpy-delete)
-(map! :map vilpy-mode-map
-      :i "C-k" 'vilpy-kill)
-(map! :map vilpy-mode-map
-      :i "C-y" 'vilpy-yank)
-```
 
 ## Customization
 This section presents some common ways that `vilpy` can be configured.
