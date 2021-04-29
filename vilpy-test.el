@@ -1966,18 +1966,6 @@ Insert KEY if there's no command."
                                (vilpy-alt-line))
                    ";; foo\n|")))
 
-(ert-deftest vilpy-outline-add ()
-  (message "vilpy-outline-add")
-  (should (string= (vilpy-with "|;;* Intro" "a")
-                   ";;* Intro\n;;* |")))
-
-(ert-deftest vilpy-outline-add ()
-  (message "vilpy-outline-add")
-  (should (string= (vilpy-with "(quote ~foo|)" "~")
-                   "(quote ~~foo|)"))
-  (should (string= (vilpy-with "(quote ~~foo|)" "~")
-                   "(quote ~foo|)")))
-
 (ert-deftest vilpy-space ()
   (message "vilpy-space")
   (should (string= (vilpy-with "(|foo" " ")

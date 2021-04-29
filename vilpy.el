@@ -1744,14 +1744,6 @@ For Clojure modes, toggle #_ sexp comment."
     (vilpy--space-unless "\\s-\\|\\s(\\|[:?`']\\|\\\\")
     (insert "`")))
 
-(defun vilpy-tilde (arg)
-  "Insert ~ ARG times.
-When the region is active, toggle a ~ at the start of the region."
-  (interactive "p")
-  (if (region-active-p)
-      (vilpy-toggle-char ?~)
-    (self-insert-command arg)))
-
 (defun vilpy-toggle-char (char)
   "Toggle CHAR at the start of the region."
   (let ((bnd (vilpy--bounds-dwim))
@@ -5783,15 +5775,20 @@ w: Widen
     (vilpy-define-key map "W" 'vilpy-knight-up)
     (vilpy-define-key map "S" 'vilpy-knight-down)
     (vilpy-define-key map "b" 'vilpy-back)
-    ;; evaluation
+    (vilpy-define-key map "G" 'end-of-buffer)
+    (vilpy-define-key map "L" 'vilpy-right)
+    ;; code actions
+    (vilpy-define-key map "=" 'vilpy-tab)
     (vilpy-define-key map "e" 'vilpy-eval)
     (vilpy-define-key map "E" 'vilpy-eval-defun)
+    (vilpy-define-key map "K" 'vilpy-describe)
     ;; transformations
     (vilpy-define-key map "r" 'vilpy-raise)
     (vilpy-define-key map "R" 'vilpy-raise-some)
     (vilpy-define-key map "p" 'vilpy-move-up)
     (vilpy-define-key map "n" 'vilpy-move-down)
     (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
+    (vilpy-define-key map ">" 'vilpy-slurp)
     (vilpy-define-key map "<" 'vilpy-barf)
     (vilpy-define-key map "x" 'vilpy-splice)
     (vilpy-define-key map "+" 'vilpy-join)
@@ -5801,37 +5798,35 @@ w: Widen
     (vilpy-define-key map "M" 'vilpy-alt-multiline)
     (vilpy-define-key map "t" 'vilpy-teleport)
     (vilpy-define-key map "x" 'vilpy-splice)
-    ;; marking
+    ;; acing
     (vilpy-define-key map "f" 'vilpy-ace-symbol)
-    (vilpy-define-key map "P" 'vilpy-paste)
-    (vilpy-define-key map ">" 'vilpy-slurp)
-    (vilpy-define-key map "K" 'vilpy-describe)
-    (vilpy-define-key map "v" 'vilpy-mark-list)
-    (vilpy-define-key map "g" 'vilpy-go-actions)
+    (vilpy-define-key map "-" 'vilpy-ace-subword)
     (vilpy-define-key map "F" 'vilpy-ace-symbol-beginning-of-defun)
-    (vilpy-define-key map "G" 'end-of-buffer)
-    (vilpy-define-key map "d" 'vilpy-delete)
-    (vilpy-define-key map "D" 'vilpy-kill)
-    ;; (vilpy-define-key map "S" 'vilpy-stringify)
-    ;; (vilpy-define-key map "D" 'pop-tag-mark)
-    (vilpy-define-key map "_" 'vilpy-underscore)
-    ;; miscellanea
-    (define-key map (kbd "SPC") 'vilpy-space)
-    (vilpy-define-key map "w" 'vilpy-clone)
-    (vilpy-define-key map "=" 'vilpy-tab)
-    (vilpy-define-key map "i" 'imenu)
-    ;; (vilpy-define-key map "W" 'vilpy-widen)
-    (vilpy-define-key map "u" 'vilpy-undo)
+    (vilpy-define-key map "Q" 'vilpy-ace-char)
     (vilpy-define-key map "q" 'vilpy-ace-paren
       :override '(cond ((bound-and-true-p view-mode)
                         (View-quit))))
-    (vilpy-define-key map "Q" 'vilpy-ace-char)
-    ;; (vilpy-define-key map "v" 'vilpy-view)
+    ;; yanking
     (vilpy-define-key map "y" 'vilpy-new-copy)
+    (vilpy-define-key map "P" 'vilpy-paste)
+    (vilpy-define-key map "D" 'vilpy-kill)
+    (vilpy-define-key map "d" 'vilpy-delete)
+    (vilpy-define-key map "w" 'vilpy-clone)
+    ;; marking
+
+    (vilpy-define-key map "v" 'vilpy-mark-list)
+    ;; misc
+    (vilpy-define-key map "_" 'vilpy-underscore)
+    (vilpy-define-key map "g" 'vilpy-go-actions)
+    (define-key map (kbd "SPC") 'vilpy-space)
+    (vilpy-define-key map "u" 'vilpy-undo)
     (vilpy-define-key map "z" 'vilpy-scroll-actions)
-    (vilpy-define-key map "-" 'vilpy-ace-subword)
     (vilpy-define-key map "." 'vilpy-repeat)
-    (vilpy-define-key map "~" 'vilpy-tilde)
+    ;; TODO: other
+    ;; (vilpy-define-key map "S" 'vilpy-stringify)
+    ;; (vilpy-define-key map "D" 'pop-tag-mark)
+    ;; (define-key map (kbd "C-8") 'vilpy-parens-down)
+    ;; (define-key map (kbd "C-9") 'vilpy-out-forward-newline)
     ;; digit argument
     (mapc (lambda (x) (vilpy-define-key map (format "%d" x) 'digit-argument))
           (number-sequence 0 9))
@@ -5855,16 +5850,6 @@ w: Widen
     (define-key map (kbd "RET") 'vilpy-newline-and-indent-plain)
     ;; tags
     (define-key map (kbd "M-,") 'pop-tag-mark)
-    map))
-
-(defvar vilpy-mode-map-c-digits
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-1") 'vilpy-describe-inline)
-    (define-key map (kbd "C-2") 'vilpy-arglist-inline)
-    (define-key map (kbd "C-3") 'vilpy-right)
-    (define-key map (kbd "C-7") 'vilpy-cursor-down)
-    (define-key map (kbd "C-8") 'vilpy-parens-down)
-    (define-key map (kbd "C-9") 'vilpy-out-forward-newline)
     map))
 
 (declare-function View-quit "view")
@@ -5906,25 +5891,23 @@ w: Widen
     (define-key map (kbd "M-RET") 'vilpy-meta-return)
     map))
 
-(defcustom vilpy-key-theme '(special vilpy c-digits)
+(defcustom vilpy-key-theme '(special vilpy)
   "List of key themes used to compose `vilpy-mode-map'."
   :type
   '(set
     (const special)
     (radio
-     (const vilpy))
-    (const c-digits)))
+     (const vilpy))))
 
 (defun vilpy-set-key-theme (theme)
   "Set `vilpy-mode-map' for according to THEME.
-THEME is a list of choices: 'special, 'vilpy, 'c-digits."
+THEME is a list of choices: 'special, 'vilpy,"
   (setq vilpy-mode-map
         (make-composed-keymap
          (delq nil
                (list
                 (when (memq 'special theme) vilpy-mode-map-special)
-                (when (memq 'vilpy theme) vilpy-mode-map-vilpy)
-                (when (memq 'c-digits theme) vilpy-mode-map-c-digits)))))
+                (when (memq 'vilpy theme) vilpy-mode-map-vilpy)))))
   (setcdr
    (assq 'vilpy-mode minor-mode-map-alist)
    vilpy-mode-map))
