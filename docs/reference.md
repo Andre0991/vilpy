@@ -242,8 +242,84 @@ after <kbd>k</kbd>:
 (bar)
 ```
 
-#### `vilpy-knight-down`
-#### `vilpy-knight-up`
+#### `vilpy-knight-down` (<kbd>S</kbd>)
+Navigate to the next line disregarding syntax.
+
+Starting with:
+
+```
+|(foo (bar)
+      (xum))
+```
+
+after <kbd>S</kbd>:
+
+```
+(foo (bar)
+     |(xum))
+```
+
+#### `vilpy-knight-up` (<kbd>W</kbd>)
+Navigate to the previous line disregarding syntax.
+
+Starting with:
+
+```
+(foo (bar)
+     |(xum))
+```
+
+after <kbd>W</kbd>:
+
+```
+|(foo (bar)
+      (xum))
+```
+#### `vilpy-beginning-of-defun` (<kbd>B</kbd>)
+
+Starting with this top level form:
+
+```
+(defun abc ()
+  (interactive)
+  |(foo))
+```
+
+after <kbd>B</kbd>as
+
+```
+|(defun abc ()
+  (interactive)
+  (foo))
+```
+
+#### `vilpy-back` (<kbd>b</kbd>)
+Moves the point to the previous position in `vilpy-back` history. The following functions write to this history:
+function name
+
+| command           | binding      |
+|-------------------|--------------|
+| `vilpy-step-out`  | <kbd>h</kbd> |
+| `vilpy-step-in`   | <kbd>l</kbd> |
+| `vilpy-down`      | <kbd>j</kbd> |
+| `vilpy-up`        | <kbd>k</kbd> |
+| `vilpy-right`     | <kbd>L</kbd> |
+| `vilpy-mark-list` | <kbd>v</kbd> |
+| `vilpy-ace-paren` | <kbd>q</kdb> |
+
+#### `vilpy-right` (<kbd>L</kbd>)
+
+Moves forward out of arg (default 1) levels of parentheses.
+
+Works as replacement for the standard `up-list`.
+
+Takes a numeric prefix arg and moves up forward list arg times or until error.
+
+Unlike up-list, no error will be reported if it's not possible to move up arg times. It that case, move as many times as possible.
+
+Return point if could move arg times, otherwise return nil.
+
+Unlike up-list, parens in strings and comments are ignored.
 
 </details>
 
@@ -255,10 +331,38 @@ after <kbd>k</kbd>:
 | `vilpy-tab`        | <kbd>=</kbd> |
 | `vilpy-describe`   | <kbd>K</kbd> |
 
+#### `vilpy-eval` (<kbd>e</kbd>)
+Eval current region or sexp.
+
+Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
+
+The evaluation function is defined in `vilpy--handlers-alist`.
+
+#### `vilpy-eval-defun` (<kbd>E</kbd>)
+Eval top level form.
+
+Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
+
+The evaluation function is defined in `vilpy--handlers-alist`.
+
+#### `vilpy-tab` (<kbd>=</kbd>)
+If before left paren or after right paren, indent the current sexp.
+
+Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
+
+The indentation function is defined in `vilpy--handlers-alist`.
+
+#### `vilpy-describe` (<kbd>K</kbd>)
+Describe the symbol at point.
+
+Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
+
+The function for describing the symbol is defined in `vilpy--handlers-alist`.
+
 ### Transformation
 | command                        | binding      |
 |--------------------------------|--------------|
-| `vilpy-raise`                  | <kbd>r</kbd>  |
+| `vilpy-raise`                  | <kbd>r</kbd> |
 | `vilpy-raise-some`             | <kbd>R</kbd> |
 | `vilpy-move-up`                | <kbd>p</kbd> |
 | `vilpy-move-down`              | <kbd>n</kbd> |
