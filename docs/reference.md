@@ -21,7 +21,7 @@ If you press `A`, for example, it will call `vilpy-insert-at-end-of-sexp`.
 |(foo)
 ```
 
-After `A`:
+After <kbd>A</kbd>:
 
 ```
 (foo|)
@@ -33,7 +33,7 @@ However, if the point is not at a position that activates special-mode, pressing
 (|foo)
 ```
 
-After `A`:
+After <kbd>A</kbd>:
 ```
 (A|foo)
 ```
@@ -360,6 +360,7 @@ Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
 The function for describing the symbol is defined in `vilpy--handlers-alist`.
 
 ### Transformation
+
 | command                        | binding      |
 |--------------------------------|--------------|
 | `vilpy-raise`                  | <kbd>r</kbd> |
@@ -377,6 +378,213 @@ The function for describing the symbol is defined in `vilpy--handlers-alist`.
 | `vilpy-alt-multiline`          | <kbd>M</kbd> |
 | `vilpy-teleport`               | <kbd>t</kbd> |
 
+#### `vilpy-raise` (<kbd>r</kbd>)
+Starting with
+
+```
+(foo |(bar))
+```
+
+after <kbd>r</kbd>:
+
+```
+(bar)
+```
+#### `vilpy-raise-some` (<kbd>R</kbd>)
+
+Starting with:
+
+```
+(foo
+  |(bar)
+  (xum))
+```
+
+after <kbd>R</kbd>:
+
+```
+(bar)
+(xum)
+```
+
+#### `vilpy-move-up` (<kbd>p</kbd>)
+
+Starting with:
+
+```
+(foo)
+|(bar)
+```
+
+after <kbd>p</kbd>:
+
+```
+|(bar)
+(foo)
+```
+
+#### `vilpy-move-down`(<kbd>n</kbd>)
+
+Starting with:
+
+```
+|(foo)
+(bar)
+```
+
+after <kbd>n</kbd>:
+
+```
+(bar)
+|(foo)
+```
+
+#### `vilpy-slurp`(<kbd>></kbd>)
+
+Starting with:
+
+```
+(foo)| (bar) (xum)
+```
+
+after <kbd>></kbd>:
+
+```
+(foo (bar))| (xum)
+```
+
+after <kbd>></kbd>:
+
+```
+(foo (bar) (xum))
+```
+
+#### `vilpy-barf` (<kbd><</kbd>)
+
+Starting with:
+
+```
+(foo) (bar) |(xum)
+```
+
+after <kbd><</kbd>:
+
+```
+(foo) |((bar) xum)
+```
+
+after <kbd><</kbd>:
+
+```
+|((foo) (bar) xum)
+```
+
+#### `vilpy-move-and-slurp-actions`(<kbd>/</kbd>)
+
+Groups some less frequent slurping actions.
+
+| command | binding            |
+|---------|--------------------|
+| h       | `vilpy-move-left`  |
+| l       | `vilpy-move-right` |
+| j       | `vilpy-down-slurp` |
+| k       | `vilpy-up-slurp`   |
+
+
+##### `vilpy-move-left` (<kbd>/h</kbd>)
+
+Move current expression to the left, outside the current list.
+
+```
+(require 'ob-python)
+(let ((color "Blue"))
+  |(message "What... is your favorite color?")
+  (message "%s. No yel..." color))
+```
+
+after <kbd>/h</kbd>:
+
+```
+(require 'ob-python)
+|(message "What... is your favorite color?")
+(let ((color "Blue"))
+  (message "%s. No yel..." color))
+```
+
+##### `vilpy-move-right` (<kbd>/l</kbd>)
+
+Move current expression to the right, outside the current list.
+
+```
+(require 'ob-python)
+(message "What... is your favorite color?")
+(let ((color "Blue"))
+  (message color)
+  |(message "Go on. Off you go."))
+```
+
+after <kbd>/l</kbd>:
+
+```
+(require 'ob-python)
+(message "What... is your favorite color?")
+(let ((color "Blue"))
+  (message color))
+|(message "Go on. Off you go.")
+```
+
+##### `vilpy-down-slurp` (<kbd>/j</kbd>)
+Move current expression to become the first element of the first list below.
+
+```
+(list 'my-sword
+      'my-bow)
+|(my-axe)
+```
+
+after <kbd>/j</kbd>:
+
+```
+'(|(first!)
+  foo bar)
+```
+
+#### `vilpy-splice`(<kbd>x</kbd>)
+
+Starting with:
+
+```
+(foo |(bar))
+```
+
+after <kbd>x</kbd>:
+
+```
+(foo bar)
+```
+
+#### `vilpy-join`(<kbd>+</kbd>)
+
+Starting with:
+
+```
+(foo)
+|(bar)
+```
+
+after <kbd>+</kbd>:
+
+```
+|(foo
+bar)
+```
+
+#### `vilpy-convolute`(<kbd>C</kbd>)
+#### `vilpy-convolute-left`(<kbd>X</kbd>)
+#### `vilpy-oneline`(<kbd>J</kbd>)
+#### `vilpy-alt-multiline`(<kbd>M</kbd>)
+#### `vilpy-teleport`(<kbd>t</kbd>)
+
 ### Acing
 | command                               | binding      |
 |---------------------------------------|--------------|
@@ -385,7 +593,7 @@ The function for describing the symbol is defined in `vilpy--handlers-alist`.
 | `vilpy-ace-symbol-beginning-of-defun` | <kbd>F</kbd> |
 | `vilpy-ace-char`                      | <kbd>Q</kbd> |
 | `vilpy-ace-pare`                      | <kbd>q</kbd> |
-
+	
 ### Yanking
 | command          | binding      |
 |------------------|--------------|
@@ -393,5 +601,5 @@ The function for describing the symbol is defined in `vilpy--handlers-alist`.
 | `vilpy-clone`    | <kbd>w</kbd> |
 | `vilpy-kill`     | <kbd>D</kbd> |
 | `vilpy-delete`   | <kbd>d</kbd> |
-| `vilpy-paste`    | <kbd>P</kbd> |
+| `vilpy-paste`    | <kbd>P</kbd> | 
 
