@@ -2431,16 +2431,6 @@ When ARG is nil, convolute only the part above sexp."
              (vilpy--reindent (1+ arg)))))
       (error "Not enough depth to convolute"))))
 
-(defun vilpy-convolute-left ()
-  "Convolute and move left.
-Useful for propagating `let' bindings."
-  (interactive)
-  (if (region-active-p)
-      (progn
-        (vilpy-convolute 1)
-        (vilpy-step-out 1))
-    (user-error "region must be active")))
-
 (defvar vilpy-repeat--command nil
   "Command to use with `vilpy-repeat'.")
 
@@ -5783,7 +5773,6 @@ w: Widen
     (vilpy-define-key map "x" 'vilpy-splice)
     (vilpy-define-key map "+" 'vilpy-join)
     (vilpy-define-key map "C" 'vilpy-convolute)
-    (vilpy-define-key map "X" 'vilpy-convolute-left)
     (vilpy-define-key map "J" 'vilpy-oneline)
     (vilpy-define-key map "M" 'vilpy-alt-multiline)
     (vilpy-define-key map "t" 'vilpy-teleport)
