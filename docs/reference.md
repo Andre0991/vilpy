@@ -331,6 +331,8 @@ Unlike up-list, parens in strings and comments are ignored.
 | `vilpy-tab`        | <kbd>=</kbd> |
 | `vilpy-describe`   | <kbd>K</kbd> |
 
+<details>
+
 #### `vilpy-eval` (<kbd>e</kbd>)
 Eval current region or sexp.
 
@@ -359,6 +361,8 @@ Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
 
 The function for describing the symbol is defined in `vilpy--handlers-alist`.
 
+</details>
+
 ### Transformation
 
 | command                        | binding      |
@@ -377,6 +381,8 @@ The function for describing the symbol is defined in `vilpy--handlers-alist`.
 | `vilpy-oneline`                | <kbd>J</kbd> |
 | `vilpy-alt-multiline`          | <kbd>M</kbd> |
 | `vilpy-teleport`               | <kbd>t</kbd> |
+
+<details>
 
 #### `vilpy-raise` (<kbd>r</kbd>)
 Starting with
@@ -584,6 +590,9 @@ bar)
 #### `vilpy-oneline`(<kbd>J</kbd>)
 #### `vilpy-alt-multiline`(<kbd>M</kbd>)
 #### `vilpy-teleport`(<kbd>t</kbd>)
+
+
+</details>
 
 ### Acing
 | command                               | binding      |
