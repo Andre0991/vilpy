@@ -490,36 +490,6 @@ Return nil on failure, t otherwise."
   (vilpy-dotimes arg
     (newline-and-indent)))
 
-(defvar vilpy-meol-point 1
-  "Point where `vilpy-move-end-of-line' should go when already at eol.")
-
-(defun vilpy-move-end-of-line ()
-  "Forward to `move-end-of-line' unless already at end of line.
-Then return to the point where it was called last.
-If this point is inside string, move outside string."
-  (interactive)
-  (let ((pt (point))
-        bnd)
-    (if (eq pt (line-end-position))
-        (if (setq bnd (vilpy--bounds-string))
-            (goto-char (cdr bnd))
-          (when (and (< vilpy-meol-point pt)
-                     (>= vilpy-meol-point (line-beginning-position)))
-            (goto-char vilpy-meol-point)
-            (when (setq bnd (vilpy--bounds-string))
-              (goto-char (cdr bnd)))))
-      (setq vilpy-meol-point (point))
-      (move-end-of-line 1))))
-
-(defun vilpy-move-beginning-of-line ()
-  "Forward to `move-beginning-of-line'.
-Reveal outlines."
-  (interactive)
-  (vilpy--ensure-visible)
-  (if (bolp)
-      (back-to-indentation)
-    (move-beginning-of-line 1)))
-
 (defun vilpy--re-search-in-code (regexp direction &optional count)
   "Move to the next REGEXP in DIRECTION, COUNT times.
 DIRECTION is either 'forward or 'backward.
@@ -5811,9 +5781,6 @@ w: Widen
 
 (defvar vilpy-mode-map-base
   (let ((map (make-sparse-keymap)))
-    ;; navigation
-    (define-key map (kbd "C-a") 'vilpy-move-beginning-of-line)
-    (define-key map (kbd "C-e") 'vilpy-move-end-of-line)
     ;; killing
     (define-key map (kbd "C-k") 'vilpy-kill)
     (define-key map (kbd "M-d") 'vilpy-kill-word)

@@ -1379,29 +1379,6 @@ Insert KEY if there's no command."
     (should (string= (vilpy-with "(foo                                    ; |\n )" ";")
                      "(foo ;; |\n )"))))
 
-(ert-deftest vilpy-move-end-of-line ()
-  (message "vilpy-move-end-of-line")
-  ;; (should (string= (vilpy-with "(foo (bar #\\x \"|baz \\\\ quux\") zot)"
-  ;;                              (move-end-of-line 1))
-  ;;                  "(foo (bar #\\x \"baz \\\\ quux\") zot)|"))
-  ;; (should (string= (vilpy-with "(foo (bar #\\x \"|baz \\\\ quux\") zot)" "\C-e\C-e")
-  ;;                  "(foo (bar #\\x \"baz \\\\ quux\"|) zot)"))
-  ;; (should (string= (vilpy-with "\"fo|o\nbar\" baz"
-  ;;                              (vilpy-move-end-of-line)
-  ;;                              (vilpy-move-end-of-line))
-  ;;                  "\"foo\nbar\"| baz"))
-  (should (string= (vilpy-with "\"foo|\nbar\" baz" "\C-e")
-                   "\"foo\nbar\"| baz")))
-
-(ert-deftest vilpy-move-beginning-of-line ()
-  (message "vilpy-move-beginning-of-line")
-  (should (string= (vilpy-with "(mapc\n (lambda (x) (* |x x))\n '(1 2 3))" (kbd "C-a"))
-                   "(mapc\n| (lambda (x) (* x x))\n '(1 2 3))"))
-  (should (string= (vilpy-with "(mapc\n (lambda (x) (* |x x))\n '(1 2 3))"
-                               (kbd "C-a")
-                               (kbd "C-a"))
-                   "(mapc\n |(lambda (x) (* x x))\n '(1 2 3))")))
-
 (ert-deftest vilpy-string-oneline ()
   (message "vilpy-string-oneline")
   (should (string= (vilpy-with "\"foo\nb|ar\n\"" (vilpy-string-oneline))
