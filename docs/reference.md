@@ -377,7 +377,6 @@ The function for describing the symbol is defined in `vilpy--handlers-alist`.
 | `vilpy-splice`                 | <kbd>x</kbd> |
 | `vilpy-join`                   | <kbd>+</kbd> |
 | `vilpy-convolute`              | <kbd>C</kbd> |
-| `vilpy-convolute-left`         | <kbd>X</kbd> |
 | `vilpy-oneline`                | <kbd>J</kbd> |
 | `vilpy-alt-multiline`          | <kbd>M</kbd> |
 | `vilpy-teleport`               | <kbd>t</kbd> |
@@ -586,9 +585,54 @@ bar)
 ```
 
 #### `vilpy-convolute`(<kbd>C</kbd>)
-#### `vilpy-convolute-left`(<kbd>X</kbd>)
+
+Starting with:
+
+```
+(foo
+ (bar
+  |(xum)))
+```
+
+after <kbd>C</kbd>:
+
+```
+(bar
+ (foo
+  (xum)))
+```
+
+after <kbd>C</kbd>:
+
+
+```
+(foo
+ (bar
+  |(xum)))
+```
+
 #### `vilpy-oneline`(<kbd>J</kbd>)
+
+Starting with:
+
+```
+|(foo
+ (bar
+  (xum)))
+```
+
+after <kbd>J</kbd>:
+
+```
+(foo (bar (xum)))
+```
+
 #### `vilpy-alt-multiline`(<kbd>M</kbd>)
+
+Starting with:
+
+
+
 #### `vilpy-teleport`(<kbd>t</kbd>)
 
 
