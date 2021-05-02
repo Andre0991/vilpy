@@ -3209,15 +3209,6 @@ When SILENT is non-nil, don't issue messages."
 (defvar vilpy-do-fill nil
   "If t, `vilpy-insert-1' will try to fill.")
 
-(defun vilpy-fill ()
-  "Fill current expression."
-  (interactive)
-  (if (or (vilpy-left-p)
-          (vilpy-right-p))
-      (let ((vilpy-do-fill t))
-        (vilpy--prettify-1))
-    (fill-paragraph)))
-
 (defcustom vilpy-move-after-commenting t
   "When non-nil, adjust point to next sexp after commenting out a
   sexp. If at last sexp in list, move out and backwards to
@@ -5789,7 +5780,6 @@ w: Widen
     (define-key map (kbd "(") 'vilpy-parens)
     (define-key map (kbd "[") 'vilpy-brackets)
     (define-key map (kbd ";") 'vilpy-comment)
-    (define-key map (kbd "M-q") 'vilpy-fill)
     (define-key map (kbd "C-j") 'vilpy-newline-and-indent)
     (define-key map (kbd "RET") 'vilpy-newline-and-indent-plain)
     ;; tags
