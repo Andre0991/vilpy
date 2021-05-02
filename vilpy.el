@@ -459,16 +459,6 @@ Return nil on failure, t otherwise."
         (t
          (vilpy--out-forward arg))))
 
-(defun vilpy-right-nostring (arg)
-  "Call `vilpy--out-forward' with ARG unless in string or comment.
-Self-insert otherwise."
-  (interactive "p")
-  (if (or (vilpy--in-string-or-comment-p)
-          (looking-back "?\\\\"
-                        (line-beginning-position)))
-      (self-insert-command arg)
-    (vilpy--out-forward arg)))
-
 (defun vilpy-step-out (arg)
   "Move outside list forwards ARG times.
 Return nil on failure, t otherwise."
@@ -5725,7 +5715,6 @@ w: Widen
   (let ((map (copy-keymap vilpy-mode-map-base)))
     ;; navigation
     (define-key map (kbd "<backtab>") 'vilpy-special)
-    (define-key map (kbd ")") 'vilpy-right-nostring)
     ;; kill-related
     (define-key map (kbd "C-y") 'vilpy-yank)
     (define-key map (kbd "C-d") 'vilpy-delete)
