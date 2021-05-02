@@ -5711,8 +5711,6 @@ w: Widen
     (define-key map (kbd "(") 'vilpy-parens)
     (define-key map (kbd "[") 'vilpy-brackets)
     (define-key map (kbd ";") 'vilpy-comment)
-    ;; tags
-    (define-key map (kbd "M-,") 'pop-tag-mark)
     map))
 
 (declare-function View-quit "view")
