@@ -2054,13 +2054,6 @@ Insert KEY if there's no command."
   (should (string= (vilpy-with clojure "foo|" "##")
                    "foo#|")))
 
-(ert-deftest vilpy-newline-and-indent-plain ()
-  (message "vilpy-newline-and-indent-plain")
-  (should (string= (vilpy-with "(mapc #'|say-ni\n      knights)" (kbd "RET"))
-                   "(mapc\n #'|say-ni\n knights)"))
-  (should (string= (vilpy-with "(mapc #'|say-ni\n      knights)" (kbd "C-j"))
-                   "(mapc\n #'|say-ni\n knights)")))
-
 (ert-deftest vilpy-knight-down ()
   (message "vilpy-knight-down")
   (should (string= (vilpy-with "|(defun foo ()\n  (bar)\n  (baz))"
