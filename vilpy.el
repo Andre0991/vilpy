@@ -1618,6 +1618,24 @@ delete the extra space, \"(| foo)\" to \"(|foo)\"."
                     (vilpy-looking-back "[[({] "))
            (backward-char)))))
 
+(defvar vilpy-brackets-preceding-syntax-alist
+  '((clojure-mode . ("[`']" "#[A-z.]*"))
+    (clojurescript-mode . ("[`']" "#[A-z.]*"))
+    (clojurec-mode . ("[`']" "#[A-z.]*"))
+    (cider-repl-mode . ("[`']" "#[A-z.]*"))
+    (cider-clojure-interaction-mode . ("[`']" "#[A-z.]*"))
+    (janet-mode . ("[@;]"))
+    (scheme-mode . ("[#`',@]+" "#hash"))
+    (t . nil))
+  "An alist of `major-mode' to a list of regexps.
+Each regexp describes valid syntax that can precede an opening bracket in that
+major mode. These regexps are used to determine whether to insert a space for
+`vilpy-brackets'.")
+
+(defalias 'vilpy-brackets
+    (vilpy-pair "[" "]" 'vilpy-brackets-preceding-syntax-alist)
+    "`vilpy-pair' with [].")
+
 (defun vilpy-tick (arg)
   "Insert ' ARG times.
 When the region is active and marks a string, unquote it.
