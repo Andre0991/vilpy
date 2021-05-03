@@ -1632,26 +1632,6 @@ delete the extra space, \"(| foo)\" to \"(|foo)\"."
                     (vilpy-looking-back "[[({] "))
            (backward-char)))))
 
-(defvar vilpy-colon-p t
-  "If true (the default), then add a space before inserting a
-colon following `vilpy-colon-no-space-regex'. To disable this
-behavior, set this variable to nil.")
-
-(defvar vilpy-colon-no-space-regex
-  '((lisp-mode . "\\s-\\|[:^?#]\\|ql\\|\\(?:\\s([[:word:]-]*\\)"))
-  "Overrides REGEX that `vilpy-colon' will consider for `major-mode'.
-`vilpy-colon' will insert \" :\" instead of \":\" unless
-`vilpy-no-space' is t or `looking-back' REGEX.")
-
-(defun vilpy-colon ()
-  "Insert :."
-  (interactive)
-  (when vilpy-colon-p
-    (vilpy--space-unless
-     (or (cdr (assoc major-mode vilpy-colon-no-space-regex))
-         "\\s-\\|\\s(\\|[#:^?]")))
-  (insert ":"))
-
 (defun vilpy-hat ()
   "Insert ^."
   (interactive)
@@ -5723,7 +5703,6 @@ w: Widen
     (define-key map (kbd "{") 'vilpy-braces)
     (define-key map (kbd "\"") 'vilpy-quotes)
     ;; insert
-    (define-key map (kbd ":") 'vilpy-colon)
     (define-key map (kbd "^") 'vilpy-hat)
     (define-key map (kbd "@") 'vilpy-at)
     (define-key map (kbd "'") 'vilpy-tick)
