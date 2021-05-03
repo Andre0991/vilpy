@@ -1693,50 +1693,6 @@ When the region is active, surrounds it with backticks."
     (vilpy--space-unless "\\s-\\|\\s(\\|[#:?'`,]\\\\?")
     (insert "#")))
 
-(defun vilpy-open-line (arg)
-  "Add ARG lines after the current expression.
-When ARG is nagative, add them above instead"
-  (interactive "p")
-  (save-excursion
-    (cond ((vilpy-left-p)
-           (forward-list))
-          ((vilpy-right-p))
-          (t
-           (vilpy--out-forward 1)))
-    (if (> arg 0)
-        (newline arg)
-      (forward-list -1)
-      (newline (- arg))
-      (vilpy--indent-for-tab))))
-
-(defun vilpy-meta-return ()
-  "Insert a new heading."
-  (interactive)
-  (let ((pt (point)))
-    (cond ((vilpy--in-comment-p)
-           (end-of-line)
-           (newline))
-          ((and (vilpy-bolp)
-                (looking-at " *$"))
-           (delete-region
-            (line-beginning-position)
-            (line-end-position)))
-          (t
-           (vilpy-beginning-of-defun)
-           (if (save-excursion
-                 (forward-list 1)
-                 (= (point) pt))
-               (progn
-                 (forward-list 1)
-                 (newline))
-             (newline)
-             (backward-char 1)))))
-  (insert vilpy-outline-header
-          (make-string (max (vilpy-outline-level) 1)
-                       ?\*)
-          " ")
-  (beginning-of-line))
-
 (defun vilpy-alt-line (&optional N)
   "Do a context-aware exit, then `newline-and-indent', N times.
 
@@ -5698,9 +5654,6 @@ w: Widen
     (define-key map (kbd "#") 'vilpy-hash)
     (define-key map (kbd "M-j") 'vilpy-split)
     (define-key map (kbd "M-J") 'vilpy-join)
-    (define-key map (kbd "<C-return>") 'vilpy-open-line)
-    (define-key map (kbd "<M-return>") 'vilpy-meta-return)
-    (define-key map (kbd "M-RET") 'vilpy-meta-return)
     map))
 
 (defcustom vilpy-key-theme '(special vilpy)
