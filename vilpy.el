@@ -1632,12 +1632,6 @@ delete the extra space, \"(| foo)\" to \"(|foo)\"."
                     (vilpy-looking-back "[[({] "))
            (backward-char)))))
 
-(defun vilpy-hat ()
-  "Insert ^."
-  (interactive)
-  (vilpy--space-unless "\\s-\\|\\s(\\|[:?]\\|\\\\")
-  (insert "^"))
-
 (defun vilpy-at ()
   (interactive)
   (vilpy--space-unless "\\s-\\|\\s(\\|[:?]\\|\\\\\\|~\\|,")
@@ -5703,7 +5697,6 @@ w: Widen
     (define-key map (kbd "{") 'vilpy-braces)
     (define-key map (kbd "\"") 'vilpy-quotes)
     ;; insert
-    (define-key map (kbd "^") 'vilpy-hat)
     (define-key map (kbd "@") 'vilpy-at)
     (define-key map (kbd "'") 'vilpy-tick)
     (define-key map (kbd "`") 'vilpy-backtick)
