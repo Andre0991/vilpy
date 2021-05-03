@@ -1476,20 +1476,6 @@ Each regexp describes valid syntax that can precede an opening paren in that
 major mode. These regexps are used to determine whether to insert a space for
 `vilpy-parens'.")
 
-(defvar vilpy-brackets-preceding-syntax-alist
-  '((clojure-mode . ("[`']" "#[A-z.]*"))
-    (clojurescript-mode . ("[`']" "#[A-z.]*"))
-    (clojurec-mode . ("[`']" "#[A-z.]*"))
-    (cider-repl-mode . ("[`']" "#[A-z.]*"))
-    (cider-clojure-interaction-mode . ("[`']" "#[A-z.]*"))
-    (janet-mode . ("[@;]"))
-    (scheme-mode . ("[#`',@]+" "#hash"))
-    (t . nil))
-  "An alist of `major-mode' to a list of regexps.
-Each regexp describes valid syntax that can precede an opening bracket in that
-major mode. These regexps are used to determine whether to insert a space for
-`vilpy-brackets'.")
-
 (defvar vilpy-braces-preceding-syntax-alist
   '((clojure-mode . ("[`'^]" "#[:]*[A-z.:]*"))
     (clojurescript-mode . ("[`'^]" "#[:]*[A-z.:]*"))
@@ -1692,60 +1678,6 @@ When the region is active, surrounds it with backticks."
         (insert "#"))
     (vilpy--space-unless "\\s-\\|\\s(\\|[#:?'`,]\\\\?")
     (insert "#")))
-
-(defun vilpy-alt-line (&optional N)
-  "Do a context-aware exit, then `newline-and-indent', N times.
-
-Exit branches:
-
-- When in the minibuffer, exit the minibuffer.
-- When in a string, exit the string.
-- When \")|\", do nothing.
-- When \" |)\", exit the list and normalize it.
-- When \"|(\", move to the other side of the list.
-- When there's a \")\" on the current line before the point, move there.
-- Otherwise, move to the end of the line.
-
-This should generally be useful when generating new code.
-If you find yourself with:
-
-    (foo (bar (baz 1 2 \"3|\")))
-
-calling this function consecutively, you will get a chance to add arguments
-to all the functions, while maintaining the parens in a pretty state."
-  (interactive "p")
-  (setq N (or N 1))
-  (when (bound-and-true-p abbrev-mode)
-    (expand-abbrev))
-  (let (bnd)
-    (vilpy-dotimes N
-      (cond ((> (minibuffer-depth) 0)
-             (exit-minibuffer))
-            ((when (setq bnd (vilpy--bounds-string))
-               (if (> (cdr bnd) (line-end-position))
-                   (goto-char (cdr bnd))
-                 (goto-char (cdr bnd))
-                 nil)))
-            ((vilpy-right-p))
-            ((looking-at vilpy-right)
-             (when (or (eq (char-before) ?\ )
-                       (bolp))
-               (vilpy-right 1)))
-            ((vilpy-left-p)
-             (vilpy-other))
-            ((vilpy-looking-back "^ +")
-             (if (re-search-forward vilpy-right (line-end-position) t)
-                 (backward-char 1)
-               (move-end-of-line 1)))
-            ((vilpy--in-comment-p))
-            (t
-             (when bnd
-               (goto-char (cdr bnd)))
-             (let ((end (min (line-end-position)
-                             (cdr (vilpy--bounds-list)))))
-               (while (< (point) (1- end))
-                 (forward-sexp)))))
-      (newline-and-indent))))
 
 ;;* Globals: miscellanea
 (defun vilpy-string-oneline ()
@@ -3602,18 +3534,6 @@ When region is active, call `vilpy-mark-car'."
   (when (region-active-p)
     (deactivate-mark t))
   (undo))
-
-(defun vilpy-view ()
-  "Recenter current sexp to first screen line, accounting for scroll-margin.
-If already there, return it to previous position."
-  (interactive)
-  (vilpy-from-left
-   (let ((window-line (count-lines (window-start) (point))))
-     (if (or (= window-line scroll-margin)
-             (and (not (bolp)) (= window-line (1+ scroll-margin))))
-         (recenter (or (get 'vilpy-recenter :line) 0))
-       (put 'vilpy-recenter :line window-line)
-       (recenter 0)))))
 
 (unless (fboundp 'macrop)
   (defun macrop (object)
