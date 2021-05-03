@@ -95,7 +95,6 @@
                  (split-string str "\\b" t)))))
 
 (ert-deftest vilpy-decode-keysequence ()
-  (message "vilpy-decode-keysequence")
   (should (equal (vilpy-decode-keysequence "23ab50c")
                  '(23 "a" "b" 50 "c")))
   (should (equal (vilpy-decode-keysequence "3\C-d")
@@ -139,7 +138,6 @@ Insert KEY if there's no command."
 
 ;;* Tests
 (ert-deftest vilpy-forward ()
-  (message "vilpy-forward")
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-forward 1))
                    "((a)| (b) (c))"))
   (should (string= (vilpy-with "((|a) (b) (c))" (vilpy-forward 1))
@@ -189,7 +187,6 @@ Insert KEY if there's no command."
   (should (vilpy-with-v el "(a)| (b)\n" (vilpy-forward 2))))
 
 (ert-deftest vilpy-backward ()
-  (message "vilpy-backward")
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-backward 1))
                    "|((a) (b) (c))"))
   (should (string= (vilpy-with "((a)|)" (vilpy-backward 1))
@@ -217,7 +214,6 @@ Insert KEY if there's no command."
                    "|(foo)\n;; (foo bar\n;;      tanf)")))
 
 (ert-deftest vilpy-right ()
-  (message "vilpy-right")
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-right 1))
                    "((a) (b) (c))|"))
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-right 2))
@@ -264,7 +260,6 @@ Insert KEY if there's no command."
                    "(asdf ?\\ )|")))
 
 (ert-deftest vilpy-move-right ()
-  (message "vilpy-move-right")
   (should (string= (vilpy-with "(defn |exclaim~ [exclamation]\n  (str exclamation \"!\"))" (progn (vilpy-clone 1)
                                                                                                   (vilpy-move-right 1)))
                    "(defn exclaim [exclamation]\n  (str exclamation \"!\"))\n|exclaim~"))
@@ -272,12 +267,10 @@ Insert KEY if there's no command."
                    "(progn\n\n  (sexp2))\n|(sexp1)")))
 
 (ert-deftest vilpy-move-left ()
-  (message "vilpy-move-left")
   (should (string= (vilpy-with "(progn\n |(sexp1)\n (sexp2))" (vilpy-move-left 1))
                    "|(sexp1)\n(progn\n  (sexp2))")))
 
 (ert-deftest vilpy-down-slurp ()
-  (message "vilpy-down-slurp")
   (should (string= (vilpy-with "(progn\n\n  |(sexp1)\n  (sexp2))" (vilpy-down-slurp))
                    "(progn\n\n  (|(sexp1)\n   sexp2))"))
   (should (string= (vilpy-with "|(fee) (fi) [fo]" (vilpy-down-slurp))
@@ -286,7 +279,6 @@ Insert KEY if there's no command."
                    "(fee) [|(fi)\n       fo]")))
 
 (ert-deftest vilpy-step-out ()
-  (message "vilpy-step-out")
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-step-out 1))
                    "|((a) (b) (c))"))
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-step-out 2))
@@ -324,7 +316,6 @@ Insert KEY if there's no command."
                    "|(foo)~")))
 
 (ert-deftest vilpy-step-in ()
-  (message "vilpy-step-in")
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-step-in 1))
                    "((a) |(b) (c))"))
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-step-in 2))
@@ -353,7 +344,6 @@ Insert KEY if there's no command."
                    ";; herp\n;; (foo)\n;; \n|(derp)")))
 
 (ert-deftest vilpy-down ()
-  (message "vilpy-down")
   (should (string= (vilpy-with "(|(a) (b) (c))" "j")
                    "((a) |(b) (c))"))
   (should (string= (vilpy-with "(|(a) (b) (c))" "jj")
@@ -400,7 +390,6 @@ Insert KEY if there's no command."
                    "(foo)\n;; comment\n~(bar)|")))
 
 (ert-deftest vilpy-up ()
-  (message "vilpy-up")
   (should (string= (vilpy-with "((a) (b) (c)|)" "k")
                    "((a) (b)| (c))"))
   (should (string= (vilpy-with "((a) (b) (c)|)" "kk")
@@ -453,7 +442,6 @@ Insert KEY if there's no command."
                    "(~foo| bar)")))
 
 (ert-deftest vilpy-other ()
-  (message "vilpy-other")
   (should (string= (vilpy-with "((a) (b) (c)|)" (vilpy-other))
                    "((a) (b) |(c))"))
   (should (string= (vilpy-with "((a) (b) (c)|)" (progn (vilpy-other) (vilpy-other)))
@@ -462,7 +450,6 @@ Insert KEY if there's no command."
                    "|((a) (b) (c))")))
 
 (ert-deftest vilpy-kill ()
-  (message "vilpy-kill")
   (should (string= (vilpy-with "\n\n|(defun foo ()\n    )" (vilpy-kill))
                    "\n\n|"))
   ;; while ahead of defun, and there's a comment before, move there
@@ -520,7 +507,6 @@ Insert KEY if there's no command."
                  "(progn\n|\n  (one)  ;;  1\n  )")))
 
 (ert-deftest vilpy-yank ()
-  (message "vilpy-yank")
   (should (string= (vilpy-with "\"|\"" (kill-new "foo") (vilpy-yank))
                    "\"foo|\""))
   (should (string= (vilpy-with "\"|\"" (kill-new "\"foo\"") (vilpy-yank))
@@ -538,7 +524,6 @@ Insert KEY if there's no command."
                      "(a\n;;foo\n)|"))))
 
 (ert-deftest vilpy-delete ()
-  (message "vilpy-delete")
   (should (string= (vilpy-with "(|(a) (b) (c))" "\C-d")
                    "(|(b) (c))"))
   (should (string= (vilpy-with "(|(a) (b) (c))" "2\C-d")
@@ -688,7 +673,6 @@ Insert KEY if there's no command."
     (should (string= (vilpy-with "\"foo|\"" "\C-d") "|"))))
 
 (ert-deftest vilpy-delete-backward ()
-  (message "vilpy-delete-backward")
   (should (string= (vilpy-with "((a) (b) (c)|)" "\C-?")
                    "((a) (b)|)"))
   (should (string= (vilpy-with "(list)(foo)|" "\C-?")
@@ -788,13 +772,10 @@ Insert KEY if there's no command."
   (should (string= (vilpy-with clojure "(foo bar?)|" "\C-?") "|")))
 
 (ert-deftest vilpy-pair ()
-  (message "vilpy-pair")
   (should (string= (vilpy-with "\"\\\\|\"" "(")
                    "\"\\\\(|\\\\)\""))
   (should (string= (vilpy-with "\"\\\\|\"" "{")
                    "\"\\\\{|\\\\}\""))
-  (should (string= (vilpy-with "\"\\\\|\"" "}")
-                   "\"\\\\[|\\\\]\""))
   (should (string= (vilpy-with "|foo bar~" "(")
                    "|(foo bar)"))
   (should (string= (vilpy-with "~foo bar|" "(")
@@ -842,7 +823,6 @@ Insert KEY if there's no command."
                      "(|a) b c"))))
 
 (ert-deftest vilpy--sub-slurp-forward ()
-  (message "vilpy--sub-slurp-forward")
   (should (eq (vilpy-with-v el "(progn\n  ~foo|-bar-baz-flip-flop)"
                                 (vilpy--sub-slurp-forward 1)) 1))
   (should (eq (vilpy-with-v el "(progn\n  ~foo|-bar-baz-flip-flop)"
@@ -856,7 +836,6 @@ Insert KEY if there's no command."
                                 (vilpy--sub-slurp-forward 1)) nil)))
 
 (ert-deftest vilpy--sub-slurp-backward ()
-  (message "vilpy--sub-slurp-backward")
   (should (eq (vilpy-with-v el "(progn\n  foo-bar-baz-flip-|flop~)"
                                 (vilpy--sub-slurp-backward 1)) 1))
   (should (eq (vilpy-with-v el "(progn\n  foo-bar-baz-flip-|flop~)"
@@ -868,7 +847,6 @@ Insert KEY if there's no command."
                                 (vilpy--sub-slurp-backward 1)) nil)))
 
 (ert-deftest vilpy-slurp ()
-  (message "vilpy-slurp")
   (should (string= (vilpy-with "()|(a) (b) (c)" ">")
                    "((a))| (b) (c)"))
   (should (string= (vilpy-with "()|(a) (b) (c)" ">>")
@@ -976,7 +954,6 @@ Insert KEY if there's no command."
                    "~(a\n b)|")))
 
 (ert-deftest vilpy-barf ()
-  (message "vilpy-barf")
   (should (string= (vilpy-with "((a) (b) (c))|" "<")
                    "((a) (b))| (c)"))
   (should (string= (vilpy-with "((a) (b) (c))|" "<<")
@@ -1019,7 +996,6 @@ Insert KEY if there's no command."
                    "(progn\n  (foo)\n  ~;; bar|\n  (baz))")))
 
 (ert-deftest vilpy-splice ()
-  (message "vilpy-splice")
   (should (string= (vilpy-with "(|(a) (b) (c))" (vilpy-splice 1))
                    "(a |(b) (c))"))
   (should (string= (vilpy-with "((a) |(b) (c))" (vilpy-splice 1))
@@ -1073,7 +1049,6 @@ Insert KEY if there's no command."
                    "|(let [foo 10\n      bar 20]\n  (baz))")))
 
 (ert-deftest vilpy-raise ()
-  (message "vilpy-raise")
   (should (string= (vilpy-with "(if (and |(pred1) (pred2))\n    (thing1)\n  (thing2))" "r")
                    "(if |(pred1)\n    (thing1)\n  (thing2))"))
   (should (string= (vilpy-with "(if (and (pred1) |(pred2))\n    (thing1)\n  (thing2))" "r")
@@ -1106,7 +1081,6 @@ Insert KEY if there's no command."
   )
 
 (ert-deftest vilpy-raise-some ()
-  (message "vilpy-raise-some")
   (should (string= (vilpy-with "(if (and |(pred1) (pred2))\n    (thing1)\n  (thing2))" "R")
                    "(if |(pred1) (pred2)\n    (thing1)\n  (thing2))"))
   (should (string= (vilpy-with "(if (and (pred1) |(pred2))\n    (thing1)\n  (thing2))" "R")
@@ -1123,7 +1097,6 @@ Insert KEY if there's no command."
                    "(foo)|")))
 
 (ert-deftest vilpy-convolute ()
-  (message "vilpy-convolute")
   (should (string= (vilpy-with "(when (pred)\n  (let ((x 1))\n    |(foo)\n    (bar)))" "C")
                    "(let ((x 1))\n  (when (pred)\n    |(foo))\n  (bar))"))
   (should (string= (vilpy-with "(when (pred)\n  (let ((x 1))\n    |(foo)\n    (bar)))" "CC")
@@ -1143,7 +1116,6 @@ Insert KEY if there's no command."
                    "(let ((beg x)\n      (end y))\n  (with-current-buffer buf\n    |(insert \" \")\n    (delete-region beg end)\n    (point)))")))
 
 (ert-deftest vilpy-join ()
-  (message "vilpy-join")
   (should (string= (vilpy-with "(foo) |(bar)" "+")
                    "(foo |bar)"))
   (should (string= (vilpy-with "(foo)| (bar)" "+")
@@ -1160,7 +1132,6 @@ Insert KEY if there's no command."
                    "|\"a series of strings\"")))
 
 (ert-deftest vilpy-split ()
-  (message "vilpy-split")
   (should (string= (vilpy-with "(foo |bar)" (kbd "M-j"))
                    "(foo)\n|(bar)"))
   (should (string= (vilpy-with "\"five |is right out\"" (kbd "M-j"))
@@ -1198,7 +1169,6 @@ Insert KEY if there's no command."
 
 
 (ert-deftest vilpy-move-up-region ()
-  (message "vilpy-move-up-region")
   (should (string= (vilpy-with "(lisp sugar-~free|)" (vilpy-move-up 1))
                    "(lisp |free~-sugar)"))
   (should (string= (vilpy-with "(lisp sugar-~free|)" (progn (vilpy-move-up 1)
@@ -1213,7 +1183,6 @@ Insert KEY if there's no command."
                    "|lisp~-sugar-free")))
 
 (ert-deftest vilpy-move-down-region ()
-  (message "vilpy-move-down-region")
   (should (string= (vilpy-with "(~sugar|-free lisp)" (vilpy-move-down 1))
                    "(free-~sugar| lisp)"))
   (should (string= (vilpy-with "(|sugar~-free lisp)" (vilpy-move-down 1))
@@ -1227,7 +1196,6 @@ Insert KEY if there's no command."
 
 
 (ert-deftest vilpy-clone ()
-  (message "vilpy-clone")
   (should (string= (vilpy-with "(foo)|" (vilpy-clone 1))
                    "(foo)\n(foo)|"))
   (should (string= (vilpy-with "(list\n (foo)|)" (vilpy-clone 1))
@@ -1250,7 +1218,6 @@ Insert KEY if there's no command."
                    "(+ 1 2)\n;; => 3\n|(+ 1 2)")))
 
 (ert-deftest vilpy-oneline ()
-  (message "vilpy-oneline")
   (should (string= (vilpy-with "|(defun abc (x)\n  \"def.\"\n  (+ x\n     x\n     x))" (vilpy-oneline))
                    "|(defun abc (x) \"def.\" (+ x x x))"))
   (should (string= (vilpy-with "(defun abc (x)\n  \"def.\"\n  (+ x\n     x\n     x))|" (vilpy-oneline))
@@ -1265,7 +1232,6 @@ Insert KEY if there's no command."
                    "[1 2 3 4 5]|")))
 
 (ert-deftest vilpy-multiline ()
-  (message "vilpy-multiline")
   (should (string= (vilpy-with "|(defun abc (x) \"def.\" (+ x x x) (foo) (bar))"
                                (vilpy-multiline))
                    "|(defun abc (x)\n  \"def.\" (+ x x x)\n  (foo)\n  (bar))"))
@@ -1277,7 +1243,6 @@ Insert KEY if there's no command."
                    "|(\"King Arthur\"\n \"Sir Lancelot\"\n \"Sir Robin\")")))
 
 (ert-deftest vilpy-alt-multiline ()
-  (message "vilpy-alt-multiline")
   (let ((vilpy-multiline-threshold nil))
     (should (string= (vilpy-with "|(defvar knights '(lancelot robin galahad bedevere) \"We're knights of the round table...\")" "M")
                      "|(defvar knights '(lancelot\n                  robin\n                  galahad\n                  bedevere)\n  \"We're knights of the round table...\")"))
@@ -1321,7 +1286,6 @@ Insert KEY if there's no command."
                      "[1\n 2\n 3\n 4\n 5]|"))))
 
 (ert-deftest vilpy-comment ()
-  (message "vilpy-comment")
   (should (string= (vilpy-with "(defun foo ()\n  (let (a b c)\n    (cond ((s1)\n           |(s2)\n           (s3)))))" ";")
                    "(defun foo ()\n  (let (a b c)\n    (cond ((s1)\n           ;; (s2)\n           |(s3)))))"))
   (should (string= (vilpy-with "(defun foo ()\n  (let (a b c)\n    (cond ((s1)\n           |(s2)\n           (s3)))))" ";;")
@@ -1380,12 +1344,10 @@ Insert KEY if there's no command."
                      "(foo ;; |\n )"))))
 
 (ert-deftest vilpy-string-oneline ()
-  (message "vilpy-string-oneline")
   (should (string= (vilpy-with "\"foo\nb|ar\n\"" (vilpy-string-oneline))
                    "\"foo\\nbar\\n\"|")))
 
 (ert-deftest vilpy-stringify ()
-  (message "vilpy-stringify")
   (should (string= (vilpy-with "(a\n b\n (foo)\n c)|" (vilpy-stringify))
                    "\"(a\n b\n (foo)\n c)|\""))
   (should (string= (vilpy-with "(progn |(1 2 3))" (vilpy-stringify))
@@ -1402,7 +1364,6 @@ Insert KEY if there's no command."
                    "(list \"one\"\n      \"two\"\n      ~\"five\"|)")))
 
 (ert-deftest vilpy-teleport ()
-  (message "vilpy-teleport")
   ;; should be able to cancel
   (should (string= (vilpy-with "(a |(b))"
                                (execute-kbd-macro (kbd "t ESC")))
@@ -1422,20 +1383,17 @@ Insert KEY if there's no command."
                    "((a) |b~)")))
 
 (ert-deftest vilpy-eval ()
-  (message "vilpy-eval")
   (should (= 4 (vilpy-with-v el "(+ 2 2)|" (vilpy-eval))))
   (should (= 4 (vilpy-with-v el "|(+ 2 2)" (vilpy-eval))))
   (should (= 4 (vilpy-with-v el "~(+ 2 2)|" (vilpy-eval))))
   (should (= 4 (vilpy-with-v el "(+ ~2 2)|" (vilpy-eval)))))
 
 (ert-deftest vilpy-eval-defun ()
-  (message "vilpy-eval-defun")
   (should (= 5 (vilpy-with-v el "(+ 1 (+ 2 2))|" (vilpy-eval-defun))))
   (should (= 5 (vilpy-with-v el "(+ 1 (+ 2 2)|)" (vilpy-eval-defun))))
   (should (= 5 (vilpy-with-v el "(+ 1 |(+ 2 2))" (vilpy-eval-defun)))))
 
 (ert-deftest vilpy-quotes ()
-  (message "vilpy-quotes")
   (should (string= (vilpy-with "(frob grovel |full lexical)" "\"")
                    "(frob grovel \"|\" full lexical)"))
   (should (string= (vilpy-with "(foo \"bar |baz\" quux)" "\"")
@@ -1459,7 +1417,6 @@ Insert KEY if there's no command."
                    "(list |\"\\\"experts\\\"\"~)")))
 
 (ert-deftest vilpy--prettify-1 ()
-  (message "vilpy--prettify-1")
   (should (string= (vilpy-with "|(foo (bar)baz)" (vilpy--prettify-1))
                    "|(foo (bar) baz)"))
   (should (string= (vilpy-with "(foo (bar)baz)|" (vilpy--prettify-1))
@@ -1498,7 +1455,6 @@ Insert KEY if there's no command."
                      "(foo\n (|)\n(bar))"))))
 
 (ert-deftest vilpy--sexp-normalize ()
-  (message "vilpy--sexp-normalize")
   (should (equal
            (vilpy--sexp-normalize
             '(progn
@@ -1509,12 +1465,10 @@ Insert KEY if there's no command."
              (ly-raw newline)))))
 
 (ert-deftest vilpy--remove-gaps ()
-  (message "vilpy--remove-gaps")
   (should (string= (vilpy-with "((a) |(c))" (vilpy--remove-gaps))
                    "((a) |(c))")))
 
 (ert-deftest vilpy-mark ()
-  (message "vilpy-mark")
   (should (string= (vilpy-with "|;; abc\n;; def\n;; ghi" (kbd "C-M-,"))
                    "~;; abc\n;; def\n;; ghi|"))
   (should (string= (vilpy-with ";; a|bc\n;; def\n;; ghi" (kbd "C-M-,"))
@@ -1525,7 +1479,6 @@ Insert KEY if there's no command."
                    "~;; abc\n;; def\n;; ghi|")))
 
 (ert-deftest vilpy-mark-symbol ()
-  (message "vilpy-mark-symbol")
   (should (string= (vilpy-with "(foo |\"bar\")" (kbd "M-m"))
                    "(foo ~\"bar\"|)"))
   (should (string= (vilpy-with "(foo \"bar|\")" (kbd "M-m"))
@@ -1564,7 +1517,6 @@ Insert KEY if there's no command."
                    "(~:keyword| (form))")))
 
 (ert-deftest vilpy--read ()
-  (message "vilpy--read")
   (should (equal (vilpy--read "(mu4e-mail)")
                  '(mu4e-mail)))
   (should (equal (vilpy--read "(progn
@@ -1681,7 +1633,6 @@ Insert KEY if there's no command."
                  '(ly-raw clojure-keyword ":.name"))))
 
 (ert-deftest vilpy-tick ()
-  (message "vilpy-tick")
   (should (string= (vilpy-with "|" "'") "'|"))
   (should (string= (vilpy-with "|" "`") "`|"))
   (should (string= (vilpy-with "~\"right\"|" "'")
@@ -1698,7 +1649,6 @@ Insert KEY if there's no command."
                    "(setq foo ~bar|)")))
 
 (ert-deftest vilpy-underscore ()
-  (message "vilpy-underscore")
   (should (string= (vilpy-with clojure "(list |[1 2 3]\n      [3 4 5])" "_")
                    "(list #_|[1 2 3]\n      [3 4 5])"))
   (should (string= (vilpy-with clojure "(list #_|[1 2 3]\n      [3 4 5])" "_")
@@ -1709,7 +1659,6 @@ Insert KEY if there's no command."
                    "(list [1 2 3]|\n      [3 4 5])")))
 
 (ert-deftest vilpy-parens ()
-  (message "vilpy-parens")
   (should (string= (vilpy-with "'|(foo bar)" "1(")
                    "(| '(foo bar))"))
   (should (string= (vilpy-with "'(foo bar)|" "1(")
@@ -1748,7 +1697,6 @@ Insert KEY if there's no command."
                    "(map #(| (+ % 1)) '(1 2 3))")))
 
 (ert-deftest vilpy-braces ()
-  (message "vilpy-braces")
   (should (string= (vilpy-with "\"a regex \\\\|\"" "{")
                    "\"a regex \\\\{|\\\\}\""))
   (should (string= (vilpy-with "\"a string |" "{")
@@ -1763,20 +1711,7 @@ Insert KEY if there's no command."
   (should (string= (vilpy-with clojure "symbol|" "{")
                    "symbol {|}")))
 
-(ert-deftest vilpy-brackets ()
-  (message "vilpy-brackets")
-  (should (string= (vilpy-with "\"a regex \\\\|\"" "}")
-                   "\"a regex \\\\[|\\\\]\""))
-  (should (string= (vilpy-with "\"a string |" "}")
-                   "\"a string [|]"))
-  ;; test space-unless behavior
-  (should (string= (vilpy-with clojure "`|" "}")
-                   "`[|]"))
-  (should (string= (vilpy-with clojure "#my.klass_or_type_or_record|" "}")
-                   "#my.klass_or_type_or_record[|]")))
-
 (ert-deftest vilpy-up-slurp ()
-  (message "vilpy-up-slurp")
   (should (string= (vilpy-with "(progn\n  (foo))\n|(bar)" (vilpy-up-slurp))
                    "(progn\n  (foo)\n  |(bar))"))
   (should (string= (vilpy-with "(progn\n  (foo))\n(bar)|" (vilpy-up-slurp))
@@ -1804,7 +1739,6 @@ Insert KEY if there's no command."
                    "(let ((a (1+\n          |))))")))
 
 (ert-deftest vilpy-tab ()
-  (message "vilpy-tab")
   (should (string= (vilpy-with "|(defun test?  (x) x)" (vilpy-tab))
                    "|(defun test? (x) x)"))
   (should (string= (vilpy-with "|(list '{foobar)" (vilpy-tab))
@@ -1843,12 +1777,10 @@ Insert KEY if there's no command."
         (vilpy-tab)))))
 
 (ert-deftest vilpy-ace-subword ()
-  (message "vilpy-ace-subword")
   (should (string= (vilpy-with "|foo-bar-baz~" (vilpy-ace-subword 1))
                    "~foo|-bar-baz")))
 
 (ert-deftest vilpy-mark-list ()
-  (message "vilpy-mark-list")
   (should (string= (vilpy-with "|;; foo\n(bar)" (vilpy-mark-list 1))
                    "~;; foo|\n(bar)"))
   (should (string= (vilpy-with "~;; foo|\n(bar)" (vilpy-mark-list 1))
@@ -1871,7 +1803,6 @@ Insert KEY if there's no command."
                    "~#2A((a b) (0 1))|")))
 
 (ert-deftest vilpy-mark-car ()
-  (message "vilpy-mark-car")
   (should (string= (vilpy-with "|\"foo\"~" (vilpy-tab))
                    "\"~foo|\""))
   (should (string= (vilpy-with "~'(\n  foo)|" (vilpy-tab))
@@ -1896,7 +1827,6 @@ Insert KEY if there's no command."
                    "(list ~\"one\"| \"two\")")))
 
 (ert-deftest vilpy-beginning-of-defun ()
-  (message "vilpy-beginning-of-defun")
   (should (string= (vilpy-with "(baz)\n(foo (b|ar))"
                                (vilpy-beginning-of-defun))
                    "(baz)\n|(foo (bar))"))
@@ -1911,7 +1841,6 @@ Insert KEY if there's no command."
   )
 
 (ert-deftest vilpy-alt-line ()
-  (message "vilpy-alt-line")
   (should (string= (vilpy-with "(invent 'wheel|)"
                                (vilpy-alt-line))
                    "(invent 'wheel\n        |)"))
@@ -1944,7 +1873,6 @@ Insert KEY if there's no command."
                    ";; foo\n|")))
 
 (ert-deftest vilpy-space ()
-  (message "vilpy-space")
   (should (string= (vilpy-with "(|foo" " ")
                    "(| foo"))
   (should (string= (vilpy-with "(| foo)" " ")
@@ -1979,7 +1907,6 @@ Insert KEY if there's no command."
                    "(list \\( |)")))
 
 (ert-deftest vilpy-kill-word ()
-  (message "vilpy-kill-word")
   (should (string= (vilpy-with "|  (require 'cl)" (kbd "M-d"))
                    "  (| 'cl)"))
   (should (string= (vilpy-with "|  \"(require 'cl)\"" (kbd "M-d"))
@@ -2000,7 +1927,6 @@ Insert KEY if there's no command."
                    "\"this is a |\"")))
 
 (ert-deftest vilpy-backward-kill-word ()
-  (message "vilpy-backward-kill-word")
   (should (string= (vilpy-with "(require 'cl)|" (kbd "M-DEL"))
                    "(require '|)"))
   (should (string= (vilpy-with "(require 'cl)|" (kbd "M-DEL") (kbd "C-y"))
@@ -2035,7 +1961,6 @@ Insert KEY if there's no command."
                    "\"|\"")))
 
 (ert-deftest vilpy-kill-sentence ()
-  (message "vilpy-kill-sentence")
   (should (string= (vilpy-with "(progn|\n  (foo)\n  (bar))" (kbd "M-k"))
                    "(progn|)"))
   (should (string= (vilpy-with "(message |\"foo bar baz\")" (kbd "M-k"))
@@ -2048,32 +1973,27 @@ Insert KEY if there's no command."
                    "(message \"Then shalt thou count to three|\")")))
 
 (ert-deftest vilpy-hash ()
-  (message "vilpy-hash")
   (should (string= (vilpy-with clojure "foo|" "#")
                    "foo #|"))
   (should (string= (vilpy-with clojure "foo|" "##")
                    "foo#|")))
 
 (ert-deftest vilpy-knight-down ()
-  (message "vilpy-knight-down")
   (should (string= (vilpy-with "|(defun foo ()\n  (bar)\n  (baz))"
                                (vilpy-knight-down))
                    "(defun foo ()\n  |(bar)\n  (baz))")))
 
 (ert-deftest vilpy-knight-up ()
-  (message "vilpy-knight-up")
   (should (string= (vilpy-with "(defun foo ()\n  |(bar)\n  (baz))"
                                (vilpy-knight-up))
                    "|(defun foo ()\n  (bar)\n  (baz))")))
 
 (ert-deftest vilpy-ace-char ()
-  (message "vilpy-ace-char")
   (should (string= (vilpy-with "|(cons 'norwegian 'blue)"
                                (execute-kbd-macro (kbd "Qob")))
                    "(cons 'n|orwegian 'blue)")))
 
 (ert-deftest vilpy-ace-paren ()
-  (message "vilpy-ace-paren")
   (should (string= (vilpy-with "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"
                                (execute-kbd-macro (kbd "qb")))
                    "(progn |(setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"))
@@ -2085,7 +2005,6 @@ Insert KEY if there's no command."
                    "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))")))
 
 (ert-deftest vilpy-ace-symbol ()
-  (message "vilpy-ace-symbol")
   (let ((avy-keys-alist nil))
     (should (string= (vilpy-with "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"
                                  (execute-kbd-macro (kbd "fb")))
@@ -2098,7 +2017,6 @@ Insert KEY if there's no command."
                      "(progn (setq type 'norwegian-blue)\n       (~setq| plumage-type 'lovely))"))))
 
 (ert-deftest vilpy-ace-subword ()
-  (message "vilpy-ace-subword")
   (should (string= (vilpy-with "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"
                                (execute-kbd-macro (kbd "-g")))
                    "(progn (setq type 'norwegian-blue)\n       (setq |plumage~-type 'lovely))"))
@@ -2111,7 +2029,6 @@ Insert KEY if there's no command."
                    "|(a b c)")))
 
 (ert-deftest vilpy-paste ()
-  (message "vilpy-paste")
   (should (string= (vilpy-with "|(a witch)"
                                (progn (vilpy-new-copy)
                                       (vilpy-paste 2)))
@@ -2142,7 +2059,6 @@ Insert KEY if there's no command."
                    "(progn\n  (one)\n  (two)\n  (three)\n  (one)|)")))
 
 (ert-deftest vilpy--balance ()
-  (message "vilpy--balance")
   (should (string= (vilpy--balance "(a")
                    "(a)"))
   (should (string= (vilpy--balance "a)")
@@ -2157,13 +2073,11 @@ Insert KEY if there's no command."
                    "{[(a)]}({[b]})")))
 
 (ert-deftest vilpy-repeat ()
-  (message "vilpy-repeat")
   (should (string= (vilpy-with "(message \"a witch\")|"
                                "2w..")
                    "(message \"a witch\")\n(message \"a witch\")\n(message \"a witch\")\n(message \"a witch\")\n(message \"a witch\")|")))
 
 (ert-deftest vilpy-interleave ()
-  (message "vilpy-interleave")
   (should (equal (vilpy-interleave 0 '(1 2 3))
                  '(1 0 2 0 3)))
   (should (equal (vilpy-interleave 1 '(1 2 3))
@@ -2180,7 +2094,6 @@ Insert KEY if there's no command."
                  '(1 2 3 4 5 6 3 7 8 9 3 10))))
 
 (ert-deftest vilpy-eval-str-racket ()
-  (message "vilpy-eval-str-racket")
   (let ((geiser-active-implementations '(racket)))
     (should (equal (vilpy-with-v scm
                        "(list #hash|((1 . 2) (3 . 4)))"
