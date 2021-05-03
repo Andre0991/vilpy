@@ -1632,11 +1632,6 @@ delete the extra space, \"(| foo)\" to \"(|foo)\"."
                     (vilpy-looking-back "[[({] "))
            (backward-char)))))
 
-(defun vilpy-at ()
-  (interactive)
-  (vilpy--space-unless "\\s-\\|\\s(\\|[:?]\\|\\\\\\|~\\|,")
-  (insert "@"))
-
 (defun vilpy-tick (arg)
   "Insert ' ARG times.
 When the region is active and marks a string, unquote it.
@@ -1667,7 +1662,8 @@ For Clojure modes, toggle #_ sexp comment."
     (self-insert-command arg)))
 
 (defun vilpy-backtick ()
-  "Insert `."
+  "Insert `.
+When the region is active, surrounds it with backticks."
   (interactive)
   (if (region-active-p)
       (vilpy--surround-region "`" "'")
@@ -5697,7 +5693,6 @@ w: Widen
     (define-key map (kbd "{") 'vilpy-braces)
     (define-key map (kbd "\"") 'vilpy-quotes)
     ;; insert
-    (define-key map (kbd "@") 'vilpy-at)
     (define-key map (kbd "'") 'vilpy-tick)
     (define-key map (kbd "`") 'vilpy-backtick)
     (define-key map (kbd "#") 'vilpy-hash)
