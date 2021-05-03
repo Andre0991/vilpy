@@ -1507,10 +1507,6 @@ major mode. These regexps are used to determine whether to insert a space for
     (vilpy-pair "(" ")" 'vilpy-parens-preceding-syntax-alist)
   "`vilpy-pair' with ().")
 
-(defalias 'vilpy-brackets
-    (vilpy-pair "[" "]" 'vilpy-brackets-preceding-syntax-alist)
-  "`vilpy-pair' with [].")
-
 (defalias 'vilpy-braces
     (vilpy-pair "{" "}" 'vilpy-braces-preceding-syntax-alist)
   "`vilpy-pair' with {}.")
@@ -5725,7 +5721,6 @@ w: Widen
     (define-key map (kbd "C-M-,") 'vilpy-mark)
     ;; pairs
     (define-key map (kbd "{") 'vilpy-braces)
-    (define-key map (kbd "}") 'vilpy-brackets)
     (define-key map (kbd "\"") 'vilpy-quotes)
     ;; insert
     (define-key map (kbd ":") 'vilpy-colon)
