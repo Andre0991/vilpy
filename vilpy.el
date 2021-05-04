@@ -1697,6 +1697,75 @@ When the region is active, surrounds it with backticks."
     (vilpy--space-unless "\\s-\\|\\s(\\|[#:?'`,]\\\\?")
     (insert "#")))
 
+(declare-function cider-eval-print-last-sexp "ext:cider-eval")
+(declare-function cider-repl-newline-and-indent "ext:cider-repl")
+(declare-function ielm-return "ielm")
+(declare-function mode-local-bind "mode-local")
+
+(defun vilpy-newline-and-indent ()
+  "Insert newline."
+  (interactive)
+  (cond ((eq major-mode 'lisp-interaction-mode)
+         (setq this-command 'eval-last-sexp)
+         (eval-print-last-sexp))
+        ((eq major-mode 'cider-clojure-interaction-mode)
+         (setq this-command 'cider-eval-print-last-sexp)
+         (cider-eval-print-last-sexp))
+        ((eq major-mode 'cider-repl-mode)
+         (setq this-command 'cider-repl-newline-and-indent)
+         (cider-repl-newline-and-indent))
+        ((eq major-mode 'inferior-emacs-lisp-mode)
+         (vilpy-newline-and-indent-plain))
+        ((vilpy-left-p)
+         (skip-chars-backward ",@'`#")
+         (newline-and-indent)
+         (skip-chars-forward ",@'`#")
+         (indent-sexp))
+        (t
+         (vilpy-newline-and-indent-plain))))
+
+(declare-function cider-repl-return "ext:cider-repl")
+(declare-function slime-repl-return "ext:slime-repl")
+(declare-function sly-mrepl-return "ext:sly-mrepl")
+(declare-function racket-repl-submit "ext:racket-repl")
+(defun vilpy-newline-and-indent-plain ()
+  "When in minibuffer, exit it.  Otherwise forward to `newline-and-indent'."
+  (interactive)
+  (if (minibufferp)
+      (exit-minibuffer)
+    (cl-case major-mode
+      (cider-repl-mode
+       (cider-repl-return))
+      (slime-repl-mode
+       (slime-repl-return))
+      (sly-mrepl-mode
+       (sly-mrepl-return))
+      (comint-mode
+       (comint-send-input))
+      (python-mode
+       (newline-and-indent))
+      (inferior-emacs-lisp-mode
+       (setq this-command 'ielm-return)
+       (ielm-return))
+      (racket-repl-mode
+       (racket-repl-submit))
+      (t
+       (if (and (not (vilpy--in-string-or-comment-p))
+                (if (memq major-mode vilpy-clojure-modes)
+                    (vilpy-looking-back "[^#`'@~][#`'@~]+")
+                  (vilpy-looking-back "[^#`',@|][#`',@]+")))
+           (save-excursion
+             (goto-char (match-beginning 0))
+             (newline-and-indent))
+         (newline-and-indent))
+       (let ((vilpy-ignore-whitespace t))
+         (save-excursion
+           (vilpy--out-backward 1)
+           (unless (< 50000
+                      (- (save-excursion (forward-list 1))
+                         (point)))
+             (indent-sexp))))))))
+
 ;;* Globals: miscellanea
 (defun vilpy-string-oneline ()
   "Convert current string to one line."
@@ -5561,6 +5630,8 @@ w: Widen
     (define-key map (kbd "(") 'vilpy-parens)
     (define-key map (kbd "[") 'vilpy-brackets)
     (define-key map (kbd ";") 'vilpy-comment)
+    (define-key map (kbd "C-j") 'vilpy-newline-and-indent)
+    (define-key map (kbd "RET") 'vilpy-newline-and-indent-plain)
     map))
 
 (declare-function View-quit "view")
