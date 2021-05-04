@@ -5629,9 +5629,9 @@ w: Widen
     (define-key map (kbd "M-d") 'vilpy-kill-word)
     (define-key map (kbd "M-DEL") 'vilpy-backward-kill-word)
     ;; misc
+    (define-key map (kbd ";") 'vilpy-comment)
     (define-key map (kbd "(") 'vilpy-parens)
     (define-key map (kbd "[") 'vilpy-brackets)
-    (define-key map (kbd ";") 'vilpy-comment)
     (define-key map (kbd "C-j") 'vilpy-newline-and-indent)
     (define-key map (kbd "RET") 'vilpy-newline-and-indent-plain)
     map))
@@ -5655,7 +5655,7 @@ w: Widen
     (define-key map (kbd "C-d") 'vilpy-delete)
     (define-key map (kbd "C-y") 'vilpy-yank)
     (define-key map (kbd "DEL") 'vilpy-delete-backward)
-    ;; manipulation
+    ;; transformation
     (define-key map (kbd "M-j") 'vilpy-split)
     (define-key map (kbd "M-J") 'vilpy-join)
     ;; marking

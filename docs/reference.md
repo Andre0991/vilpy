@@ -517,6 +517,8 @@ after <kbd>J</kbd>:
 (foo (bar (xum)))
 ```
 
+#### `vilpy-split` (<kbd>M-j</kbd>)
+#### `vilpy-join` (<kbd>M-J</kbd>)
 ### Barfing & slurping
 #### `vilpy-slurp`(<kbd>></kbd>)
 
@@ -637,9 +639,16 @@ after <kbd>/j</kbd>:
 | `vilpy-ace-pare`                      | <kbd>q</kbd> |
 	
 ### Deleting & killing
-| command          | binding      |
-|------------------|--------------|
-| `vilpy-delete`   | <kbd>d</kbd> |
+| command                 | binding          |
+|-------------------------|------------------|
+| `vilpy-delete`          | <kbd>d</kbd>     |
+| `vilpy-delete`          | <kbd>C-d</kbd>   |
+| `vilpy-kill`            | <kbd>C-k</kbd>   |
+| `vilpy-kill-word`       | <kbd>M-DEL</kbd> |
+| `vilpy-kill-sentence`   | <kbd>M-k</kbd>   |
+| `vilpy-kill-at-point`   | <kbd>C-,</kbd>   |
+| `vilpy-yank`            | <kbd>C-y</kbd>   |
+| `vilpy-delete-backward` | <kbd>DEL</kbd>   |
 
 ### Copying & yanking
 | command          | binding      |
@@ -649,13 +658,16 @@ after <kbd>/j</kbd>:
 | `vilpy-paste`    | <kbd>P</kbd> |
 
 ### Marking
-| command           | binding      |
-|-------------------|--------------|
-| `vilpy-mark-list` | <kbd>v</kbd> |
+| command             | binding          |
+|---------------------|------------------|
+| `vilpy-mark-list`   | <kbd>v</kbd>     |
+| `vilpy-mark-symbol` | <kbd>M-m</kbd>   |
+| `vilpy-mark`        | <kbd>C-M-,</kbd> |
 
 ### Misc
 | command                       | binding        |
 |-------------------------------|----------------|
+| `vilpy-comment`               | <kbd>;</kbd>   |
 | `vilpy-space`                 | <kbd>SPC</kbd> |
 | `vilpy-narrow`                | <kbd>gn</kbd>  |
 | `vilpy-widen`                 | <kbd>gw</kbd>  |
