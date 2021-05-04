@@ -5578,15 +5578,15 @@ w: Widen
     (vilpy-define-key map "R" 'vilpy-raise-some)
     (vilpy-define-key map "p" 'vilpy-move-up)
     (vilpy-define-key map "n" 'vilpy-move-down)
-    (vilpy-define-key map ">" 'vilpy-slurp)
-    (vilpy-define-key map "<" 'vilpy-barf)
-    (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
     (vilpy-define-key map "x" 'vilpy-splice)
     (vilpy-define-key map "+" 'vilpy-join)
     (vilpy-define-key map "C" 'vilpy-convolute)
     (vilpy-define-key map "J" 'vilpy-oneline)
     (vilpy-define-key map "M" 'vilpy-alt-multiline)
-    (vilpy-define-key map "t" 'vilpy-teleport)
+    ;; barfing & slurping
+    (vilpy-define-key map ">" 'vilpy-slurp)
+    (vilpy-define-key map "<" 'vilpy-barf)
+    (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
     ;; acing
     (vilpy-define-key map "f" 'vilpy-ace-symbol)
     (vilpy-define-key map "-" 'vilpy-ace-subword)
@@ -5595,11 +5595,11 @@ w: Widen
     (vilpy-define-key map "q" 'vilpy-ace-paren
       :override '(cond ((bound-and-true-p view-mode)
                         (View-quit))))
-    ;; yanking
+    ;; deleting & killing
+    (vilpy-define-key map "d" 'vilpy-delete)
+    ;; copying & yanking
     (vilpy-define-key map "y" 'vilpy-new-copy)
     (vilpy-define-key map "w" 'vilpy-clone)
-    (vilpy-define-key map "D" 'vilpy-kill)
-    (vilpy-define-key map "d" 'vilpy-delete)
     (vilpy-define-key map "P" 'vilpy-paste)
     ;; marking
     (vilpy-define-key map "v" 'vilpy-mark-list)
@@ -5610,6 +5610,8 @@ w: Widen
     (vilpy-define-key map "u" 'vilpy-undo)
     (vilpy-define-key map "z" 'vilpy-scroll-actions)
     (vilpy-define-key map "." 'vilpy-repeat)
+    ;; magic
+    (vilpy-define-key map "t" 'vilpy-teleport)
     ;; TODO: other
     ;; (vilpy-define-key map "S" 'vilpy-stringify)
     ;; (vilpy-define-key map "D" 'pop-tag-mark)
@@ -5646,23 +5648,25 @@ w: Widen
   (let ((map (copy-keymap vilpy-mode-map-base)))
     ;; navigation
     (define-key map (kbd "<backtab>") 'vilpy-special)
-    ;; kill-related
-    (define-key map (kbd "C-y") 'vilpy-yank)
-    (define-key map (kbd "C-d") 'vilpy-delete)
-    (define-key map (kbd "DEL") 'vilpy-delete-backward)
+    ;; killing
     (define-key map (kbd "M-k") 'vilpy-kill-sentence)
-    (define-key map (kbd "M-m") 'vilpy-mark-symbol)
     (define-key map (kbd "C-,") 'vilpy-kill-at-point)
+    ;; deleting
+    (define-key map (kbd "C-d") 'vilpy-delete)
+    (define-key map (kbd "C-y") 'vilpy-yank)
+    (define-key map (kbd "DEL") 'vilpy-delete-backward)
+    ;; manipulation
+    (define-key map (kbd "M-j") 'vilpy-split)
+    (define-key map (kbd "M-J") 'vilpy-join)
+    ;; marking
+    (define-key map (kbd "M-m") 'vilpy-mark-symbol)
     (define-key map (kbd "C-M-,") 'vilpy-mark)
-    ;; pairs
+    ;; insert
     (define-key map (kbd "{") 'vilpy-braces)
     (define-key map (kbd "\"") 'vilpy-quotes)
-    ;; insert
     (define-key map (kbd "'") 'vilpy-tick)
     (define-key map (kbd "`") 'vilpy-backtick)
     (define-key map (kbd "#") 'vilpy-hash)
-    (define-key map (kbd "M-j") 'vilpy-split)
-    (define-key map (kbd "M-J") 'vilpy-join)
     map))
 
 (defcustom vilpy-key-theme '(special vilpy)

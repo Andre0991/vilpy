@@ -444,6 +444,80 @@ after <kbd>n</kbd>:
 |(foo)
 ```
 
+#### `vilpy-splice`(<kbd>x</kbd>)
+
+Starting with:
+
+```
+(foo |(bar))
+```
+
+after <kbd>x</kbd>:
+
+```
+(foo bar)
+```
+
+#### `vilpy-join`(<kbd>+</kbd>)
+
+Starting with:
+
+```
+(foo)
+|(bar)
+```
+
+after <kbd>+</kbd>:
+
+```
+|(foo
+bar)
+```
+
+#### `vilpy-convolute`(<kbd>C</kbd>)
+
+Starting with:
+
+```
+(foo
+ (bar
+  |(xum)))
+```
+
+after <kbd>C</kbd>:
+
+```
+(bar
+ (foo
+  (xum)))
+```
+
+after <kbd>C</kbd>:
+
+
+```
+(foo
+ (bar
+  |(xum)))
+```
+
+#### `vilpy-oneline`(<kbd>J</kbd>)
+
+Starting with:
+
+```
+|(foo
+ (bar
+  (xum)))
+```
+
+after <kbd>J</kbd>:
+
+```
+(foo (bar (xum)))
+```
+
+### Barfing & slurping
 #### `vilpy-slurp`(<kbd>></kbd>)
 
 Starting with:
@@ -553,91 +627,6 @@ after <kbd>/j</kbd>:
 '(|(first!)
   foo bar)
 ```
-
-#### `vilpy-splice`(<kbd>x</kbd>)
-
-Starting with:
-
-```
-(foo |(bar))
-```
-
-after <kbd>x</kbd>:
-
-```
-(foo bar)
-```
-
-#### `vilpy-join`(<kbd>+</kbd>)
-
-Starting with:
-
-```
-(foo)
-|(bar)
-```
-
-after <kbd>+</kbd>:
-
-```
-|(foo
-bar)
-```
-
-#### `vilpy-convolute`(<kbd>C</kbd>)
-
-Starting with:
-
-```
-(foo
- (bar
-  |(xum)))
-```
-
-after <kbd>C</kbd>:
-
-```
-(bar
- (foo
-  (xum)))
-```
-
-after <kbd>C</kbd>:
-
-
-```
-(foo
- (bar
-  |(xum)))
-```
-
-#### `vilpy-oneline`(<kbd>J</kbd>)
-
-Starting with:
-
-```
-|(foo
- (bar
-  (xum)))
-```
-
-after <kbd>J</kbd>:
-
-```
-(foo (bar (xum)))
-```
-
-#### `vilpy-alt-multiline`(<kbd>M</kbd>)
-
-Starting with:
-
-
-
-#### `vilpy-teleport`(<kbd>t</kbd>)
-
-
-</details>
-
 ### Acing
 | command                               | binding      |
 |---------------------------------------|--------------|
@@ -647,12 +636,34 @@ Starting with:
 | `vilpy-ace-char`                      | <kbd>Q</kbd> |
 | `vilpy-ace-pare`                      | <kbd>q</kbd> |
 	
-### Yanking
+### Deleting & killing
+| command          | binding      |
+|------------------|--------------|
+| `vilpy-delete`   | <kbd>d</kbd> |
+
+### Copying & yanking
 | command          | binding      |
 |------------------|--------------|
 | `vilpy-new-copy` | <kbd>y</kbd> |
 | `vilpy-clone`    | <kbd>w</kbd> |
-| `vilpy-kill`     | <kbd>D</kbd> |
-| `vilpy-delete`   | <kbd>d</kbd> |
-| `vilpy-paste`    | <kbd>P</kbd> | 
+| `vilpy-paste`    | <kbd>P</kbd> |
 
+### Marking
+| command           | binding      |
+|-------------------|--------------|
+| `vilpy-mark-list` | <kbd>v</kbd> |
+
+### Misc
+| command                       | binding        |
+|-------------------------------|----------------|
+| `vilpy-space`                 | <kbd>SPC</kbd> |
+| `vilpy-narrow`                | <kbd>gn</kbd>  |
+| `vilpy-widen`                 | <kbd>gw</kbd>  |
+| `vilpy-undo`                  | <kbd>u</kbd>   |
+| `vilpy-scroll-line-to-top`    | <kbd>zt</kbd>  |
+| `vilpy-scroll-line-to-center` | <kbd>zz</kbd>  |
+| `vilpy-scroll-line-to-bottom` | <kbd>zb</kbd>  |
+| `vilpy-repeat`                | <kbd>.</kbd>   |
+
+### Magic
+#### `vilpy-teleport`(<kbd>t</kbd>)
