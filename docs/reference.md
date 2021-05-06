@@ -161,10 +161,9 @@ after <kbd>O</kbd>:
 | `vilpy-step-in`            | <kbd>l</kbd> |
 | `vilpy-down`               | <kbd>j</kbd> |
 | `vilpy-up`                 | <kbd>k</kbd> |
-| `vilpy-beginning-of-defun` | <kbd>B</kbd> |
 | `vilpy-knight-down`        | <kbd>S</kbd> |
 | `vilpy-knight-up`          | <kbd>W</kbd> |
-| `vilpy-beginning-of-defun` | <kbd>B</kbd> |
+| `vilpy-beginning-of-defun` | <kbd>I</kbd> |
 | `vilpy-back`               | <kbd>b</kbd> |
 | `vilpy-right`              | <kbd>L</kbd> |
 
@@ -275,7 +274,7 @@ after <kbd>W</kbd>:
 |(foo (bar)
       (xum))
 ```
-#### `vilpy-beginning-of-defun` (<kbd>B</kbd>)
+#### `vilpy-beginning-of-defun` (<kbd>I</kbd>)
 
 Starting with this top level form:
 
@@ -285,7 +284,7 @@ Starting with this top level form:
   |(foo))
 ```
 
-after <kbd>B</kbd>as
+after <kbd>I</kbd>as
 
 ```
 |(defun abc ()

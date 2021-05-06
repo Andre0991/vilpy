@@ -5564,7 +5564,7 @@ w: Widen
     (vilpy-define-key map "k" 'vilpy-up)
     (vilpy-define-key map "W" 'vilpy-knight-up)
     (vilpy-define-key map "S" 'vilpy-knight-down)
-    (vilpy-define-key map "B" 'vilpy-beginning-of-defun)
+    (vilpy-define-key map "I" 'vilpy-beginning-of-defun)
     (vilpy-define-key map "b" 'vilpy-back)
     (vilpy-define-key map "L" 'vilpy-right)
     (vilpy-define-key map "G" 'end-of-buffer)
