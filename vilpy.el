@@ -50,6 +50,7 @@
                     (:eval-last-sexp . eval-last-sexp)
                     (:eval-defun . eval-defun)
                     (:eval-region . eval-region)
+		    (:eval-buffer . eval-buffer)
                     (:describe-symbol . vilpy--emacs-lisp-describe-symbol)
                     (:indent-sexp . vilpy--prettify-emacs-lisp-sexp)))
     (:inf-clojure . ((:decider-fn . (lambda () (bound-and-true-p inf-clojure-minor-mode)))
@@ -57,12 +58,14 @@
 		     (:describe-symbol . vilpy--inf-clojure-describe-symbol)
                      (:eval-defun . inf-clojure-eval-defun)
                      (:eval-region . inf-clojure-eval-region)
+		     (:eval-buffer . inf-clojure-eval-buffer)
                      (:indent-sexp . vilpy-clojure-indent)))
     (:cider . ((:decider-fn . (lambda () (bound-and-true-p cider-mode)))
                (:eval-last-sexp . cider-eval-last-sexp)
                (:describe-symbol . vilpy--cider-describe-symbol)
                (:eval-defun . cider-eval-defun-at-point)
                (:eval-region . cider-eval-region)
+	       (:eval-buffer . cider-eval-buffer)
                (:indent-sexp . vilpy-clojure-indent)))
     ;; Fallback for clojure, in case `cider` and `inf-clojure` are not activated
     ;; Do not move this up to in this list - that would always ignore cider and inf-clojure,
@@ -5327,7 +5330,6 @@ If `vilpy-safe-paste' is non-nil, any unmatched delimiters will be added to it."
 
 ;;; Handlers helpers
 
-
 (defun vilpy--get-handlers ()
   "Return the appropriate handlers for the current buffer.
 This is done by iterating over `vilpy--handlers-alist` and finding
@@ -5363,6 +5365,15 @@ The evaluation function is defined by `vilpy--handlers-alist`."
         (call-interactively eval-last-sexp-handler)))
      ((vilpy-right-p)
       (call-interactively eval-last-sexp-handler)))))
+
+(defun vilpy-eval-buffer ()
+  "Evaluate the buffer.
+
+The evaluation function is defined by `vilpy--handlers-alist`."
+  (interactive)
+  (if-let ((handler (assoc-default :eval-buffer (vilpy--get-handlers))))
+      (call-interactively handler)
+    (vilpy--complain-not-supported)))
 
 (defun vilpy-eval-defun ()
   "Evaluate the top level form.
@@ -5572,6 +5583,7 @@ w: Widen
     (vilpy-define-key map "=" 'vilpy-tab)
     (vilpy-define-key map "e" 'vilpy-eval)
     (vilpy-define-key map "E" 'vilpy-eval-defun)
+    (vilpy-define-key map "B" 'vilpy-eval-buffer)
     (vilpy-define-key map "K" 'vilpy-describe)
     ;; transformations
     (vilpy-define-key map "r" 'vilpy-raise)

@@ -323,12 +323,13 @@ Unlike up-list, parens in strings and comments are ignored.
 </details>
 
 ### Code actions
-| command            | binding      |
-|--------------------|--------------|
-| `vilpy-eval`       | <kbd>e</kbd> |
-| `vilpy-eval-defun` | <kbd>E</kbd> |
-| `vilpy-tab`        | <kbd>=</kbd> |
-| `vilpy-describe`   | <kbd>K</kbd> |
+| command             | binding      |
+|---------------------|--------------|
+| `vilpy-eval`        | <kbd>e</kbd> |
+| `vilpy-eval-defun`  | <kbd>E</kbd> |
+| `vilpy-eval-buffer` | <kbd>B</kbd> |
+| `vilpy-tab`         | <kbd>=</kbd> |
+| `vilpy-describe`    | <kbd>K</kbd> |
 
 <details>
 
