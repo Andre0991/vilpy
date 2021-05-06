@@ -1840,38 +1840,6 @@ Insert KEY if there's no command."
   ;;                  "(baz)\n(foo (|bar~))"))
   )
 
-(ert-deftest vilpy-alt-line ()
-  (should (string= (vilpy-with "(invent 'wheel|)"
-                               (vilpy-alt-line))
-                   "(invent 'wheel\n        |)"))
-  (should (string= (vilpy-with "(message |\"hello %s\" name)"
-                               (vilpy-alt-line))
-                   "(message \"hello %s\" name\n         |)"))
-  (should (string= (vilpy-with "(invent 'wheel|)"
-                               (vilpy-alt-line 2))
-                   "(invent 'wheel)\n|"))
-  (should (string= (vilpy-with "(invent \"wheel|\")"
-                               (vilpy-alt-line))
-                   "(invent \"wheel\"\n        |)"))
-  (should (string= (vilpy-with "(progn\n  (take-out the-holy-pin)|\n  (count-to-three))"
-                               (vilpy-alt-line))
-                   "(progn\n  (take-out the-holy-pin)\n  |\n  (count-to-three))"))
-  (should (string= (vilpy-with "(progn\n  (take-out the-holy-pin)\n  (count-to-three)|)"
-                               (vilpy-alt-line))
-                   "(progn\n  (take-out the-holy-pin)\n  (count-to-three)\n  |)"))
-  (should (string= (vilpy-with "(progn\n  |(take-out the-holy-pin)\n  (count-to-three))"
-                               (vilpy-alt-line))
-                   "(progn\n  (take-out the-holy-pin)\n  |\n  (count-to-three))"))
-  (should (string= (vilpy-with "(progn\n  (take-out |the-holy-pin)\n  (count-to-three))"
-                               (vilpy-alt-line))
-                   "(progn\n  (take-out the-holy-pin\n            |)\n  (count-to-three))"))
-  (should (string= (vilpy-with "(progn\n  (take-out |the-holy-pin)\n  (count-to-three))"
-                               (vilpy-alt-line 2))
-                   "(progn\n  (take-out the-holy-pin)\n  |\n  (count-to-three))"))
-  (should (string= (vilpy-with ";; foo|"
-                               (vilpy-alt-line))
-                   ";; foo\n|")))
-
 (ert-deftest vilpy-space ()
   (should (string= (vilpy-with "(|foo" " ")
                    "(| foo"))
