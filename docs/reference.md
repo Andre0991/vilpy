@@ -322,8 +322,6 @@ Return point if could move arg times, otherwise return nil.
 
 Unlike up-list, parens in strings and comments are ignored.
 
-</details>
-
 #### `vilpy-go-to-first-defun` (<kbd>gg</kbd>)
 Starting with
 
@@ -353,6 +351,8 @@ after <kbd>G</kbd>:
 (a (b))
 |(c)
 ```
+
+</details>
 
 ### Code actions
 | command             | binding      |
