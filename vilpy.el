@@ -5607,8 +5607,6 @@ w: Widen
     (vilpy-define-key map "q" 'vilpy-ace-paren
       :override '(cond ((bound-and-true-p view-mode)
                         (View-quit))))
-    ;; deleting & killing
-    (vilpy-define-key map "d" 'vilpy-delete)
     ;; copying & yanking
     (vilpy-define-key map "y" 'vilpy-new-copy)
     (vilpy-define-key map "w" 'vilpy-clone)

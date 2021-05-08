@@ -641,7 +641,6 @@ after <kbd>/j</kbd>:
 ### Deleting & killing
 | command                 | binding          |
 |-------------------------|------------------|
-| `vilpy-delete`          | <kbd>d</kbd>     |
 | `vilpy-delete`          | <kbd>C-d</kbd>   |
 | `vilpy-kill`            | <kbd>C-k</kbd>   |
 | `vilpy-kill-word`       | <kbd>M-DEL</kbd> |
