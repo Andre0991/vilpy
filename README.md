@@ -15,7 +15,7 @@ In this way, you don't need to press modifiers for editing lisps.
 
 Note that `vilpy` is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy).
 Think of it as a `lispy-core`, which is lighter, but no less sweet.
-`vilpy` strives to be vimmier (though no less suited for non-Evil users) and smaller (no refactoring and debugging features, fewer external dependencies).
+`vilpy` keybindings are vimmier and it is considerably smaller (no refactoring and debugging features, fewer dependencies).
 For more differences with `lispy`, please consult the [alternatives](#alternatives) section.
 
 I prefer forking the original code because (1) the author is happy with the current approach of bundling everything in the same package, and that's perfectly fine ([issue](https://github.com/abo-abo/lispy/issues/74)) and (2) `lispy` is critical for getting things done in my job, but the Clojure-specific parts are not important for me and they do interfere with some projects.
