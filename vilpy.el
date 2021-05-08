@@ -791,10 +791,10 @@ If position isn't special, move to previous or error."
   (interactive)
   (push-mark)
   (vilpy-beginning-of-defun)
-  (let ((previous-line (line-number-at-pos (point))))
+  (let ((previous-point (point)))
     (vilpy-up 1)
-    (while (not (= previous-line (line-number-at-pos (point))))
-      (setq previous-line (line-number-at-pos (point)))
+    (while (not (= previous-point (point)))
+      (setq previous-point (point))
       (vilpy-up 1)))
   (message "Mark saved where command was called"))
 
