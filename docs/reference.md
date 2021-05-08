@@ -326,7 +326,7 @@ Unlike up-list, parens in strings and comments are ignored.
 | command             | binding      |
 |---------------------|--------------|
 | `vilpy-eval`        | <kbd>e</kbd> |
-| `vilpy-eval-defun`  | <kbd>E</kbd> |
+| `vilpy-eval-defun`  | <kbd>D</kbd> |
 | `vilpy-eval-buffer` | <kbd>B</kbd> |
 | `vilpy-tab`         | <kbd>=</kbd> |
 | `vilpy-describe`    | <kbd>K</kbd> |

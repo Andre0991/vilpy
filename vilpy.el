@@ -5582,7 +5582,7 @@ w: Widen
     ;; code actions
     (vilpy-define-key map "=" 'vilpy-tab)
     (vilpy-define-key map "e" 'vilpy-eval)
-    (vilpy-define-key map "E" 'vilpy-eval-defun)
+    (vilpy-define-key map "D" 'vilpy-eval-defun)
     (vilpy-define-key map "B" 'vilpy-eval-buffer)
     (vilpy-define-key map "K" 'vilpy-describe)
     ;; transformations
