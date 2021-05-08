@@ -798,6 +798,18 @@ If position isn't special, move to previous or error."
       (vilpy-up 1)))
   (message "Mark saved where command was called"))
 
+(defun vilpy-go-to-last-defun ()
+  "Sets the mark and moves the point to the last defun."
+  (interactive)
+  (push-mark)
+  (vilpy-beginning-of-defun)
+  (let ((previous-point (point)))
+    (vilpy-down 1)
+    (while (not (= previous-point (point)))
+      (setq previous-point (point))
+      (vilpy-down 1)))
+  (message "Mark saved where command was called"))
+
 ;;* Globals: kill, yank, delete, mark, copy
 (defun vilpy-kill ()
   "Kill line, keeping parens consistent."
@@ -5589,7 +5601,7 @@ w: Widen
     (vilpy-define-key map "I" 'vilpy-beginning-of-defun)
     (vilpy-define-key map "b" 'vilpy-back)
     (vilpy-define-key map "L" 'vilpy-right)
-    (vilpy-define-key map "G" 'end-of-buffer)
+    (vilpy-define-key map "G" 'vilpy-go-to-last-defun)
     ;; code actions
     (vilpy-define-key map "=" 'vilpy-tab)
     (vilpy-define-key map "e" 'vilpy-eval)

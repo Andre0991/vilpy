@@ -167,6 +167,7 @@ after <kbd>O</kbd>:
 | `vilpy-back`               | <kbd>b</kbd>  |
 | `vilpy-right`              | <kbd>L</kbd>  |
 | `vilpy-go-to-first-defun`  | <kbd>gg</kbd> |
+| `vilpy-go-to-last-defun`   | <kbd>G</kbd>  |
 
 <details>
 
@@ -336,6 +337,21 @@ after <kbd>gg</kbd>:
 ```
 |(a)
 (b (c))
+```
+
+#### `vilpy-go-to-last-defun` (<kbd>G</kbd>)
+Starting with
+
+```
+(a |(b))
+(c)
+```
+
+after <kbd>G</kbd>:
+
+```
+(a (b))
+|(c)
 ```
 
 ### Code actions
