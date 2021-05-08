@@ -51,7 +51,9 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might ne
 ```
 
 ## Usage
-Please refer to the [function reference](/docs/reference.md) (work in progress).
+
+You can find workflow examples in [usage](/docs/usage.md).
+For a complete list of commands, see the [function reference](/docs/reference.md).
 
 ## Customization
 This section presents some common ways that `vilpy` can be configured.
