@@ -155,17 +155,18 @@ after <kbd>O</kbd>:
 </details>
 
 ### Navigation
-| command                    | binding      |
-|----------------------------|--------------|
-| `vilpy-step-out`           | <kbd>h</kbd> |
-| `vilpy-step-in`            | <kbd>l</kbd> |
-| `vilpy-down`               | <kbd>j</kbd> |
-| `vilpy-up`                 | <kbd>k</kbd> |
-| `vilpy-knight-down`        | <kbd>S</kbd> |
-| `vilpy-knight-up`          | <kbd>W</kbd> |
-| `vilpy-beginning-of-defun` | <kbd>I</kbd> |
-| `vilpy-back`               | <kbd>b</kbd> |
-| `vilpy-right`              | <kbd>L</kbd> |
+| command                    | binding       |
+|----------------------------|---------------|
+| `vilpy-step-out`           | <kbd>h</kbd>  |
+| `vilpy-step-in`            | <kbd>l</kbd>  |
+| `vilpy-down`               | <kbd>j</kbd>  |
+| `vilpy-up`                 | <kbd>k</kbd>  |
+| `vilpy-knight-down`        | <kbd>S</kbd>  |
+| `vilpy-knight-up`          | <kbd>W</kbd>  |
+| `vilpy-beginning-of-defun` | <kbd>I</kbd>  |
+| `vilpy-back`               | <kbd>b</kbd>  |
+| `vilpy-right`              | <kbd>L</kbd>  |
+| `vilpy-go-to-first-defun`  | <kbd>gg</kbd> |
 
 <details>
 
@@ -321,6 +322,21 @@ Return point if could move arg times, otherwise return nil.
 Unlike up-list, parens in strings and comments are ignored.
 
 </details>
+
+#### `vilpy-go-to-first-defun` (<kbd>gg</kbd>)
+Starting with
+
+```
+(a)
+(b |(c))
+```
+
+after <kbd>gg</kbd>:
+
+```
+|(a)
+(b (c))
+```
 
 ### Code actions
 | command             | binding      |

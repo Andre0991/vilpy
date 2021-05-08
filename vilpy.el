@@ -786,6 +786,18 @@ If position isn't special, move to previous or error."
         (t
          (user-error "Unexpected"))))
 
+(defun vilpy-go-to-first-defun ()
+  "Sets the mark and moves the point to the first defun."
+  (interactive)
+  (push-mark)
+  (vilpy-beginning-of-defun)
+  (let ((previous-line (line-number-at-pos (point))))
+    (vilpy-up 1)
+    (while (not (= previous-line (line-number-at-pos (point))))
+      (setq previous-line (line-number-at-pos (point)))
+      (vilpy-up 1)))
+  (message "Mark saved where command was called"))
+
 ;;* Globals: kill, yank, delete, mark, copy
 (defun vilpy-kill ()
   "Kill line, keeping parens consistent."
@@ -5549,12 +5561,11 @@ k: Slurp up
 (defun vilpy-go-actions ()
   (interactive)
   (cl-case (read-char-from-minibuffer "Actions:\n
-g: Go to beginning of buffer
+g: Go to first defun
 n: Narrow
 w: Widen
 \n")
-    (?g (progn (goto-char (point-min))
-               (message nil)))
+    (?g (call-interactively 'vilpy-go-to-first-defun))
     (?n (progn (call-interactively 'vilpy-narrow)
                (message nil)))
     (?w (progn (call-interactively 'vilpy-widen)

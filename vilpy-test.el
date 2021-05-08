@@ -449,6 +449,16 @@ Insert KEY if there's no command."
   (should (string= (vilpy-with "((a) (b) (c))|" (vilpy-other))
                    "|((a) (b) (c))")))
 
+(ert-deftest vilpy-go-to-first-defun ()
+  (should (string= (vilpy-with "|(a)" (vilpy-go-to-first-defun))
+                   "|(a)"))
+  (should (string= (vilpy-with "(a) (b) (c |(d)" (vilpy-go-to-first-defun))
+                   "|(a) (b) (c (d)"))
+  (should (string= (vilpy-with "(a) (b) (c)|" (vilpy-go-to-first-defun))
+                   "|(a) (b) (c)"))
+  (should (string= (vilpy-with "((a) (b) (c)|)" (vilpy-go-to-first-defun))
+                   "|((a) (b) (c))")))
+
 (ert-deftest vilpy-kill ()
   (should (string= (vilpy-with "\n\n|(defun foo ()\n    )" (vilpy-kill))
                    "\n\n|"))
