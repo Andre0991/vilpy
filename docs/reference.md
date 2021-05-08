@@ -667,9 +667,77 @@ after <kbd>/j</kbd>:
 | `vilpy-ace-symbol`                    | <kbd>f</kbd> |
 | `vilpy-ace-subword`                   | <kbd>-</kbd> |
 | `vilpy-ace-symbol-beginning-of-defun` | <kbd>F</kbd> |
+| `vilpy-ace-paren`                      | <kbd>q</kbd> |
 | `vilpy-ace-char`                      | <kbd>Q</kbd> |
-| `vilpy-ace-pare`                      | <kbd>q</kbd> |
-	
+
+<details>
+
+#### `vilpy-ace-symbol` (<kbd>f</kbd>)
+Marks symbol in the current form.
+This can be followed up with eval, raise, deletion etc.
+For unmarking the symbol afterwards, as usual, press <kbd>C-g</kbd>.
+
+Starting with:
+
+```
+(foo bar baz)
+```
+
+After <kbd>f</kbd>, each symbol will be annotated with a character:
+
+```
+(afoo bbar cbaz)
+```
+
+In this example, say you press `c`. Then, the cursor will jump to `baz` and it will be marked.
+
+#### `vilpy-ace-subword` (<kbd>-</kbd>)
+
+Marks subword.
+
+Starting with:
+
+```
+(foo-bar-baz)
+```
+
+After <kbd>-</kbd>:
+
+```
+(afoo-bbaz-cbaz)
+```
+
+In this example, use `a`, `b` or `c` for jumping and marking a subword.
+
+#### `vilpy-ace-symbol-beginning-of-defun` (<kbd>F</kbd>)
+
+Same as `vilpy-ace-symbol`, but the range of acing is the current defun rather than the current form.
+
+#### `vilpy-ace-paren` (<kbd>q</kbd>)
+
+Marks form.
+
+Starting with:
+
+```
+(a (b) (c) d)
+```
+
+After <kbd>q</kbd>:
+
+```
+a((bb) (cc) d)
+```
+
+In this example, use `a`, `b` or `c` for jumping and marking a form.
+
+</details>
+
+#### `vilpy-ace-char` (<kbd>Q</kbd>)
+
+Asks for a char and jumps to it in the current form.
+
+
 ### Deleting & killing
 | command                 | binding          |
 |-------------------------|------------------|
