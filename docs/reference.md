@@ -953,11 +953,15 @@ Call `backward-delete-char`.
 </details>
 
 ### Copying & yanking
-| command          | binding      |
-|------------------|--------------|
-| `vilpy-new-copy` | <kbd>y</kbd> |
-| `vilpy-clone`    | <kbd>w</kbd> |
-| `vilpy-paste`    | <kbd>P</kbd> |
+
+| command       | binding      |
+|---------------|--------------|
+| `vilpy-copy`  | <kbd>y</kbd> |
+| `vilpy-clone` | <kbd>w</kbd> |
+| `vilpy-paste` | <kbd>P</kbd> |
+
+<details>
+</details>
 
 ### Marking
 | command             | binding          |

@@ -1996,30 +1996,30 @@ Insert KEY if there's no command."
 
 (ert-deftest vilpy-paste ()
   (should (string= (vilpy-with "|(a witch)"
-                               (progn (vilpy-new-copy)
+                               (progn (vilpy-copy)
                                       (vilpy-paste 2)))
                    "(a (a witch)| witch)"))
   (should (string= (vilpy-with "|(a witch)"
-                               (progn (vilpy-new-copy)
+                               (progn (vilpy-copy)
                                       (vilpy-paste 3)))
                    "(a witch (a witch)|)"))
   (should (string= (vilpy-with "(progn\n  |(one)\n  (two)\n  (three))"
-                               (progn (vilpy-new-copy)
+                               (progn (vilpy-copy)
                                       (vilpy-down 1)
                                       (vilpy-paste 1)))
                    "(progn\n  (one)\n  (one)|\n  (two)\n  (three))"))
   (should (string= (vilpy-with "(progn\n  |(one)\n  (two)\n  (three))"
-                               (progn (vilpy-new-copy)
+                               (progn (vilpy-copy)
                                       (vilpy-down 2)
                                       (vilpy-paste 1)))
                    "(progn\n  (one)\n  (two)\n  (one)|\n  (three))"))
   (should (string= (vilpy-with "(progn\n  (one)|\n  (two)\n  (three))"
-                               (progn (vilpy-new-copy)
+                               (progn (vilpy-copy)
                                       (vilpy-down 1)
                                       (vilpy-paste 1)))
                    "(progn\n  (one)\n  (two)\n  (one)|\n  (three))"))
   (should (string= (vilpy-with "(progn\n  (one)|\n  (two)\n  (three))"
-                               (progn (vilpy-new-copy)
+                               (progn (vilpy-copy)
                                       (vilpy-down 2)
                                       (vilpy-paste 1)))
                    "(progn\n  (one)\n  (two)\n  (three)\n  (one)|)")))

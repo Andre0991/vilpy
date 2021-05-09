@@ -198,7 +198,7 @@ This applies to `vilpy-delete', `vilpy-paste', and
   :type 'boolean)
 
 (defcustom vilpy-safe-copy nil
-  "When non-nil, `vilpy-new-copy' won't copy unbalanced delimiters in a region."
+  "When non-nil, `vilpy-copy' won't copy unbalanced delimiters in a region."
   :group 'vilpy
   :type 'boolean)
 
@@ -1340,7 +1340,7 @@ When ARG is more than 1, mark ARGth element."
           (t
            (vilpy--mark (vilpy--bounds-dwim))))))
 
-(defun vilpy-new-copy ()
+(defun vilpy-copy ()
   "Copy marked region or sexp to kill ring."
   (interactive)
   (let ((str (if (region-active-p)
@@ -5581,7 +5581,7 @@ w: Widen
       :override '(cond ((bound-and-true-p view-mode)
                         (View-quit))))
     ;; copying & yanking
-    (vilpy-define-key map "y" 'vilpy-new-copy)
+    (vilpy-define-key map "y" 'vilpy-copy)
     (vilpy-define-key map "w" 'vilpy-clone)
     (vilpy-define-key map "P" 'vilpy-paste)
     ;; marking
