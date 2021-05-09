@@ -50,26 +50,36 @@ We start with this code. Note that the point is in the middle of `defun`.
 (plus-one 2)
 ```
 
-Press <kbd>backtab</kbd> (that is, <kbd>shift</kbd> and <kbd>tab</kbd>) to move the point to the beginning of the defun and enter special mode.
+**Evaluating `(plus-one 2)`**
 
-```
-|(defun plus-one (n)
-  (+ 1 n)
-  (message "done"))
+- Press <kbd>backtab</kbd> (that is, <kbd>shift</kbd> and <kbd>tab</kbd>) to move the point to the beginning of the defun and enter special mode.
+- First, evaluate the defun with <kbd>e</kbd> (`vilpy-eval`).
+- Then, use <kbd>j</kbd> (`vilpy-down`) and <kbd>e</kbd> for evaluating `(plus-one 2)` and getting 3.
+- Use <kbd>k</kbd> for getting back to the defun. Note that this entire sequence is equivalent to simply using <kbd>B</kbd> (`vilpy-eval-buffer`).
 
-(plus-one 2)
-```
+**Change `plus-one` to `plus-two`**
 
-Let's eval `(plus-one 2)` and see what's the current value. First, evaluate the defun with <kbd>e</kbd> (`vilpy-eval`). Then, use <kbd>j</kbd> (`vilpy-down`) and <kbd>e</kbd> for evaluating `(plus-one 2)` and getting 3. Use <kbd>k</kbd> for getting back to the defun. Note that this entire sequence is equivalent to simply using <kbd>B</kbd> (`vilpy-eval-buffer`).
+- With the point in the beginning of the defun, press <kbd>-</kbd> (`vilpy-ace-subword`). This will display a letter in each subword, alphabetically, like `(adefun bplus-cone ...)`. Press `c` for jumping to `one`, which will be marked.
+- Then, use <kbd>C-d</kbd> (`vilpy-delete`) for removing `one` and write `two`.
+- Press <kbd>backtab</kbd> for getting back to special mode.
 
-Now, let's change `plus-one` to `plus-two`. With the point in the beginning of the defun, press <kbd>-</kbd> (`vilpy-ace-subword`).
-This will display a letter in each subword, alphabetically, like `(adefun bplus-cone ...)`. Press `c` for jumping to `one`, which will be marked. Then, use <kbd>C-d</kbd> (`vilpy-delete`) for removing `one` and write `two`. Press <kbd>backtab</kbd> for getting back to special mode.
+**Remove `message`**
 
-Let's remove `message`. Use  <kbd>l</kbd> (`vilpy-step-in`) three times for getting to the `message` form. This is equivalent to <kbd>3l</kbd>. Alternatively, use <kbd>q</kbd> (`vilpy-ace-paren`) and `d` for directly jumping to `message`. Then, press <kbd>C-d</kbd> (`vilpy-delete`) twice for removing the form and the blank line. The point will jump to the beginning of the defun.
+- Use  <kbd>l</kbd> (`vilpy-step-in`) three times for getting to the `message` form. This is equivalent to <kbd>3l</kbd>. Alternatively, use <kbd>q</kbd> (`vilpy-ace-paren`) and `d` for directly jumping to `message`.
+- Then, press <kbd>C-d</kbd> (`vilpy-delete`) twice for removing the form and the blank line. The point will jump to the beginning of the defun.
 
-Now, let's change `(+ 1 n)` to `(+ 2 n)`. Press <kbd>f</kbd> (`vilpy-ace-symbol`). This command will add a letter before each symbol. Use `e` for directly jumping to `1`. Use <kbd>C-d</kbd> for deleting it and write `2`. Use <kbd>backtab</kbd> for getting back to special mode and <kbd>I</kbd> (`vilpy-beginning-of-defun`) for jumping to the beginning of the defun and <kbd>e</kbd> for evaluating it.
+**Change `(+ 1 n)` to `(+ 2 n)`**
 
-Finally, press <kbd>j</kbd> for moving the point to `(plus-one 2)` and <kbd>C-d</kbd> for deleting it.
+- Press <kbd>f</kbd> (`vilpy-ace-symbol`). This command will add a letter before each symbol. Use `e` for directly jumping to `1`.
+- Use <kbd>C-d</kbd> for deleting it and write `2`.
+- Use <kbd>backtab</kbd> for getting back to special mode.
+- <kbd>I</kbd> (`vilpy-beginning-of-defun`) for jumping to the beginning of the defun.
+- <kbd>e</kbd> for evaluating it.
+
+**Deleting `(plus-one 2)`**
+
+- Finally, press <kbd>j</kbd> for moving the point to `(plus-one 2)`.
+- <kbd>C-d</kbd> for deleting it.
 
 
 ## Example 2: Killing, copying and yanking
@@ -115,29 +125,33 @@ This will be the result:
 
 Consider that the point starts just before `defun`, in special mode.
 
-First, let's insert `(do-foo)` by duplicating `(do-bar)` and replacing `bar`.
-Use <kbd>l</kbd> (`vilpy-step-in`) twice for getting to `do-bar`.
-This is equivalent to <kbd>2l</kbd> or <kbd>qc</kbd> (`vilpy-ace-paren` followed by `c`).
-Then, press <kbd>w</kbd> (`vilpy-clone`), which will duplicate `(do-foo)`.
-Use <kbd>j</kbd> (`vilpy-down`) for moving to the second `(do-bar)`.
-Press <kbd>-b</kbd> for marking `bar` and delete it with <kbd>C-d</kbd>. Type `foo` and use <kbd>backtab</kbd> for getting back to special mode (that is, <kbd>shift</kbd> and <kbd>tab</kbd>).
+**Insert `(do-foo)`**
 
-Next, let's change `(do-bar)` to `(with-foo do-bar)`.
-Use <kbd>k</kbd> (`vilpy-up`) for getting to `do-bar`.
-Then, press <kbd>a</kbd> (`forward-char`).
-This is equivalent to the usual `C-f` Emacs binding.
-The point will be just after the paren: `(|do-bar)`.
-Press <kbd>SPC</kbd> (`vilpy-space`) for inserting a whitespace character and type `with-foo`.
-After that, use <kbd>backtab</kbd> (`vilpy-special`) for getting back to special mode.
-The point will be just before the parens, like this: `|(with-foo do-bar)`.
+- First, let's insert `(do-foo)` by duplicating `(do-bar)` and replacing `bar`.
+- Use <kbd>l</kbd> (`vilpy-step-in`) twice for getting to `do-bar`. This is equivalent to <kbd>2l</kbd> or <kbd>qc</kbd> (`vilpy-ace-paren` followed by `c`).
+- Then, press <kbd>w</kbd> (`vilpy-clone`), which will duplicate `(do-foo)`.
+- Use <kbd>j</kbd> (`vilpy-down`) for moving to the second `(do-bar)`.
+- Press <kbd>-b</kbd> for marking `bar` and delete it with <kbd>C-d</kbd>. Type `foo`
+- Use <kbd>backtab</kbd> for getting back to special mode (that is, <kbd>shift</kbd> and <kbd>tab</kbd>).
 
-Now, let's remove `(b)` and `(c)` from `do-baz`.
-Press <kbd>j</kbd> for getting to `do-baz`.
-Use <kbd>l</kbd> twice for getting to `(b)`.
-Then, use <kbd>C-k</kbd> (`vilpy-kill`) for killing until the end of the parent sexp.
+**Change `(do-bar)` to `(with-foo do-bar)`**
 
-Finally, let's copy `(a)` to the line below.
-Use <kbd>backtab</kbd> for getting back to special mode and then <kbd>y</kbd> for copying `a`.
-Press <kbd>h</kbd> (`vilpy-step-out`) for getting to the paren sexp.
-Use <kbd>backtab</kbd> for switching to the matching paren and <kbd>RET</kbd> for opening a new line. This is equivalent to just using <kbd>o</kbd> (`vilpy-open-line-below`).
-Then, press <kbd>C-y</kbd> (the standard `yank` command) for pasting the previously copied sexp.
+- Use <kbd>k</kbd> (`vilpy-up`) for getting to `do-bar`.
+- Then, press <kbd>a</kbd> (`forward-char`).This is equivalent to the usual `C-f` Emacs binding. The point will be just after the paren: `(|do-bar)`.
+- Press <kbd>SPC</kbd> (`vilpy-space`) for inserting a whitespace character and type `with-foo`.
+- Use <kbd>backtab</kbd> (`vilpy-special`) for getting back to special mode. The point will be just before the parens, like this: `|(with-foo do-bar)`.
+
+**Now, remove `(b)` and `(c)` from `do-baz`**
+
+- Press <kbd>j</kbd> for getting to `do-baz`.
+- Use <kbd>l</kbd> twice for getting to `(b)`.
+- Then, use <kbd>C-k</kbd> (`vilpy-kill`) for killing until the end of the parent sexp.
+
+
+**Copy `(a)` to the line below**
+
+- Use <kbd>backtab</kbd> for getting back to special mode.
+- <kbd>y</kbd> for copying `a`.
+- Press <kbd>h</kbd> (`vilpy-step-out`) for getting to the paren sexp.
+- Use <kbd>backtab</kbd> for switching to the matching paren and <kbd>RET</kbd> for opening a new line. This is equivalent to just using <kbd>o</kbd> (`vilpy-open-line-below`).
+- Finally, press <kbd>C-y</kbd> (the standard `yank` command) for pasting the previously copied sexp.
