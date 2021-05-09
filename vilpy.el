@@ -2,7 +2,7 @@
 
 ;; Author: André Peric Tavares <andre.peric.tavares@gmail.com>
 ;; URL: https://github.com/Andre0991/vilpy-lite
-;; Version: 0.1.5
+;; Version: 0.1.5 (beta)
 ;; Keywords: lisp
 
 ;; This file is not part of GNU Emacs
