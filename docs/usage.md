@@ -139,19 +139,18 @@ Consider that the point starts just before `defun`, in special mode.
 - Use <kbd>k</kbd> (`vilpy-up`) for getting to `do-bar`.
 - Then, press <kbd>a</kbd> (`forward-char`).This is equivalent to the usual `C-f` Emacs binding. The point will be just after the paren: `(|do-bar)`.
 - Press <kbd>SPC</kbd> (`vilpy-space`) for inserting a whitespace character and type `with-foo`.
-- Use <kbd>backtab</kbd> (`vilpy-special`) for getting back to special mode. The point will be just before the parens, like this: `|(with-foo do-bar)`.
+- Use <kbd>backtab</kbd> (`vilpy-special`) for getting back to special mode. The point will be just before the paren, like this: `|(with-foo do-bar)`.
 
-**Now, remove `(b)` and `(c)` from `do-baz`**
+**Remove `(b)` and `(c)` from `do-baz`**
 
 - Press <kbd>j</kbd> for getting to `do-baz`.
 - Use <kbd>l</kbd> twice for getting to `(b)`.
 - Then, use <kbd>C-k</kbd> (`vilpy-kill`) for killing until the end of the parent sexp.
 
-
 **Copy `(a)` to the line below**
 
 - Use <kbd>backtab</kbd> for getting back to special mode.
-- <kbd>y</kbd> for copying `a`.
+- <kbd>y</kbd> for copying `(a)`.
 - Press <kbd>h</kbd> (`vilpy-step-out`) for getting to the paren sexp.
 - Use <kbd>backtab</kbd> for switching to the matching paren and <kbd>RET</kbd> for opening a new line. This is equivalent to just using <kbd>o</kbd> (`vilpy-open-line-below`).
 - Finally, press <kbd>C-y</kbd> (the standard `yank` command) for pasting the previously copied sexp.

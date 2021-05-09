@@ -7,13 +7,12 @@
 
 > creamy & even shorter lisp editing
 
-**Important: Work in progress. Expect things to break and keybindings to change. I don't even recommend using this right now, but stay tuned!**
+**Important: Work in progress. Expect things to break and keybindings to change. Stay tuned!**
 
 `vilpy` is a vi-like `paredit`.
-It is modal in the sense that when the point is exactly before or after a paren, keys run commands rather than inserting text.
-In this way, you don't need to press modifiers for editing lisps.
+It is modal in the sense that when the point is exactly before or after a paren, keys run commands rather than inserting text. For more details, see [documentation](#documentation).
 
-Note that `vilpy` is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy).
+`vilpy` is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy).
 Think of it as a `lispy-core`, which is lighter, but no less sweet.
 `vilpy` keybindings are vimmier and it is considerably smaller (no refactoring and debugging features, fewer dependencies).
 For more differences with `lispy`, please consult the [alternatives](#alternatives) section.
@@ -23,15 +22,15 @@ I prefer forking the original code because (1) the author is happy with the curr
 ## Supported languages & compatibility with other modes
 The navigation features are tested with emacs-lisp and Clojure, but they are likely to work with other lisps.
 
-emacs-lisp and Clojure (`cider` and `inf-clojure`) also support evaluation, describing the symbol at point and identation.
+emacs-lisp and Clojure (`cider` and `inf-clojure`) also support evaluation, describing the symbol at point and indentation.
 These features can be added to other languages by setting the proper handlers in the variable `vilpy--handlers-alist`.
 
-`vilpy` defines its own keybindings that might conflict with `parinfer`, `paredit` and other structural diting odes
+`vilpy` defines its own keybindings that might conflict with `parinfer`, `paredit` and other structural editing modes.
 
 ## Installation
 `vilpy` must be installed manually as of now.
 
-Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might need to get it as well.
+Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy). You might need to install it as well.
 
 ``` emacs-lisp
 ;; replace `vilpy-load-path` by the directory that has `vilpy.el`
@@ -47,9 +46,10 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might ne
 (evil-define-key 'insert 'vilpy-mode-map (kbd "C-d") 'vilpy-delete)
 ```
 
-## Usage
+## Documentation
 
 You can find workflow examples in [usage](/docs/usage.md).
+
 For a complete list of commands, see the [function reference](/docs/reference.md).
 
 ## Customization
@@ -90,7 +90,7 @@ h: Select left window.
 (vilpy-define-key map "w" 'vilpy-window-actions)
 ```
 
-#### Overring behavior
+#### Overriding behavior
 You may want to override some default behavior based on some conditions.
 For example, suppose you want to change `H`, which is originally bound to `vilpy-foo`, to `my-function`, but only if `inf-clojure-minor-mode` is enabled.
 
