@@ -554,7 +554,7 @@ after <kbd>J</kbd>:
 
 </details>
 
-### Barfing & slurping
+### Barfage & Slurpage
 
 | command            | binding       |
 |--------------------|---------------|
