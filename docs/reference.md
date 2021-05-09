@@ -551,7 +551,22 @@ after <kbd>J</kbd>:
 
 #### `vilpy-split` (<kbd>M-j</kbd>)
 #### `vilpy-join` (<kbd>M-J</kbd>)
+
+</details>
+
 ### Barfing & slurping
+
+| command            | binding       |
+|--------------------|---------------|
+| `vilpy-slurp`      | <kbd>></kbd>  |
+| `vilpy-barf`       | <kbd><</kbd>  |
+| `vilpy-move-left`  | <kbd>/h</kbd> |
+| `vilpy-move-right` | <kbd>/l</kbd> |
+| `vilpy-down-slurp` | <kbd>/j</kbd> |
+| `vilpy-up-slurp`   | <kbd>/k</kbd> |
+
+<details>
+
 #### `vilpy-slurp`(<kbd>></kbd>)
 
 Starting with:
@@ -591,17 +606,6 @@ after <kbd><</kbd>:
 ```
 |((foo) (bar) xum)
 ```
-
-#### `vilpy-move-and-slurp-actions`(<kbd>/</kbd>)
-
-Groups some less frequent slurping actions.
-
-| command | binding            |
-|---------|--------------------|
-| h       | `vilpy-move-left`  |
-| l       | `vilpy-move-right` |
-| j       | `vilpy-down-slurp` |
-| k       | `vilpy-up-slurp`   |
 
 
 ##### `vilpy-move-left` (<kbd>/h</kbd>)
@@ -661,13 +665,16 @@ after <kbd>/j</kbd>:
 '(|(first!)
   foo bar)
 ```
+
+</details>
+
 ### Acing
 | command                               | binding      |
 |---------------------------------------|--------------|
 | `vilpy-ace-symbol`                    | <kbd>f</kbd> |
 | `vilpy-ace-subword`                   | <kbd>-</kbd> |
 | `vilpy-ace-symbol-beginning-of-defun` | <kbd>F</kbd> |
-| `vilpy-ace-paren`                      | <kbd>q</kbd> |
+| `vilpy-ace-paren`                     | <kbd>q</kbd> |
 | `vilpy-ace-char`                      | <kbd>Q</kbd> |
 
 <details>
@@ -731,12 +738,13 @@ a((bb) (cc) d)
 
 In this example, use `a`, `b` or `c` for jumping and marking a form.
 
-</details>
-
 #### `vilpy-ace-char` (<kbd>Q</kbd>)
 
 Asks for a char and jumps to it in the current form.
 
+
+
+</details>
 
 ### Deleting & killing
 | command                 | binding          |
@@ -745,6 +753,204 @@ Asks for a char and jumps to it in the current form.
 | `vilpy-kill`            | <kbd>C-k</kbd>   |
 | `vilpy-kill-word`       | <kbd>M-DEL</kbd> |
 | `vilpy-delete-backward` | <kbd>DEL</kbd>   |
+
+<details>
+
+#### `vilpy-delete` (<kbd>C-d</kbd>)
+
+Deletes region, form or string, depending on the position of the point. Accepts numerical argument.
+
+For the complete list of behaviours, please refer to the `lispy` [documentation](http://oremacs.com/lispy/#lispy-delete).
+
+**Example 1: In region**
+
+Starting with (`~` denotes a marked region):
+
+```
+(~foo~)
+```
+
+After <kbd>C-d</kbd>:
+
+```
+()
+```
+
+**Example 2: Before form**
+
+Starting with
+
+```
+|(foo) (bar)
+```
+
+after <kbd>C-d</kbd>:
+
+```
+|(bar)
+```
+
+#### `vilpy-kill` (<kbd>C-k</kbd>)
+
+Similar to `kill-line`, but keeps parens balanced.
+
+**Example 1: Before form**
+
+Starting with:
+
+```
+(foo |(bar) (baz))
+```
+
+after <kbd>C-k</kbd>:
+
+```
+(foo )
+```
+
+**Example 2: In string**
+
+Starting with:
+
+```
+"foo |bar"
+```
+
+after <kbd>C-k</kbd>:
+
+```
+"foo "
+```
+
+#### `vilpy-kill-word` (<kbd>M-DEL</kbd>)
+
+Kill words. Accepts numerical argument.
+
+Starting with:
+
+```
+|(foo bar)
+```
+
+After <kbd>M-DEL</kbd>:
+
+```
+(| bar)
+```
+
+After <kbd>M-DEL</kbd>:
+
+```
+(|)
+```
+
+#### `vilpy-delete-backward` (<kbd>DEL</kbd>)
+
+Bound to <kbd>DEL</kbd>.
+
+Replaces `backward-delete-char`, keeping parens balanced.
+
+The result depends on the following conditions, each tried one by one until one that holds true is found:
+
+**Active region**
+
+Delete region.
+
+**At first char of the string**
+
+Move to the end of the string. This allows to delete the whole string with the next DEL.
+
+```
+(message "|more gold is required")
+```
+
+after <kbd>DEL</kbd>:
+
+```
+(message "more gold is required"|)
+```
+
+**In string near `\\(` or `\\)`**
+
+Remove `\\(` and `\\)`.
+
+Starting with:
+```
+(looking-at "\\([a-z]+\\)|")
+```
+
+After <kbd>DEL</kbd>:
+
+```
+(looking-at "[a-z]+")
+
+```
+
+Starting with:
+
+```
+(looking-at "\\(|[a-z]+\\)")
+```
+
+after <kbd>DEL</kbd>:
+
+```
+(looking-at "|[a-z]+")
+```
+
+**In string or comment**
+
+Call `backward-delete-char`.
+
+**After right paren**
+
+Delete arg sexps.
+
+Starting with:
+
+```
+(foo (bar) (baz)|)
+```
+
+after <kbd>2 DEL</kbd>:
+
+```
+(foo)
+```
+
+**After left paren**
+
+Delete containing sexp.
+
+```
+(foo (|bar) (baz))
+```
+
+After <kbd>DEL</kbd>:
+
+```
+(foo| (bar))
+```
+
+**After a string**
+
+Delete string.
+
+```
+(message "more gold is required"|)
+```
+
+After <kbd>DEL</kbd>:
+
+```
+(message |)
+```
+
+**Otherwise**
+
+Call `backward-delete-char`.
+
+</details>
 
 ### Copying & yanking
 | command          | binding      |
