@@ -42,9 +42,7 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might ne
 (add-hook 'clojure-mode-hook (lambda () (vilpy-mode 1)))
 
 ;; recommended settings for `evil` users
-(vilpy-define-key vilpy-mode-map "m" 'evil-set-marker)
-(vilpy-define-key vilpy-mode-map "`" 'evil-goto-mark)
-(vilpy-define-key vilpy-mode-map "c" 'vilpy-execute-in-normal-state)
+;; those are the default keybindings, but they are overriden by `evil`
 (evil-define-key 'insert 'vilpy-mode-map (kbd "C-k") 'vilpy-kill)
 (evil-define-key 'insert 'vilpy-mode-map (kbd "C-d") 'vilpy-delete)
 ```
