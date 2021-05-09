@@ -47,7 +47,6 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy), you might ne
 (vilpy-define-key vilpy-mode-map "c" 'vilpy-execute-in-normal-state)
 (evil-define-key 'insert 'vilpy-mode-map (kbd "C-k") 'vilpy-kill)
 (evil-define-key 'insert 'vilpy-mode-map (kbd "C-d") 'vilpy-delete)
-(evil-define-key 'insert 'vilpy-mode-map (kbd "C-y") 'vilpy-yank)
 ```
 
 ## Usage

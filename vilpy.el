@@ -193,8 +193,7 @@ using those packages."
 (defcustom vilpy-safe-delete nil
   "When non-nil, killing/deleting an active region keeps delimiters balanced.
 This applies to `vilpy-delete', `vilpy-paste', and
-`vilpy-delete-backward'. This also applies to `vilpy-yank' when
-`delete-selection-mode' is non-nil."
+`vilpy-delete-backward'."
   :group 'vilpy
   :type 'boolean)
 
@@ -204,7 +203,7 @@ This applies to `vilpy-delete', `vilpy-paste', and
   :type 'boolean)
 
 (defcustom vilpy-safe-paste nil
-  "When non-nil, `vilpy-paste' and `vilpy-yank' will add missing delimiters."
+  "When non-nil, `vilpy-paste' will add missing delimiters."
   :group 'vilpy
   :type 'boolean)
 
@@ -937,24 +936,6 @@ If position isn't special, move to previous or error."
                              (point-max))
                 (widen)))
           (backward-kill-word 1))))))
-
-(defun vilpy-yank ()
-  "Like regular `yank', but quotes body when called from \"|\"."
-  (interactive)
-  (setq this-command 'yank)
-  (let* ((text (vilpy--maybe-safe-current-kill)))
-    (cond
-      ((and (region-active-p)
-            (bound-and-true-p delete-selection-mode))
-       (vilpy--maybe-safe-delete-region (region-beginning) (region-end))
-       (insert-for-yank text))
-      ((and (eq (char-after) ?\")
-            (eq (char-before) ?\"))
-       (insert-for-yank (replace-regexp-in-string "\"" "\\\\\""
-                                                  text)))
-      (t
-       (push-mark (point))
-       (insert-for-yank text)))))
 
 (defvar vilpy-delete-sexp-from-within nil
   "When cursor is adjacent to an opening or closing pair,
@@ -5652,7 +5633,6 @@ w: Widen
     (define-key map (kbd "<backtab>") 'vilpy-special)
     ;; deleting
     (define-key map (kbd "C-d") 'vilpy-delete)
-    (define-key map (kbd "C-y") 'vilpy-yank)
     (define-key map (kbd "DEL") 'vilpy-delete-backward)
     ;; transformation
     (define-key map (kbd "M-j") 'vilpy-split)
