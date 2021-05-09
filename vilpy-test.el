@@ -1948,18 +1948,6 @@ Insert KEY if there's no command."
   (should (string= (vilpy-with "\"\\n |\"" (kbd "M-DEL"))
                    "\"|\"")))
 
-(ert-deftest vilpy-kill-sentence ()
-  (should (string= (vilpy-with "(progn|\n  (foo)\n  (bar))" (kbd "M-k"))
-                   "(progn|)"))
-  (should (string= (vilpy-with "(message |\"foo bar baz\")" (kbd "M-k"))
-                   "(message |)"))
-  (should (string= (vilpy-with "(progn |(foo bar baz))" (kbd "M-k"))
-                   "(progn |)"))
-  (should (string= (vilpy-with "(message \"Then shalt thou count to three|, no more, no less.
-                                         Three shall be the number thou shalt count, and the number of the
-                                         counting shall be three.\")" (kbd "M-k"))
-                   "(message \"Then shalt thou count to three|\")")))
-
 (ert-deftest vilpy-hash ()
   (should (string= (vilpy-with clojure "foo|" "#")
                    "foo #|"))

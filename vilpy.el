@@ -938,16 +938,6 @@ If position isn't special, move to previous or error."
                 (widen)))
           (backward-kill-word 1))))))
 
-(defun vilpy-kill-sentence ()
-  "Kill until the end of current string or list."
-  (interactive)
-  (let ((bnd (vilpy--bounds-dwim)))
-    (if (or (vilpy-left-p) (looking-at "\""))
-        (kill-region (car bnd) (cdr bnd))
-      (setq bnd (or (vilpy--bounds-string)
-                    (vilpy--bounds-list)))
-      (kill-region (point) (1- (cdr bnd))))))
-
 (defun vilpy-yank ()
   "Like regular `yank', but quotes body when called from \"|\"."
   (interactive)
@@ -5682,7 +5672,6 @@ w: Widen
     ;; navigation
     (define-key map (kbd "<backtab>") 'vilpy-special)
     ;; killing
-    (define-key map (kbd "M-k") 'vilpy-kill-sentence)
     (define-key map (kbd "C-,") 'vilpy-kill-at-point)
     ;; deleting
     (define-key map (kbd "C-d") 'vilpy-delete)
