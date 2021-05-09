@@ -961,6 +961,33 @@ Call `backward-delete-char`.
 | `vilpy-paste` | <kbd>P</kbd> |
 
 <details>
+
+#### `vilpy-copy`(<kbd>y</kbd>)
+
+Copy the current sexp or region to kill ring.
+
+#### `vilpy-clone` (<kbd>w</kbd>)
+
+Copy current sexp or region and paste it below.
+With a numerical argument, copy that many times.
+
+Starting with:
+
+```
+|(foo)
+```
+
+after <kbd>w</kbd>:
+
+```
+|(foo)
+(foo)
+```
+
+#### `vilpy-paste` (<kbd>P</kbd>)
+
+When region is active, replace it with current kill. Otherwise, forward to yank.
+
 </details>
 
 ### Marking
