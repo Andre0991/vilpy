@@ -43,9 +43,7 @@ Press <kbd>backtab</kbd> (that is, <kbd>shift</kbd> and <kbd>tab</kbd>) to move 
 (plus-one 2)
 ```
 
-Let's eval `(plus-one 2)` and see what's the current value.
-
-First, evaluate the defun with <kbd>e</kbd> (`vilpy-eval`). Then, use <kbd>j</kbd> (`vilpy-down`) and <kbd>e</kbd> for evaluating `(plus-one 2)` and getting 3. Use <kbd>k</kbd> for getting back to the defun. Note that this entire sequence is equivalent to simply using <kbd>B</kbd> (`vilpy-eval-buffer`).
+Let's eval `(plus-one 2)` and see what's the current value. First, evaluate the defun with <kbd>e</kbd> (`vilpy-eval`). Then, use <kbd>j</kbd> (`vilpy-down`) and <kbd>e</kbd> for evaluating `(plus-one 2)` and getting 3. Use <kbd>k</kbd> for getting back to the defun. Note that this entire sequence is equivalent to simply using <kbd>B</kbd> (`vilpy-eval-buffer`).
 
 Now, let's change `plus-one` to `plus-two`. With the point in the beginning of the defun, press <kbd>-</kbd> (`vilpy-ace-subword`).
 This will display a letter in each subword, alphabetically, like `(adefun bplus-cone ...)`. Press `c` for jumping to `one`, which will be marked. Then, use <kbd>C-d</kbd> (`vilpy-delete`) for removing `one` and write `two`. Press <kbd>backtab</kbd> for getting back to special mode.

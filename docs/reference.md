@@ -993,7 +993,7 @@ When region is active, replace it with current kill. Otherwise, forward to yank.
 ### Marking
 | command             | binding          |
 |---------------------|------------------|
-| `vilpy-mark-list`   | <kbd>v</kbd>     |
+| `vilpy-mark-list`   | <kbd>m</kbd>     |
 | `vilpy-mark-symbol` | <kbd>M-m</kbd>   |
 | `vilpy-mark`        | <kbd>C-M-,</kbd> |
 

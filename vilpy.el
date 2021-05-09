@@ -5585,7 +5585,7 @@ w: Widen
     (vilpy-define-key map "w" 'vilpy-clone)
     (vilpy-define-key map "P" 'vilpy-paste)
     ;; marking
-    (vilpy-define-key map "v" 'vilpy-mark-list)
+    (vilpy-define-key map "m" 'vilpy-mark-list)
     ;; misc
     (vilpy-define-key map "_" 'vilpy-underscore)
     (vilpy-define-key map "g" 'vilpy-go-actions)
