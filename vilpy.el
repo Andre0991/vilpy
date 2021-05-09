@@ -192,7 +192,7 @@ using those packages."
 
 (defcustom vilpy-safe-delete nil
   "When non-nil, killing/deleting an active region keeps delimiters balanced.
-This applies to `vilpy-delete', `vilpy-kill-at-point', `vilpy-paste', and
+This applies to `vilpy-delete', `vilpy-paste', and
 `vilpy-delete-backward'. This also applies to `vilpy-yank' when
 `delete-selection-mode' is non-nil."
   :group 'vilpy
@@ -1358,27 +1358,6 @@ When ARG is more than 1, mark ARGth element."
 
           (t
            (vilpy--mark (vilpy--bounds-dwim))))))
-
-(defun vilpy-kill-at-point ()
-  "Kill the quoted string or the list that includes the point."
-  (interactive)
-  (cond ((region-active-p)
-         (vilpy--maybe-safe-kill-region (region-beginning)
-                                        (region-end)))
-        ((derived-mode-p 'text-mode)
-         (let ((beg (save-excursion
-                      (1+ (re-search-backward "[ \t\n]" nil t))))
-               (end (save-excursion
-                      (1- (re-search-forward "[ \t\n]" nil t)))))
-           (kill-region beg end)))
-        (t
-         (let ((bounds (or (vilpy--bounds-comment)
-                           (vilpy--bounds-string)
-                           (vilpy--bounds-list))))
-           (if buffer-read-only
-               (kill-new (buffer-substring
-                          (car bounds) (cdr bounds)))
-             (kill-region (car bounds) (cdr bounds)))))))
 
 (defun vilpy-new-copy ()
   "Copy marked region or sexp to kill ring."
@@ -5671,8 +5650,6 @@ w: Widen
   (let ((map (copy-keymap vilpy-mode-map-base)))
     ;; navigation
     (define-key map (kbd "<backtab>") 'vilpy-special)
-    ;; killing
-    (define-key map (kbd "C-,") 'vilpy-kill-at-point)
     ;; deleting
     (define-key map (kbd "C-d") 'vilpy-delete)
     (define-key map (kbd "C-y") 'vilpy-yank)

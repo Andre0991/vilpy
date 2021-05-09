@@ -744,7 +744,6 @@ Asks for a char and jumps to it in the current form.
 | `vilpy-delete`          | <kbd>C-d</kbd>   |
 | `vilpy-kill`            | <kbd>C-k</kbd>   |
 | `vilpy-kill-word`       | <kbd>M-DEL</kbd> |
-| `vilpy-kill-at-point`   | <kbd>C-,</kbd>   |
 | `vilpy-yank`            | <kbd>C-y</kbd>   |
 | `vilpy-delete-backward` | <kbd>DEL</kbd>   |
 
