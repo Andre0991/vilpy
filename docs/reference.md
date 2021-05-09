@@ -997,6 +997,46 @@ When region is active, replace it with current kill. Otherwise, forward to yank.
 | `vilpy-mark-symbol` | <kbd>M-m</kbd>   |
 | `vilpy-mark`        | <kbd>C-M-,</kbd> |
 
+<details>
+
+#### `vilpy-mark-list` (<kbd>m</kbd>)
+
+Mark the current sexp. When the mark is already active, deactivate it instead.
+
+#### `vilpy-mark-symbol` (<kbd>M-m</kbd>)
+
+Marks the symbol at point, comment or symbol in the next or previous list.
+
+**Point is under symbol**
+
+Mark the symbol.
+
+**In comment**
+
+Mark the comment.
+
+**In special mode, before paren**
+
+Marks the next symbol.
+
+**In special mode, after paren**
+
+Marks the previous symbol.
+
+**Region is active**
+
+Call `forward-sexp`.
+
+**Otherwise**
+
+Forward to `lispy-mark`.
+
+#### `vilpy-mark` (<kbd>C-M-,</kbd>)
+
+Mark the smallest comment, string or sexp that includes point.
+
+</details>
+
 ### Misc
 | command                       | binding        |
 |-------------------------------|----------------|
