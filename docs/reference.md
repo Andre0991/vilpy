@@ -94,8 +94,8 @@ after <kbd>backtab</kbd>:
 |-------------------------------|----------------|
 | `forward-char`                | <kbd>a</kbd>   |
 | `vilpy-insert-at-end-of-sexp` | <kbd>A</kbd>   |
-| `vilpy-open-parens-below`     | <kbd>o</kbd>   |
-| `vilpy-open-parens-above`     | <kbd>O</kbd>   |
+| `vilpy-open-line-below`       | <kbd>o</kbd>   |
+| `vilpy-open-line-above`       | <kbd>O</kbd>   |
 | `backward-char`               | <kbd>C-b</kbd> |
 | `forward-char`                | <kbd>C-f</kbd> |
 
@@ -126,7 +126,7 @@ after <kbd>A</kbd>:
 (foo bar|)
 ```
 
-##### `vilpy-open-parens-below` (<kbd>o</kbd>)
+##### `vilpy-open-line-below` (<kbd>o</kbd>)
 Starting with
 
 ```
@@ -136,10 +136,10 @@ Starting with
 after <kbd>o</kbd>:
 ```
 (foo)
-(|)
+|
 ```
 
-##### `vilpy-open-parens-above` (<kbd>O</kbd>)
+##### `vilpy-open-line-above` (<kbd>O</kbd>)
 Starting with
 
 ```
@@ -148,7 +148,7 @@ Starting with
 
 after <kbd>O</kbd>:
 ```
-(|)
+|
 (foo)
 ```
 

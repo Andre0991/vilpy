@@ -1509,24 +1509,20 @@ otherwise the whole string is unquoted."
              (backward-char 1))
            (backward-char)))))
 
-(defun vilpy-open-parens-below ()
-  "Insert parenthesis in an empty line below the current line and move the point to them."
+(defun vilpy-open-line-below ()
+  "Insert an empty line below the current line and move the point to it."
   (interactive)
   (end-of-line)
   (open-line 1)
   (forward-char)
-  (insert "()")
-  (backward-char)
   (vilpy--indent-for-tab))
 
-(defun vilpy-open-parens-above ()
+(defun vilpy-open-line-above ()
   "Insert parenthesis in an empty line above the current line and move the point to them."
   (interactive)
   (end-of-line 0)
   (open-line 1)
   (forward-char)
-  (insert "()")
-  (backward-char)
   (vilpy--indent-for-tab))
 
 (defun vilpy-parens-down ()
@@ -5539,8 +5535,8 @@ w: Widen
     ;; getting out of special mode
     (vilpy-define-key map "A" 'vilpy-insert-at-end-of-sexp)
     (vilpy-define-key map "a" 'forward-char)
-    (vilpy-define-key map "o" 'vilpy-open-parens-below)
-    (vilpy-define-key map "O" 'vilpy-open-parens-above)
+    (vilpy-define-key map "o" 'vilpy-open-line-below)
+    (vilpy-define-key map "O" 'vilpy-open-line-above)
     ;; navigation
     (vilpy-define-key map "h" 'vilpy-step-out)
     (vilpy-define-key map "l" 'vilpy-step-in)
