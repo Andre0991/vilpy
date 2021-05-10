@@ -1051,4 +1051,13 @@ Mark the smallest comment, string or sexp that includes point.
 | `vilpy-repeat`                | <kbd>.</kbd>   |
 
 ### Magic
+| command          | binding      |
+|------------------|--------------|
+| `vilpy-teleport` | <kbd>t</kbd> |
+
+<details>
+
 #### `vilpy-teleport`(<kbd>t</kbd>)
+
+</details>
+

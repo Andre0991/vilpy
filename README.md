@@ -107,7 +107,7 @@ You would use this:
 ```
 
 ## Alternatives
-### `lispy`
+### [`lispy`](https://github.com/abo-abo/lispy/)
 `vilpy` has some important differences from its big brother.
 
 In particular, it attempts to respect the following design goals (mostly not taken into practice yet):
@@ -121,3 +121,13 @@ In particular, it attempts to respect the following design goals (mostly not tak
 - For evaluation features, just depend on public functions from external packages. For example, `lispy` loads `le-clojure.clj` when you use `cider` for providing some features such as getting bindings from `let` when evaluating forms. This relies on injecting dependencies to `cider` and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552). `vilpy` simple uses `cider-eval*` functions.
 
 That said, `lispy` has more features, including debugging and refactoring capabilities and support more languages. If you want a more featureful package, go for it.
+
+### [`lispyville`](https://github.com/noctuid/lispyville)
+
+`lispyville` is a layer on top of `lispy` that adapts some `evil` commands for working consistently with `lispy`.
+Personally, I never felt the need for `lispyville` when using `evil`: using vim commands while in normal mode and `lispy` commands in insert mode worked fine for me.
+I found `lispyville` quite difficult to grasp, and I simply got used to the raw `lispy` commands, avoiding this extra indirection for `lispy` commands.
+That said, it's clear that `lispyville` is useful for lots of people., so would be great if it worked with `vilpy`.
+I believe this should not be too difficult: maybe simply forking it and renaming `lispy` to `vilpy` and fixing some renamed functions will do it.
+Another simpler possibility is aliasing `vilpy` functions to their `lispy` counterpars.
+That said, I do not have the motivation for experimenting with this now.
