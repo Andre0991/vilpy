@@ -110,15 +110,14 @@ You would use this:
 ### [`lispy`](https://github.com/abo-abo/lispy/)
 `vilpy` has some important differences from its big brother.
 
-In particular, it attempts to respect the following design goals (mostly not taken into practice yet):
-- Be vimmier: avoid using modifier keys and prefer composability over specialization
-- Reduce the feature set to navigation and evaluation functions. We don't need debugging and tags features. Refactoring commands can be leveraged from other packages.
-- Prefer to leverage Emacs built-in functions whenever possible.
-- Implement a uniform API that works well with all supported languages. Alternatively: avoid language-specific commands.
-- Rely on fewer external dependencies.
-- Drop support for non-lisps languages.
-- Use less magic. For example, in the original `lispy`, the function for evaluating the last sexp also uses `setq` when evaluating `defvars`. `vilpy` does not try to guess your intent. `vilpy` is intentionally dumber.
-- For evaluation features, just depend on public functions from external packages. For example, `lispy` loads `le-clojure.clj` when you use `cider` for providing some features such as getting bindings from `let` when evaluating forms. This relies on injecting dependencies to `cider` and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552). `vilpy` simple uses `cider-eval*` functions.
+In particular, it attempts to respect the following design goals:
+- **Be vimmier**: the default keybindings resemble vim more than `lispy` (note that if you do not know vim, it's okay. `lispy` keybindings are arguably not super emacs-y either, so either way you would have to invest some time in learning some keys.)
+- **Reduce the feature set to navigation and evaluation functions**. We don't need debugging and tags features. Refactoring commands can be leveraged from other packages. This makes `vilypy` easier to maintain and understand.
+- **Have a reduced, but reliable set of commands that works well with all supported languages.** The original `lispy` has some nice refactoring tools, but they mostly works for Emacs Lisp. This adds confusion for people trying to use it, as it is not always clear if some command will work for a given language.
+- **Rely on fewer external dependencies**. This also makes `vilpy` easier to maintain. Currently, its only dependency is `avy`, which is essential for navigation commands.
+- **Drop support for non-lisps languages**. While the prospect of using `vilpy` in other languages is interesting, this is not very well tested and not a priority. That said, you can always invoke `vilpy-mode` manually and see what happens.
+- **Be less magic**. For example, in the original `lispy`, the function for evaluating the last sexp also uses `setq` when evaluating `defvars`. `vilpy` does not try to guess your intent. `vilpy` is intentionally dumber.
+- **Do not inject language-specific code**. For example, `lispy` loads `le-clojure.clj` when you use `cider` for providing some features such as getting bindings from `let` when evaluating forms. This relies on injecting dependencies to `cider` and will not work on some project setups (see https://github.com/abo-abo/lispy/issues/552). `vilpy` simple uses `cider-eval*` functions.
 
 That said, `lispy` has more features, including debugging and refactoring capabilities and support more languages. If you want a more featureful package, go for it.
 
@@ -127,7 +126,8 @@ That said, `lispy` has more features, including debugging and refactoring capabi
 `lispyville` is a layer on top of `lispy` that adapts some `evil` commands for working consistently with `lispy`.
 Personally, I never felt the need for `lispyville` when using `evil`: using vim commands while in normal mode and `lispy` commands in insert mode worked fine for me.
 I found `lispyville` quite difficult to grasp, and I simply got used to the raw `lispy` commands, avoiding this extra indirection for `lispy` commands.
+
 That said, it's clear that `lispyville` is useful for lots of people., so would be great if it worked with `vilpy`.
 I believe this should not be too difficult: maybe simply forking it and renaming `lispy` to `vilpy` and fixing some renamed functions will do it.
-Another simpler possibility is aliasing `vilpy` functions to their `lispy` counterpars.
-That said, I do not have the motivation for experimenting with this now.
+Another simpler possibility is aliasing `vilpy` functions to their `lispy` counterparts.
+However, I do not have the motivation for experimenting with this now.
