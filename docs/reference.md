@@ -560,10 +560,10 @@ after <kbd>J</kbd>:
 |--------------------|---------------|
 | `vilpy-slurp`      | <kbd>></kbd>  |
 | `vilpy-barf`       | <kbd><</kbd>  |
-| `vilpy-move-left`  | <kbd>/h</kbd> |
-| `vilpy-move-right` | <kbd>/l</kbd> |
-| `vilpy-down-slurp` | <kbd>/j</kbd> |
-| `vilpy-up-slurp`   | <kbd>/k</kbd> |
+| `vilpy-move-left`  | <kbd>sh</kbd> |
+| `vilpy-move-right` | <kbd>sl</kbd> |
+| `vilpy-down-slurp` | <kbd>sj</kbd> |
+| `vilpy-up-slurp`   | <kbd>sk</kbd> |
 
 <details>
 
@@ -608,7 +608,7 @@ after <kbd><</kbd>:
 ```
 
 
-##### `vilpy-move-left` (<kbd>/h</kbd>)
+#### `vilpy-move-left` (<kbd>sh</kbd>)
 
 Move current expression to the left, outside the current list.
 
@@ -628,7 +628,7 @@ after <kbd>/h</kbd>:
   (message "%s. No yel..." color))
 ```
 
-##### `vilpy-move-right` (<kbd>/l</kbd>)
+#### `vilpy-move-right` (<kbd>sl</kbd>)
 
 Move current expression to the right, outside the current list.
 
@@ -650,7 +650,7 @@ after <kbd>/l</kbd>:
 |(message "Go on. Off you go.")
 ```
 
-##### `vilpy-down-slurp` (<kbd>/j</kbd>)
+#### `vilpy-down-slurp` (<kbd>sj</kbd>)
 Move current expression to become the first element of the first list below.
 
 ```

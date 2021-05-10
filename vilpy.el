@@ -5567,7 +5567,7 @@ w: Widen
     ;; barfing & slurping
     (vilpy-define-key map ">" 'vilpy-slurp)
     (vilpy-define-key map "<" 'vilpy-barf)
-    (vilpy-define-key map "/" 'vilpy-move-and-slurp-actions)
+    (vilpy-define-key map "s" 'vilpy-move-and-slurp-actions)
     ;; acing
     (vilpy-define-key map "f" 'vilpy-ace-symbol)
     (vilpy-define-key map "-" 'vilpy-ace-subword)
