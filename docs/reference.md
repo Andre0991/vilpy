@@ -372,8 +372,15 @@ Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
 
 The evaluation function is defined in `vilpy--handlers-alist`.
 
-#### `vilpy-eval-defun` (<kbd>E</kbd>)
+#### `vilpy-eval-defun` (<kbd>D</kbd>)
 Eval top level form.
+
+Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
+
+The evaluation function is defined in `vilpy--handlers-alist`.
+
+#### `vilpy-eval-buffer` (<kbd>B</kbd>)
+Eval buffer.
 
 Emacs Lisp and Clojure (`cider` and `inf-clojure`) are supported.
 
