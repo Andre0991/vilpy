@@ -7,8 +7,6 @@
 
 > creamy & even shorter lisp editing
 
-**Important: Work in progress. Expect things to break and keybindings to change. Stay tuned!**
-
 `vilpy` is a vi-like `paredit`.
 It is modal in the sense that when the point is exactly before or after a paren, keys run commands rather than inserting text. For more details, see [documentation](#documentation).
 
