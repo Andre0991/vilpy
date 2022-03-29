@@ -4495,6 +4495,9 @@ Defaults to `error'."
 (defun vilpy--complain-not-supported ()
   (vilpy--complain "Command not supported for current mode. Please consult the variable `vilpy--handlers-alist`."))
 
+(defun vilpy--complain-missing-eval-handler ()
+  (vilpy--complain "Could not find eval handler for current mode."))
+
 (defun vilpy--complain-unrecognized-key ()
   (vilpy--complain "Ignoring unmapped key."))
 
@@ -5325,10 +5328,10 @@ The evaluation function is defined by `vilpy--handlers-alist`."
     (cond
      ((and (region-active-p)
            (not eval-region-handler))
-      (vilpy--complain-not-supported))
+      (vilpy--complain-missing-eval-handler))
      ((and (not (region-active-p))
            (not eval-last-sexp-handler))
-      (vilpy--complain-not-supported))
+      (vilpy--complain-missing-eval-handler))
      ((vilpy-left-p)
       (save-excursion
         (vilpy-forward 1)
