@@ -1,7 +1,7 @@
 ;;; vilpy.el --- vi-like Paredit. -*- lexical-binding: t -*-
 
 ;; Author: André Peric Tavares <andre.peric.tavares@gmail.com>
-;; URL: https://github.com/Andre0991/vilpy-lite
+;; URL: https://github.com/Andre0991/vilpy
 ;; Version: 0.1.5 (beta)
 ;; Keywords: lisp
 
@@ -23,7 +23,7 @@
 ;;; Commentary:
 
 ;; This is a stripped-down fork of the excellent [vilpy](https://github.com/abo-abo/vilpy), a paredit-like mode.
-;; For more details, please see https://github.com/Andre0991/vilpy-lite.
+;; For more details, please see https://github.com/Andre0991/vilpy.
 
 ;;; Code:
 
@@ -4488,7 +4488,7 @@ Defaults to `error'."
   "Display MSG if `vilpy-verbose' is t."
   (when (and vilpy-verbose
              (null noninteractive))
-    (message "[vilpy-lite] %s: %s"
+    (message "[vilpy] %s: %s"
              (prin1-to-string this-command)
              msg)))
 
