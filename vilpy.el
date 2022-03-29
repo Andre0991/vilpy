@@ -22,8 +22,7 @@
 
 ;;; Commentary:
 
-;; This is a stripped-down fork of the excellent [vilpy](https://github.com/abo-abo/vilpy), a paredit-like mode.
-;; For more details, please see https://github.com/Andre0991/vilpy.
+;; This is a stripped-down fork of the excellent [lispy](https://github.com/abo-abo/lispy), a paredit-like mode.
 
 ;;; Code:
 
