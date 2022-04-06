@@ -280,7 +280,7 @@ backward through lists, which is useful to move into special.
 \\{vilpy-mode-map}"
   :keymap vilpy-mode-map
   :group 'vilpy
-  :lighter " LY"
+  :lighter " VP"
   (if vilpy-mode
       (progn
         (require 'eldoc)
