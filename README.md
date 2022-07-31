@@ -21,18 +21,21 @@ I prefer forking the original code because (1) the author is happy with the curr
 The navigation features are tested with emacs-lisp and Clojure, but they are likely to work with other lisps.
 
 emacs-lisp and Clojure (`cider` and `inf-clojure`) also support evaluation, describing the symbol at point and indentation.
-These features can be added to other languages by setting the proper handlers in the variable `vilpy--handlers-alist`.
+These features can be added to other languages by setting the proper handlers in the variable `vilpy--handlers-alist` (see the customization section).
 
 `vilpy` defines its own keybindings that might conflict with `parinfer`, `paredit` and other structural editing modes.
 
 ## Installation
 `vilpy` must be installed manually as of now.
 
-Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy). You might need to install it as well.
+Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy).
+You might need to install it as well.
+
+### Vanilla
 
 ``` emacs-lisp
 ;; replace `vilpy-load-path` by the directory that has `vilpy.el`
-(let ((vilpy-path "vilpy-load-path"))
+(let ((vilpy-path "~/path/to/vilpy"))
   (add-to-list 'load-path vilpy-path)
   (require 'vilpy))
 (add-hook 'emacs-lisp-mode-hook (lambda () (vilpy-mode 1)))
@@ -42,6 +45,16 @@ Note that `vilpy` requires [`avy`](https://github.com/abo-abo/avy). You might ne
 ;; those are the default keybindings, but they are overriden by `evil`
 (evil-define-key 'insert 'vilpy-mode-map (kbd "C-k") 'vilpy-kill)
 (evil-define-key 'insert 'vilpy-mode-map (kbd "C-d") 'vilpy-delete)
+```
+
+### `use-package`
+
+``` emacs-lisp
+(use-package vilpy
+  :load-path
+  "~/path/to/vilpy/"
+  :hook
+  ((emacs-lisp-mode clojure-mode) . vilpy-mode))
 ```
 
 ## Documentation
@@ -54,6 +67,24 @@ For a complete list of commands, see the [function reference](/docs/reference.md
 This section presents some common ways that `vilpy` can be configured.
 
 There is also the [wiki](https://github.com/Andre0991/vilpy/wiki), with additional configuration examples and tips.
+
+### Adding support to other modes
+
+By default, `vilpy` supports Emacs Lisp and Clojure.
+These are the official supported modes because I use them everyday and the test suite ensures that their syntax is well handled by `vilpy`.
+That said, you can easily use `vilpy` with other languages (presumably lisps) and it should work without major issues.
+
+For example, for using `vilpy` with [sly](https://github.com/joaotavora/sly), customize `vilpy--handlers-alist` like this:
+
+```emacs-lisp
+(add-to-list 'vilpy--handlers-alist
+	     '(:sly . ((:decider-fn . (lambda () (derived-mode-p 'sly-mode)))
+		       (:eval-last-sexp . sly-eval-last-expression)
+		       (:eval-defun . sly-eval-defun)
+		       (:eval-region . sly-eval-region)
+		       (:eval-buffer . sly-eval-buffer)
+		       (:describe-symbol . sly-describe-symbol))))
+```
 
 ### Keybindings
 #### Single-key bindings
