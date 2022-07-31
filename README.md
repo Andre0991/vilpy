@@ -78,7 +78,7 @@ For example, for using `vilpy` with [sly](https://github.com/joaotavora/sly), cu
 
 ```emacs-lisp
 (add-to-list 'vilpy--handlers-alist
-	     '(:sly . ((:decider-fn . (lambda () (derived-mode-p 'sly-mode)))
+	     '(:sly . ((:decider-fn . (lambda () (bound-and-true-p sly-mode)))
 		       (:eval-last-sexp . sly-eval-last-expression)
 		       (:eval-defun . sly-eval-defun)
 		       (:eval-region . sly-eval-region)
