@@ -40,6 +40,8 @@ You might need to install it as well.
   (require 'vilpy))
 (add-hook 'emacs-lisp-mode-hook (lambda () (vilpy-mode 1)))
 (add-hook 'clojure-mode-hook (lambda () (vilpy-mode 1)))
+; if using the treesitter version of clojure-mode:
+(add-hook 'clojure-ts-mode-hook (lambda () (vilpy-mode 1)))
 
 ;; recommended settings for `evil` users
 ;; those are the default keybindings, but they are overriden by `evil`
@@ -54,7 +56,7 @@ You might need to install it as well.
   :load-path
   "~/path/to/vilpy/"
   :hook
-  ((emacs-lisp-mode clojure-mode) . vilpy-mode))
+  ((emacs-lisp-mode clojure-mode clojure-ts-mode) . vilpy-mode))
 ```
 
 ## Documentation
