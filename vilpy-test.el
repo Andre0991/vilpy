@@ -1775,10 +1775,6 @@ Insert KEY if there's no command."
             (throw 'break nil))
         (vilpy-tab)))))
 
-(ert-deftest vilpy-ace-subword ()
-  (should (string= (vilpy-with "|foo-bar-baz~" (vilpy-ace-subword 1))
-                   "~foo|-bar-baz")))
-
 (ert-deftest vilpy-mark-list ()
   (should (string= (vilpy-with "|;; foo\n(bar)" (vilpy-mark-list 1))
                    "~;; foo|\n(bar)"))
@@ -1979,6 +1975,8 @@ Insert KEY if there's no command."
                      "(progn (setq type 'norwegian-blue)\n       (~setq| plumage-type 'lovely))"))))
 
 (ert-deftest vilpy-ace-subword ()
+  (should (string= (vilpy-with "|foo-bar-baz~" (vilpy-ace-subword 1))
+                   "~foo|-bar-baz"))
   (should (string= (vilpy-with "|(progn (setq type 'norwegian-blue)\n       (setq plumage-type 'lovely))"
                                (execute-kbd-macro (kbd "-g")))
                    "(progn (setq type 'norwegian-blue)\n       (setq |plumage~-type 'lovely))"))

@@ -89,6 +89,7 @@ in this list is appropriate for the current buffer.
 
 (defvar vilpy-clojure-modes
   '(clojure-mode
+    clojure-ts-mode
     clojurescript-mode
     clojurec-mode)
   "Modes for which clojure related functions are appropriate.")
@@ -1440,6 +1441,7 @@ When this function is called:
   '((lisp-mode . ("[#`',.@]+" "#[0-9]*" "#[.,Ss+-]" "#[0-9]+[=Aa]"))
     (emacs-lisp-mode . ("[#`',@]+" "#s" "#[0-9]+="))
     (clojure-mode . ("[`'~@]+" "#" "#\\?@?"))
+    (clojure-ts-mode . ("[`'~@]+" "#" "#\\?@?"))
     (clojurescript-mode . ("[`'~@]+" "#" "#\\?@?"))
     (clojurec-mode . ("[`'~@]+" "#" "#\\?@?"))
     (cider-repl-mode . ("[`'~@]+" "#" "#\\?@?"))
@@ -1454,6 +1456,7 @@ major mode. These regexps are used to determine whether to insert a space for
 
 (defvar vilpy-braces-preceding-syntax-alist
   '((clojure-mode . ("[`'^]" "#[:]*[A-z.:]*"))
+    (clojure-ts-mode . ("[`'^]" "#[:]*[A-z.:]*"))
     (clojurescript-mode . ("[`'^]" "#[:]*[A-z.:]*"))
     (clojurec-mode . ("[`'^]" "#[:]*[A-z.:]*"))
     (cider-repl-mode . ("[`'^]" "#[:]*[A-z.:]*"))
@@ -1592,6 +1595,7 @@ delete the extra space, \"(| foo)\" to \"(|foo)\"."
 
 (defvar vilpy-brackets-preceding-syntax-alist
   '((clojure-mode . ("[`']" "#[A-z.]*"))
+    (clojure-ts-mode . ("[`']" "#[A-z.]*"))
     (clojurescript-mode . ("[`']" "#[A-z.]*"))
     (clojurec-mode . ("[`']" "#[A-z.]*"))
     (cider-repl-mode . ("[`']" "#[A-z.]*"))
@@ -2791,9 +2795,10 @@ When ARG is `fill', do nothing for short expressions."
       define-key nth throw define-error defadvice defhydra defsubst)
   "List of constructs for which the first 3 elements are on the first line.")
 
-(setq-mode-local
- clojure-mode
- vilpy--multiline-take-3 '())
+(dolist (mode vilpy-clojure-modes)
+  (setq-mode-local
+   mode
+   vilpy--multiline-take-3 '()))
 
 (defvar vilpy--multiline-take-3-arg
   '(defun defmacro declare-function define-error defadvice defhydra defsubst)
@@ -2817,12 +2822,13 @@ The third one is assumed to be the arglist and will not be changed.")
       not pop listp or and)
   "List of constructs for which the first 2 elements are on the first line.")
 
-(setq-mode-local
- clojure-mode
- vilpy--multiline-take-2 '(loop recur for fn def defn ns if -> ->>
-                           + +' - -' * *' / > >= < <= = ==
-                           or and not
-                           assoc! assoc assoc-in concat))
+(dolist (mode vilpy-clojure-modes)
+  (setq-mode-local
+   mode
+   vilpy--multiline-take-2 '(loop recur for fn def defn ns if -> ->>
+                                  + +' - -' * *' / > >= < <= = ==
+                                  or and not
+                                  assoc! assoc assoc-in concat)))
 
 (defvar vilpy--multiline-take-2-arg '(declare lambda
                                       make-variable-buffer-local
@@ -4185,6 +4191,11 @@ See https://clojure.org/guides/weird_characters#_character_literal.")
                      (match-string subexp)))
             t t nil subexp)))))
 
+(defun vilpy--clojure-mode-p ()
+  "Return t if the current buffer is derived from `clojure-mode' or `clojure-ts-mode'."
+  (or (derived-mode-p 'clojure-mode)
+      (derived-mode-p 'clojure-ts-mode)))
+
 ;; TODO: Make the read test pass on string with semi-colon
 (defun vilpy--read (str)
   "Read STR including comments and newlines."
@@ -4245,7 +4256,7 @@ See https://clojure.org/guides/weird_characters#_character_literal.")
                   (unless (vilpy--in-string-or-comment-p)
                     (replace-match "(ly-raw empty)" nil nil nil 1)))
                 ;; ——— \ char syntax (Clojure)—
-                (when (eq major-mode 'clojure-mode)
+                (when (vilpy--clojure-mode-p)
                   (vilpy--read-replace vilpy--clojure-char-literal-regex "clojure-char"))
                 ;; namespaced map #520
                 (when (memq major-mode vilpy-clojure-modes)
@@ -4284,7 +4295,7 @@ See https://clojure.org/guides/weird_characters#_character_literal.")
                         (setq sexp (buffer-substring-no-properties pt (point)))
                         (delete-region (1- pt) (point))
                         (insert (format "(ly-raw char %S)" sexp))))))
-                (when (eq major-mode 'clojure-mode)
+                (when (vilpy--clojure-mode-p)
                   (vilpy--read-replace " *,+" "clojure-commas"))
                 ;; ——— \ char syntax (LISP)————
                 (goto-char (point-min))
@@ -5448,20 +5459,24 @@ b: Scroll line to bottom
     ;; since this function is used internally and we don't want to spam the *Messages* buffer.
     (call-interactively handler)))
 
-(declare-function clojure-align "ext:clojure-mode")
 (declare-function clojure-indent-region "ext:clojure-mode")
+
 (defun vilpy-clojure-indent ()
   "Indents the next or previous sexp, depending on the point."
   (interactive)
-  (if (not (or (vilpy-right-p) (vilpy-left-p)))
-      (vilpy-complain "Point is not at beginning or end of sexp.")
-    (let* ((beg (if (vilpy-right-p)
-                    (save-excursion (backward-sexp) (point))
-                  (point)))
-           (end (if (vilpy-right-p)
-                    (point)
-                  (save-excursion (forward-sexp) (point)))))
-      (clojure-indent-region beg end))))
+  (cond ((derived-mode-p 'clojure-mode)
+         (if (not (or (vilpy-right-p) (vilpy-left-p)))
+             (vilpy-complain "Point is not at beginning or end of sexp.")
+           (let* ((beg (if (vilpy-right-p)
+                           (save-excursion (backward-sexp) (point))
+                         (point)))
+                  (end (if (vilpy-right-p)
+                           (point)
+                         (save-excursion (forward-sexp) (point)))))
+             (clojure-indent-region beg end))))
+        ((derived-mode-p 'clojure-ts-mode)
+         (message "This functionality depends on `clojure-indent-region', which is not yet implemented on clojure-ts-mode."))
+        (message "Ignoring command. Expected `clojure-mode'.")))
 
 ;;* Key definitions
 (defvar ac-trigger-commands '(self-insert-command))
