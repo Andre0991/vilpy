@@ -1725,6 +1725,10 @@ When the region is active, surrounds it with backticks."
        (ielm-return))
       (racket-repl-mode
        (racket-repl-submit))
+      ;; FIXME: adds unecessary changes otherwise (when pressing <RET> for adding a new binding in let forms, for example)
+      (clojure-ts-mode
+       (newline)
+       (indent-for-tab-command))
       (t
        (if (and (not (vilpy--in-string-or-comment-p))
                 (if (memq major-mode vilpy-clojure-modes)
