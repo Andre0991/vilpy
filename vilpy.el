@@ -5478,7 +5478,15 @@ b: Scroll line to bottom
                          (save-excursion (forward-sexp) (point)))))
              (clojure-indent-region beg end))))
         ((derived-mode-p 'clojure-ts-mode)
-         (message "This functionality depends on `clojure-indent-region', which is not yet implemented on clojure-ts-mode."))
+         (if (not (or (vilpy-right-p) (vilpy-left-p)))
+             (vilpy-complain "Point is not at beginning or end of sexp.")
+           (let* ((beg (if (vilpy-right-p)
+                           (save-excursion (backward-sexp) (point))
+                         (point)))
+                  (end (if (vilpy-right-p)
+                           (point)
+                         (save-excursion (forward-sexp) (point)))))
+             (indent-region beg end))))
         (message "Ignoring command. Expected `clojure-mode'.")))
 
 ;;* Key definitions
